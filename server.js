@@ -153,6 +153,8 @@ const{
 
 customerName,
 
+customerPhone,
+    
 eventType,
 
 packageName,
@@ -186,7 +188,9 @@ const status=balanceDue===0?"Paid":"Pending";
 await Booking.create({
 
 customerName,
-
+    
+customerPhone,
+    
 eventType,
 
 packageName,
