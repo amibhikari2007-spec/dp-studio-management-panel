@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>User Management</title>
+</head>
+
+<body style="font-family:Arial;text-align:center;margin-top:60px;">
+
+<h2>Create New Admin / Staff</h2>
+
+<input id="username" placeholder="Username">
+
+<br><br>
+
+<input id="password" placeholder="Password">
+
+<br><br>
+
+<select id="role">
+
+<option value="admin">Admin</option>
+
+<option value="staff">Staff</option>
+
+<option value="super_admin">Super Admin</option>
+
+</select>
+
+<br><br>
+
+<button onclick="createUser()">
+Create User
+</button>
+
+<p id="msg"></p>
+
+<script>
+
+if(!localStorage.getItem("token")){
+window.location="/admin.html";
+}
+
+async function createUser(){
+
+const username=document.getElementById("username").value;
+
+const password=document.getElementById("password").value;
+
+const role=document.getElementById("role").value;
+
+const res=await fetch("/create-user",{
+
+method:"POST",
+
+headers:{
+
+"Content-Type":"application/json"
+
+},
+
+body:JSON.stringify({
+
+username,
+password,
+role
+
+})
+
+});
+
+const data=await res.text();
+
+document.getElementById("msg").innerText=data;
+
+}
+
+</script>
+
+</body>
+</html>
