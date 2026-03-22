@@ -26,20 +26,16 @@
             --danger: #e74c3c;
             --warning: #f39c12;
         }
+
         body.dark-mode {
-
---background: #0f172a;
---card-bg: #1e293b;
-
---text-dark: #f1f5f9;
---text-light: #94a3b8;
-
---border-color: #334155;
-
---primary-color: #3b82f6;
---primary-dark: #2563eb;
-
-}
+            --background: #0f172a;
+            --card-bg: #1e293b;
+            --text-dark: #f1f5f9;
+            --text-light: #94a3b8;
+            --border-color: #334155;
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+        }
 
         body {
             font-family: 'Poppins', sans-serif;
@@ -106,6 +102,25 @@
             display: flex;
             align-items: center;
             gap: 15px;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .user-badge {
@@ -181,7 +196,7 @@
         }
 
         .stat-card {
-            background: white;
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -191,6 +206,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            color: var(--text-dark);
         }
 
         .stat-card:nth-child(1) { animation-delay: 0.1s; }
@@ -300,11 +316,12 @@
         }
 
         .chart-card {
-            background: white;
+            background: var(--card-bg);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             animation: slideUp 0.6s ease-out 0.5s both;
+            color: var(--text-dark);
         }
 
         .chart-title {
@@ -339,14 +356,14 @@
         }
 
         .action-card {
-            background: white;
+            background: var(--card-bg);
             padding: 25px;
             border-radius: 15px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            color: inherit;
+            color: var(--text-dark);
             display: flex;
             align-items: center;
             gap: 20px;
@@ -451,26 +468,6 @@
     <!-- Header -->
     <header>
         <div class="header-container">
-            <div class="header-right">
-
-<button onclick="toggleTheme()" id="themeToggle"
-style="
-background: rgba(255,255,255,0.2);
-border:none;
-padding:8px 15px;
-border-radius:20px;
-color:white;
-cursor:pointer;
-margin-right:10px;
-">
-
-🌙 Dark
-
-</button>
-
-<a href="/dashboard.html">← Back to Dashboard</a>
-
-</div>
             <div class="header-left">
                 <div class="logo">DP</div>
                 <div class="header-title">
@@ -479,6 +476,7 @@ margin-right:10px;
                 </div>
             </div>
             <div class="header-right">
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
                 <div class="user-badge">👤 Admin</div>
                 <button class="logout-btn" onclick="confirmLogout()">Logout</button>
             </div>
@@ -705,45 +703,38 @@ margin-right:10px;
             window.location = "/admin.html";
         }
 
+        // Toggle theme function
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle("dark-mode");
+            
+            const themeBtn = document.getElementById("themeToggle");
+            if (body.classList.contains("dark-mode")) {
+                localStorage.setItem("theme", "dark");
+                themeBtn.textContent = "☀️ Light";
+            } else {
+                localStorage.setItem("theme", "light");
+                themeBtn.textContent = "🌙 Dark";
+            }
+        }
+
+        // Load theme on page load
+        function loadTheme() {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark") {
+                document.body.classList.add("dark-mode");
+                const themeBtn = document.getElementById("themeToggle");
+                if (themeBtn) {
+                    themeBtn.textContent = "☀️ Light";
+                }
+            }
+        }
+
         // Load stats on page load
-        document.addEventListener('DOMContentLoaded', loadStats);
-        function toggleTheme(){
-
-const body=document.body;
-
-body.classList.toggle("dark-mode");
-
-if(body.classList.contains("dark-mode")){
-
-localStorage.setItem("theme","dark");
-
-document.getElementById("themeToggle").innerText="☀️ Light";
-
-}else{
-
-localStorage.setItem("theme","light");
-
-document.getElementById("themeToggle").innerText="🌙 Dark";
-
-}
-
-}
-        function loadTheme(){
-
-const savedTheme=localStorage.getItem("theme");
-
-if(savedTheme==="dark"){
-
-document.body.classList.add("dark-mode");
-
-document.getElementById("themeToggle").innerText="☀️ Light";
-
-}
-
-}
-
-document.addEventListener("DOMContentLoaded",loadTheme);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            loadStats();
+        });
     </script>
-    
 </body>
 </html>
