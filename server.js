@@ -54,7 +54,7 @@ const User = mongoose.model("User", userSchema);
 /* ROOT ROUTE */
 
 app.get("/", (req, res) => {
-res.send("DP Studio Management Panel Running Successfully 🚀");
+res.redirect("/admin.html");
 });
 
 
