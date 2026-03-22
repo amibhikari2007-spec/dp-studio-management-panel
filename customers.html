@@ -45,7 +45,7 @@
         }
 
         .header-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -95,13 +95,13 @@
 
         /* Main Container */
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 40px 20px;
         }
 
         .page-title {
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             animation: slideDown 0.6s ease-out;
         }
 
@@ -128,20 +128,13 @@
             }
         }
 
-        /* Layout Grid */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
         /* Form Section */
-        .form-section {
+        .form-card {
             background: white;
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
             animation: slideUp 0.6s ease-out;
         }
 
@@ -156,7 +149,7 @@
             }
         }
 
-        .form-section h3 {
+        .form-card h3 {
             font-size: 20px;
             margin-bottom: 25px;
             color: var(--text-dark);
@@ -165,7 +158,7 @@
             gap: 10px;
         }
 
-        .form-section h3::before {
+        .form-card h3::before {
             content: '';
             width: 4px;
             height: 24px;
@@ -173,8 +166,14 @@
             border-radius: 2px;
         }
 
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
         .form-group {
-            margin-bottom: 20px;
             animation: fadeIn 0.6s ease-out;
             animation-fill-mode: both;
         }
@@ -182,7 +181,6 @@
         .form-group:nth-child(1) { animation-delay: 0.1s; }
         .form-group:nth-child(2) { animation-delay: 0.2s; }
         .form-group:nth-child(3) { animation-delay: 0.3s; }
-        .form-group:nth-child(4) { animation-delay: 0.4s; }
 
         @keyframes fadeIn {
             from {
@@ -205,7 +203,7 @@
             letter-spacing: 0.5px;
         }
 
-        input, textarea {
+        input {
             width: 100%;
             padding: 12px 14px;
             border: 2px solid var(--border-color);
@@ -217,31 +215,25 @@
             transition: all 0.3s ease;
         }
 
-        input:focus, textarea:focus {
+        input:focus {
             outline: none;
             border-color: var(--primary-color);
             background: white;
             box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.08);
         }
 
-        input::placeholder, textarea::placeholder {
+        input::placeholder {
             color: #a0a0a0;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
         }
 
         .button-group {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr auto;
             gap: 12px;
-            margin-top: 25px;
         }
 
         .btn {
-            padding: 12px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 10px;
             font-family: 'Poppins', sans-serif;
@@ -273,13 +265,17 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
             color: white;
-            grid-column: 1 / -1;
             box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
         .btn-secondary {
@@ -297,7 +293,7 @@
         .message {
             padding: 14px 16px;
             border-radius: 10px;
-            margin-top: 15px;
+            margin-bottom: 20px;
             font-size: 13px;
             font-weight: 600;
             text-align: center;
@@ -329,7 +325,7 @@
         }
 
         /* Table Section */
-        .table-section {
+        .table-card {
             background: white;
             border-radius: 15px;
             padding: 30px;
@@ -337,16 +333,24 @@
             animation: slideUp 0.6s ease-out 0.1s both;
         }
 
-        .table-section h3 {
-            font-size: 20px;
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 25px;
+            gap: 20px;
+        }
+
+        .table-card h3 {
+            font-size: 20px;
             color: var(--text-dark);
             display: flex;
             align-items: center;
             gap: 10px;
+            flex: 1;
         }
 
-        .table-section h3::before {
+        .table-card h3::before {
             content: '';
             width: 4px;
             height: 24px;
@@ -355,16 +359,26 @@
         }
 
         .search-box {
-            margin-bottom: 20px;
+            flex: 1;
+            max-width: 300px;
         }
 
         .search-box input {
             width: 100%;
-            padding: 12px 14px;
+            padding: 10px 14px;
             border: 2px solid var(--border-color);
             border-radius: 10px;
             font-family: 'Poppins', sans-serif;
             background: #f8f9fa;
+        }
+
+        .customer-count {
+            font-size: 12px;
+            color: var(--text-light);
+            background: var(--background);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: 600;
         }
 
         .table-wrapper {
@@ -398,25 +412,65 @@
 
         tbody tr {
             transition: all 0.3s ease;
+            animation: slideUp 0.6s ease-out;
+            animation-fill-mode: both;
         }
+
+        tbody tr:nth-child(1) { animation-delay: 0s; }
+        tbody tr:nth-child(2) { animation-delay: 0.05s; }
+        tbody tr:nth-child(3) { animation-delay: 0.1s; }
+        tbody tr:nth-child(4) { animation-delay: 0.15s; }
+        tbody tr:nth-child(5) { animation-delay: 0.2s; }
 
         tbody tr:hover {
             background: #f8f9fa;
+            transform: scale(1.01);
         }
 
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
-            color: var(--text-light);
+            padding: 60px 20px;
         }
 
         .empty-state-icon {
-            font-size: 48px;
+            font-size: 64px;
             margin-bottom: 15px;
+            opacity: 0.6;
         }
 
-        .empty-state p {
+        .empty-state-text {
+            color: var(--text-light);
             font-size: 14px;
+            margin: 10px 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* Footer */
@@ -429,28 +483,46 @@
             margin-top: 60px;
         }
 
-        /* Responsive */
-        @media (max-width: 968px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .page-title h2 {
-                font-size: 26px;
-            }
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(74, 144, 226, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
-        @media (max-width: 480px) {
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
             .header-container {
                 flex-direction: column;
                 gap: 15px;
+                text-align: center;
             }
 
             .container {
                 padding: 20px 15px;
             }
 
-            .form-section, .table-section {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .form-card, .table-card {
                 padding: 20px;
             }
 
@@ -465,20 +537,6 @@
             th, td {
                 padding: 10px;
             }
-        }
-
-        .loading {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid rgba(74, 144, 226, 0.3);
-            border-top: 2px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -502,16 +560,18 @@
     <div class="container">
         <!-- Page Title -->
         <div class="page-title">
-            <h2>Manage Customers</h2>
-            <p>Add new customers and view your complete customer database</p>
+            <h2>Customer Management</h2>
+            <p>Add, view, and manage all your customers in one place</p>
         </div>
 
-        <!-- Content Grid -->
-        <div class="content-grid">
-            <!-- Form Section -->
-            <div class="form-section">
-                <h3>Add New Customer</h3>
-                <form id="customerForm" onsubmit="handleSubmit(event)">
+        <!-- Form Section -->
+        <div class="form-card">
+            <h3>Add New Customer</h3>
+            
+            <div id="message" class="message"></div>
+
+            <form id="customerForm" onsubmit="handleSubmit(event)">
+                <div class="form-grid">
                     <div class="form-group">
                         <label for="name">Customer Name *</label>
                         <input 
@@ -527,71 +587,69 @@
                         <input 
                             type="tel" 
                             id="phone" 
-                            placeholder="Enter 10-digit phone number"
-                            pattern="[0-9]{10}"
+                            placeholder="Enter phone number"
                             required
                         >
                     </div>
 
                     <div class="form-group">
                         <label for="address">Address *</label>
-                        <textarea 
-                            id="address" 
-                            placeholder="Enter complete address"
-                            required
-                        ></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">Email (Optional)</label>
                         <input 
-                            type="email" 
-                            id="email" 
-                            placeholder="Enter email address"
+                            type="text" 
+                            id="address" 
+                            placeholder="Enter address"
+                            required
                         >
                     </div>
+                </div>
 
-                    <div class="button-group">
-                        <button type="submit" class="btn btn-primary">Save Customer</button>
-                        <button type="reset" class="btn btn-secondary">Clear Form</button>
-                    </div>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save Customer</button>
+                    <button type="reset" class="btn btn-secondary">Clear Form</button>
+                </div>
+            </form>
+        </div>
 
-                    <div id="message" class="message"></div>
-                </form>
+        <!-- Statistics -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalCustomers">0</div>
+                <div class="stat-label">Total Customers</div>
             </div>
+        </div>
 
-            <!-- Table Section -->
-            <div class="table-section">
-                <h3>Customers List</h3>
-                
+        <!-- Table Section -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3>Saved Customers</h3>
                 <div class="search-box">
                     <input 
                         type="text" 
                         id="searchInput" 
-                        placeholder="Search customers by name or phone..."
+                        placeholder="Search by name or phone..."
                         onkeyup="filterTable()"
                     >
                 </div>
+            </div>
 
-                <div class="table-wrapper">
-                    <table id="customersTable">
-                        <thead>
-                            <tr>
-                                <th>Customer Name</th>
-                                <th>Phone</th>
-                                <th>Address</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                            <tr>
-                                <td colspan="3" class="empty-state">
-                                    <div class="empty-state-icon">📋</div>
-                                    <p>No customers yet. Add your first customer to get started.</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-wrapper">
+                <table id="customerTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="3" class="empty-state">
+                                <div class="empty-state-icon">📋</div>
+                                <div class="empty-state-text">Loading customers...</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -607,7 +665,7 @@
             window.location = "/admin.html";
         }
 
-        let customersData = [];
+        let allCustomers = [];
 
         // Load customers on page load
         document.addEventListener('DOMContentLoaded', loadCustomers);
@@ -619,7 +677,6 @@
             const name = document.getElementById("name").value.trim();
             const phone = document.getElementById("phone").value.trim();
             const address = document.getElementById("address").value.trim();
-            const email = document.getElementById("email").value.trim();
 
             // Validation
             if (!name || !phone || !address) {
@@ -627,12 +684,7 @@
                 return;
             }
 
-            if (phone.length !== 10 || isNaN(phone)) {
-                showMessage("Please enter a valid 10-digit phone number", "error");
-                return;
-            }
-
-            const btn = event.target.querySelector('button[type="submit"]');
+            const btn = document.getElementById("submitBtn");
             btn.innerHTML = '<span class="loading"></span> Saving...';
             btn.disabled = true;
 
@@ -642,7 +694,7 @@
                     headers: {
                         "Content-Type": "application/json"
                     },
-                    body: JSON.stringify({ name, phone, address, email })
+                    body: JSON.stringify({ name, phone, address })
                 });
 
                 const data = await response.text();
@@ -666,12 +718,13 @@
         // Load customers from database
         async function loadCustomers() {
             try {
-                const response = await fetch("/get-customers");
+                const response = await fetch("/customers-list");
                 if (!response.ok) {
-                    return; // Fallback to local storage or empty state
+                    throw new Error("Failed to load customers");
                 }
-                customersData = await response.json();
-                displayCustomers(customersData);
+                allCustomers = await response.json();
+                displayCustomers(allCustomers);
+                updateStats();
             } catch (error) {
                 console.error("Error loading customers:", error);
                 displayEmptyState();
@@ -683,19 +736,12 @@
             const tableBody = document.getElementById("tableBody");
             
             if (customers.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="3" class="empty-state">
-                            <div class="empty-state-icon">📋</div>
-                            <p>No customers yet. Add your first customer to get started.</p>
-                        </td>
-                    </tr>
-                `;
+                displayEmptyState();
                 return;
             }
 
             tableBody.innerHTML = customers.map((customer, index) => `
-                <tr style="animation: slideUp 0.6s ease-out; animation-fill-mode: both; animation-delay: ${index * 0.05}s;">
+                <tr>
                     <td><strong>${escapeHtml(customer.name)}</strong></td>
                     <td>${escapeHtml(customer.phone)}</td>
                     <td>${escapeHtml(customer.address)}</td>
@@ -710,7 +756,7 @@
                 <tr>
                     <td colspan="3" class="empty-state">
                         <div class="empty-state-icon">📋</div>
-                        <p>Unable to load customers. Please try again.</p>
+                        <div class="empty-state-text">No customers yet. Add your first customer to get started.</div>
                     </td>
                 </tr>
             `;
@@ -719,11 +765,16 @@
         // Filter table based on search
         function filterTable() {
             const searchInput = document.getElementById("searchInput").value.toLowerCase();
-            const filtered = customersData.filter(customer =>
+            const filtered = allCustomers.filter(customer =>
                 customer.name.toLowerCase().includes(searchInput) ||
-                customer.phone.includes(searchInput)
+                customer.phone.toLowerCase().includes(searchInput)
             );
             displayCustomers(filtered);
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById("totalCustomers").textContent = allCustomers.length;
         }
 
         // Show message
