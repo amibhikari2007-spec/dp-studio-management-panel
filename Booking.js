@@ -1,30 +1,19 @@
-const mongoose=require("mongoose");
+const bookingSchema = new mongoose.Schema({
 
-const bookingSchema=new mongoose.Schema({
+customerName: String,
 
-customerName:String,
+customerPhone: String,
 
-eventType:String,
+eventType: String,
 
-packageName:String,
+packageName: String,
 
-totalAmount:Number,
+totalAmount: Number,
 
-advancePaid:Number,
+advancePaid: Number,
 
-balanceDue:Number,
+balanceDue: Number,
 
-eventDate:String,
-
-invoiceNumber:String,
-
-status:String,
-
-createdAt:{
-type:Date,
-default:Date.now
-}
+eventDate: Date
 
 });
-
-module.exports=mongoose.model("Booking",bookingSchema);
