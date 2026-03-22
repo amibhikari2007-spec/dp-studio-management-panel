@@ -500,8 +500,7 @@
         <button class="btn btn-secondary" onclick="downloadPDF()">⬇️ Download PDF</button>
         <button class="btn btn-secondary" onclick="history.back()">← Go Back</button>
     </div>
-
- <script>
+<script>
 
 if (!localStorage.getItem("token")) {
 window.location = "/admin.html";
@@ -511,12 +510,12 @@ let invoice = null;
 
 document.addEventListener("DOMContentLoaded", loadInvoice);
 
-
 async function loadInvoice(){
 
 try{
 
 const params = new URLSearchParams(window.location.search);
+
 const invoiceId = params.get("id");
 
 if(!invoiceId){
@@ -526,26 +525,12 @@ return;
 
 }
 
-/* FIX: use absolute URL (works everywhere) */
-
-const response = await fetch(
-window.location.origin + "/bookings-list"
-);
-
-/* FIX: check server response */
-
-if(!response.ok){
-
-throw new Error("API not responding");
-
-}
+const response = await fetch("/bookings-list");
 
 const data = await response.json();
 
-/* FIX: correct MongoDB id comparison */
-
 invoice = data.find(i =>
-String(i._id).trim() === String(invoiceId).trim()
+String(i._id) === String(invoiceId)
 );
 
 if(!invoice){
@@ -567,8 +552,6 @@ alert("Failed to load invoice");
 }
 
 
-
-/* DISPLAY INVOICE */
 
 function displayInvoice(invoice){
 
@@ -685,8 +668,6 @@ ${invoice.eventType}
 
 
 
-/* WHATSAPP BUTTON */
-
 function sendWhatsApp(){
 
 if(!invoice){
@@ -724,9 +705,11 @@ ${window.location.href}
 
 Thank you for choosing DP Studio & Light 📸`;
 
+const encodedMessage = encodeURIComponent(message);
+
 window.open(
 
-`https://wa.me/${invoice.customerPhone}?text=${encodeURIComponent(message)}`,
+`https://wa.me/${invoice.customerPhone}?text=${encodedMessage}`,
 
 "_blank"
 
@@ -735,8 +718,6 @@ window.open(
 }
 
 
-
-/* DOWNLOAD PDF */
 
 function downloadPDF(){
 
@@ -749,14 +730,33 @@ return;
 
 const element = document.querySelector(".container");
 
-html2pdf().from(element).set({
+const opt = {
 
-margin:5,
-filename:`${invoice.invoiceNumber}.pdf`,
-html2canvas:{scale:3},
-jsPDF:{unit:"mm",format:"a4"}
+margin: 5,
 
-}).save();
+filename: `${invoice.invoiceNumber}.pdf`,
+
+image: { type: "jpeg", quality: 1 },
+
+html2canvas: {
+
+scale: 3,
+useCORS: true,
+scrollY: 0
+
+},
+
+jsPDF: {
+
+unit: "mm",
+format: "a4",
+orientation: "portrait"
+
+}
+
+};
+
+html2pdf().set(opt).from(element).save();
 
 }
 
