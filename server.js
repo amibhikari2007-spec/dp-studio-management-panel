@@ -18,7 +18,7 @@ app.use(express.static(__dirname));
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB Connected"))
 .catch(err => console.log(err));
-const mongoose = require("mongoose");
+
 
 const userSchema = new mongoose.Schema({
 
