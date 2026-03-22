@@ -752,7 +752,10 @@ required
             const customerPhone =
 document.getElementById("customerPhone").value.trim();
 
+const balanceDue = totalAmount - advancePaid;
+
 const booking = {
+
 customerName,
 customerPhone,
 eventType,
@@ -761,8 +764,8 @@ totalAmount,
 advancePaid,
 eventDate,
 balanceDue
-};
 
+};
             try {
                 const response = await fetch("/add-booking", {
                     method: "POST",
