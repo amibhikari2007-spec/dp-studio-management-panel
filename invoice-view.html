@@ -662,6 +662,35 @@ Send via WhatsApp
 
         // Load invoice on page load
         document.addEventListener('DOMContentLoaded', loadInvoice);
+        function sendWhatsApp(){
+
+const phone = invoice.customerPhone;
+
+const message = `DP Studio & Light
+
+Invoice Number: ${invoice.invoiceNumber}
+
+Customer: ${invoice.customerName}
+
+Event: ${invoice.eventType}
+
+Package: ${invoice.packageName}
+
+Total Amount: ₹${invoice.totalAmount}
+
+Advance Paid: ₹${invoice.advancePaid}
+
+Balance Due: ₹${invoice.balanceDue}
+
+Thank you for choosing DP Studio & Light 📸`;
+
+const encodedMessage = encodeURIComponent(message);
+
+const url = `https://wa.me/${phone}?text=${encodedMessage}`;
+
+window.open(url, "_blank");
+
+}
     </script>
 </body>
 </html>
