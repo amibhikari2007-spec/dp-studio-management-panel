@@ -660,43 +660,49 @@ data: data.monthlyBookings
 loadMonthlyBookingsChart();
 
             // Revenue Chart
-            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
-            revenueChart = new Chart(revenueCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Advance Received', 'Pending Balance'],
-                    datasets: [{
-                        data: [data.totalIncome || 0, data.pendingAmount || 0],
-                        backgroundColor: [
-                            'rgba(39, 174, 96, 0.8)',
-                            'rgba(243, 156, 18, 0.8)'
-                        ],
-                        borderColor: [
-                            'rgba(39, 174, 96, 1)',
-                            'rgba(243, 156, 18, 1)'
-                        ],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 20,
-                                font: {
-                                    size: 12,
-                                    weight: '600'
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+           async function loadRevenueChart(){
 
+const res = await fetch("/dashboard-chart-data");
+
+const data = await res.json();
+
+const ctx = document
+.getElementById("revenueChart")
+.getContext("2d");
+
+new Chart(ctx, {
+
+type: "doughnut",
+
+data: {
+
+labels: [
+
+"Advance Received",
+
+"Pending Balance"
+
+],
+
+datasets: [{
+
+data: [
+
+data.totalAdvance,
+
+data.totalPending
+
+]
+
+}]
+
+}
+
+});
+
+}
+
+loadRevenueChart();
         // Confirm logout
         function confirmLogout() {
             if (confirm("Are you sure you want to logout?")) {
