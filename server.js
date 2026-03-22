@@ -97,3 +97,12 @@ address
 res.send("Customer Added Successfully");
 
 });
+/* Get Customers List */
+
+app.get("/customers-list",async(req,res)=>{
+
+const customers=await Customer.find();
+
+res.json(customers);
+
+});
