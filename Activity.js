@@ -2,11 +2,20 @@ const mongoose = require("mongoose");
 
 const activitySchema = new mongoose.Schema({
 
-username: String,
+username: {
+type: String,
+required: true
+},
 
-action: String,
+action: {
+type: String,
+required: true
+},
 
-details: String,
+details: {
+type: String,
+default: ""
+},
 
 date: {
 type: Date,
