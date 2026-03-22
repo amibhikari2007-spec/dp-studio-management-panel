@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - DP Studio & Light</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Header */
+        .invoice-header {
+            background: linear-gradient(135deg, #0f1f35 0%, #1a2f4a 100%);
+            color: white;
+            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .company-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .company-logo {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 3px solid #d4af37;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #0f1f35;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .company-details h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .company-details p {
+            font-size: 11px;
+            opacity: 0.8;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .invoice-label {
+            text-align: right;
+        }
+
+        .invoice-label p {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .invoice-number {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: #faf8f3;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #ffcccc;
+            color: #c41e3a;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .status-date {
+            color: #999;
+        }
+
+        /* Content */
+        .invoice-content {
+            padding: 40px;
+        }
+
+        /* Bill To & Invoice Info Grid */
+        .billing-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .billing-section h3 {
+            font-size: 11px;
+            font-weight: 700;
+            color: #999;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .bill-to-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .event-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: #e8f4f8;
+            color: #0080a8;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .invoice-details {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-label {
+            font-size: 11px;
+            color: #999;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        /* Payment Summary */
+        .payment-summary {
+            margin-bottom: 0;
+        }
+
+        .payment-summary h3 {
+            font-size: 11px;
+            font-weight: 700;
+            color: #999;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0;
+        }
+
+        .payment-table thead {
+            background: #faf8f3;
+            border-top: 1px solid #e0e0e0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .payment-table th {
+            padding: 15px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: #999;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .payment-table tbody tr {
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .payment-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .payment-table td {
+            padding: 20px 15px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .desc-col {
+            text-align: left;
+        }
+
+        .desc-main {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .desc-sub {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .status-col {
+            text-align: center;
+        }
+
+        .amount-col {
+            text-align: right;
+            font-weight: 700;
+        }
+
+        /* Payment Status Badges */
+        .payment-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-total {
+            background: #e8f0f5;
+            color: #0080a8;
+        }
+
+        .badge-paid {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-pending {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .amount-positive {
+            color: #2e7d32;
+        }
+
+        .amount-negative {
+            color: #999;
+        }
+
+        .amount-due {
+            color: #c41e3a;
+            font-size: 16px;
+        }
+
+        /* Footer */
+        .invoice-footer {
+            background: linear-gradient(135deg, #0f1f35 0%, #1a2f4a 100%);
+            color: white;
+            padding: 30px 40px;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .footer-message {
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .footer-credit {
+            font-size: 10px;
+            opacity: 0.6;
+            margin-top: 15px;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding: 30px 20px;
+            flex-wrap: wrap;
+            background: #fafafa;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0f1f35 0%, #1a2f4a 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(15, 31, 53, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(15, 31, 53, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #333;
+            border: 2px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            border-color: #0f1f35;
+            color: #0f1f35;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px;
+            color: #999;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #0f1f35;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .container {
+                box-shadow: none;
+            }
+
+            .action-bar {
+                display: none;
+            }
+
+            @page {
+                margin: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .invoice-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .invoice-label {
+                text-align: left;
+            }
+
+            .billing-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .payment-table th, .payment-table td {
+                padding: 12px 10px;
+            }
+
+            .action-bar {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="invoice-header">
+            <div class="company-info">
+                <div class="company-logo">DP</div>
+                <div class="company-details">
+                    <h1>DP STUDIO</h1>
+                    <p>Photography & Cinematography</p>
+                </div>
+            </div>
+            <div class="invoice-label">
+                <p>Invoice</p>
+                <div class="invoice-number" id="invoiceNum">INV-00016</div>
+            </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span class="status-badge" id="statusBadge">PENDING</span>
+                <span id="eventDateSpan">17 FEB 2026</span>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="invoice-content" id="invoiceContent">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading invoice details...</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="invoice-footer">
+            <div class="footer-message">Thank you for choosing DP Studio — Capturing your precious moments forever</div>
+            <div class="footer-credit">Generated by DP Studio Management System | <span id="footerDate">17 Feb 2026</span></div>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print Invoice</button>
+        <button class="btn btn-secondary" onclick="downloadPDF()">⬇️ Download PDF</button>
+        <button class="btn btn-secondary" onclick="history.back()">← Go Back</button>
+    </div>
+
+    <script>
+        // Check authentication
+        if (!localStorage.getItem("token")) {
+            window.location = "/admin.html";
+        }
+
+        // Get invoice ID from URL
+        const params = new URLSearchParams(window.location.search);
+        const invoiceId = params.get("id");
+
+        // Load invoice details
+        async function loadInvoice() {
+            try {
+                const response = await fetch("/bookings-list");
+                if (!response.ok) {
+                    throw new Error("Failed to load invoices");
+                }
+
+                const data = await response.json();
+                const invoice = data.find(i => i._id === invoiceId);
+
+                if (!invoice) {
+                    displayError("Invoice not found");
+                    return;
+                }
+
+                displayInvoice(invoice);
+            } catch (error) {
+                console.error("Error loading invoice:", error);
+                displayError("Failed to load invoice. Please try again.");
+            }
+        }
+
+        // Display invoice
+        function displayInvoice(invoice) {
+            const invoiceNumber = invoice.invoiceNumber || `INV-${String(Math.floor(Math.random() * 10000)).padStart(5, '0')}`;
+            const eventDate = new Date(invoice.eventDate);
+            const formattedDate = eventDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            }).toUpperCase();
+
+            const totalAmount = invoice.totalAmount || 0;
+            const advancePaid = invoice.advancePaid || 0;
+            const balanceDue = invoice.balanceDue || (totalAmount - advancePaid);
+
+            // Update header
+            document.getElementById("invoiceNum").textContent = invoiceNumber;
+            document.getElementById("eventDateSpan").textContent = formattedDate;
+            document.getElementById("statusBadge").textContent = invoice.status || "PENDING";
+            document.getElementById("footerDate").textContent = formattedDate;
+
+            // Update status bar color
+            const statusBadge = document.getElementById("statusBadge");
+            if ((invoice.status || "").toLowerCase().includes("paid")) {
+                statusBadge.style.background = "#e8f5e9";
+                statusBadge.style.color = "#2e7d32";
+            }
+
+            // Create content HTML
+            const contentHTML = `
+                <!-- Bill To & Invoice Info -->
+                <div class="billing-grid">
+                    <div class="billing-section">
+                        <h3>Bill To</h3>
+                        <div class="bill-to-name">${escapeHtml(invoice.customerName)}</div>
+                        <div class="event-badge">${escapeHtml(invoice.eventType)}</div>
+                    </div>
+
+                    <div class="billing-section">
+                        <div class="invoice-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Invoice Number</span>
+                                <span class="detail-value">${escapeHtml(invoiceNumber)}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Invoice Date</span>
+                                <span class="detail-value">${formattedDate}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Package</span>
+                                <span class="detail-value" style="font-size: 14px;">${escapeHtml(invoice.packageName)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Summary -->
+                <div class="payment-summary">
+                    <h3>Payment Summary</h3>
+                    <table class="payment-table">
+                        <thead>
+                            <tr>
+                                <th class="desc-col">Description</th>
+                                <th class="status-col">Status</th>
+                                <th class="amount-col">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="desc-col">
+                                    <div class="desc-main">${escapeHtml(invoice.packageName)}</div>
+                                    <div class="desc-sub">Full service package</div>
+                                </td>
+                                <td class="status-col">
+                                    <span class="payment-badge badge-total">Total</span>
+                                </td>
+                                <td class="amount-col">Rs. ${totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 3})}</td>
+                            </tr>
+                            <tr>
+                                <td class="desc-col">
+                                    <div class="desc-main">Advance Payment</div>
+                                    <div class="desc-sub">Received on booking</div>
+                                </td>
+                                <td class="status-col">
+                                    <span class="payment-badge badge-paid">Paid</span>
+                                </td>
+                                <td class="amount-col amount-negative">- Rs. ${advancePaid.toLocaleString('en-IN', {minimumFractionDigits: 3})}</td>
+                            </tr>
+                            <tr>
+                                <td class="desc-col">
+                                    <div class="desc-main">Balance Due</div>
+                                    <div class="desc-sub">${balanceDue > 0 ? 'PENDING' : 'PAID'}</div>
+                                </td>
+                                <td class="status-col">
+                                    <span class="payment-badge ${balanceDue > 0 ? 'badge-pending' : 'badge-paid'}">${balanceDue > 0 ? 'PENDING' : 'PAID'}</span>
+                                </td>
+                                <td class="amount-col amount-due">Rs. ${balanceDue.toLocaleString('en-IN', {minimumFractionDigits: 3})}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById("invoiceContent").innerHTML = contentHTML;
+        }
+
+        // Display error
+        function displayError(message) {
+            const errorHTML = `
+                <div style="text-align: center; padding: 60px 40px;">
+                    <p style="font-size: 16px; color: #c41e3a; margin-bottom: 20px;">⚠️ ${escapeHtml(message)}</p>
+                    <button class="btn btn-primary" onclick="history.back()" style="display: inline-block;">Go Back</button>
+                </div>
+            `;
+            document.getElementById("invoiceContent").innerHTML = errorHTML;
+        }
+
+        // Download PDF (placeholder)
+        function downloadPDF() {
+            alert("PDF download feature will be implemented soon!");
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        // Load invoice on page load
+        document.addEventListener('DOMContentLoaded', loadInvoice);
+    </script>
+</body>
+</html>
