@@ -212,5 +212,37 @@ app.get("/customers-dropdown", async (req, res) => {
 const customers = await Customer.find().sort({ name: 1 });
 
 res.json(customers);
+    /* Dashboard Chart Data */
+
+app.get("/dashboard-chart-data", async (req, res) => {
+
+const bookings = await Booking.find();
+
+let monthlyBookings = new Array(12).fill(0);
+
+let totalAdvance = 0;
+let totalPending = 0;
+
+bookings.forEach(b => {
+
+const month = new Date(b.eventDate).getMonth();
+
+monthlyBookings[month]++;
+
+totalAdvance += b.advancePaid;
+
+totalPending += b.balanceDue;
+
+});
+
+res.json({
+
+monthlyBookings,
+totalAdvance,
+totalPending
+
+});
+
+});
 
 });
