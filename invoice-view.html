@@ -661,10 +661,51 @@
         }
 
         // Load invoice on page load
-        document.addEventListener('DOMContentLoaded', loadInvoice);
-        function sendWhatsApp(){
+       let invoice; // make invoice global
 
-const phone = invoice.customerPhone;
+document.addEventListener('DOMContentLoaded', loadInvoice);
+
+async function loadInvoice(){
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+const res = await fetch("/bookings-list");
+
+const data = await res.json();
+
+invoice = data.find(i => i._id === id);
+
+if(!invoice){
+
+alert("Invoice not found");
+
+return;
+
+}
+
+/* your existing invoice display code continues here */
+
+}
+
+
+function sendWhatsApp(){
+
+if(!invoice){
+
+alert("Invoice data not loaded yet");
+
+return;
+
+}
+
+if(!invoice.customerPhone){
+
+alert("Customer phone number missing");
+
+return;
+
+}
 
 const message = `DP Studio & Light
 
@@ -682,11 +723,14 @@ Advance Paid: ₹${invoice.advancePaid}
 
 Balance Due: ₹${invoice.balanceDue}
 
+View Invoice:
+${window.location.href}
+
 Thank you for choosing DP Studio & Light 📸`;
 
 const encodedMessage = encodeURIComponent(message);
 
-const url = `https://wa.me/${phone}?text=${encodedMessage}`;
+const url = `https://wa.me/${invoice.customerPhone}?text=${encodedMessage}`;
 
 window.open(url, "_blank");
 
