@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice - DP Studio & Light</title>
@@ -781,7 +782,34 @@ window.open(
 
 function downloadPDF(){
 
-window.print();
+const element = document.querySelector(".container");
+
+const invoiceNumber =
+invoice?.invoiceNumber || "invoice";
+
+const opt = {
+
+margin: 0,
+
+filename: `${invoiceNumber}.pdf`,
+
+image: { type: "jpeg", quality: 0.98 },
+
+html2canvas: { scale: 2 },
+
+jsPDF: {
+
+unit: "mm",
+
+format: "a4",
+
+orientation: "portrait"
+
+}
+
+};
+
+html2pdf().set(opt).from(element).save();
 
 }
 
