@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Customer=require("./Customer");
 require("dotenv").config();
 
 const Admin = require("./Admin");
@@ -76,4 +77,23 @@ const PORT = process.env.PORT || 10000;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+});
+/* Add Customer */
+
+app.post("/add-customer",async(req,res)=>{
+
+const {name,phone,address}=req.body;
+
+await Customer.create({
+
+name,
+
+phone,
+
+address
+
+});
+
+res.send("Customer Added Successfully");
+
 });
