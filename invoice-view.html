@@ -789,13 +789,19 @@ invoice?.invoiceNumber || "invoice";
 
 const opt = {
 
-margin: 0,
+margin: [5,5,5,5],
 
 filename: `${invoiceNumber}.pdf`,
 
-image: { type: "jpeg", quality: 0.98 },
+image: { type: "jpeg", quality: 1 },
 
-html2canvas: { scale: 2 },
+html2canvas: {
+
+scale: 3,
+useCORS: true,
+scrollY: 0
+
+},
 
 jsPDF: {
 
@@ -805,6 +811,12 @@ format: "a4",
 
 orientation: "portrait"
 
+},
+
+pagebreak: {
+
+mode: ['avoid-all', 'css', 'legacy']
+
 }
 
 };
@@ -812,8 +824,3 @@ orientation: "portrait"
 html2pdf().set(opt).from(element).save();
 
 }
-
-</script>
-    
-</body>
-</html>
