@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Super Admin Panel</title>
+</head>
+
+<body style="font-family:Arial;padding:40px">
+
+<h2>DP Studio Super Admin Panel</h2>
+
+<br>
+
+<button onclick="location.href='dashboard.html'">
+Open Dashboard
+</button>
+
+<br><br>
+
+<button onclick="location.href='users.html'">
+Create / Manage Users
+</button>
+
+<br><br>
+
+<button onclick="loadBookings()">
+View All Booking Activity
+</button>
+
+<div id="activity"></div>
+
+<script>
+
+if(!localStorage.getItem("token")){
+window.location="/admin.html";
+}
+
+async function loadBookings(){
+
+const res = await fetch("/bookings-list");
+
+const data = await res.json();
+
+document.getElementById("activity").innerHTML =
+
+data.map(b=>`
+
+<p>
+
+Customer: ${b.customerName}
+
+Event: ${b.eventType}
+
+Amount: ₹${b.totalAmount}
+
+Status: ${b.status}
+
+</p>
+
+`).join("");
+
+}
+
+</script>
+
+</body>
+</html>
