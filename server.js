@@ -1,15 +1,14 @@
-const User = require("./User");
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 require("dotenv").config();
 
 const Customer = require("./Customer");
 const Booking = require("./Booking");
 const Admin = require("./Admin");
+const User = require("./User"); // ✅ keep this only
 
 const app = express();
 
@@ -20,36 +19,6 @@ app.use(express.static(__dirname));
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB Connected"))
 .catch(err => console.log(err));
-
-
-/* USER MODEL */
-
-const userSchema = new mongoose.Schema({
-
-username: {
-type: String,
-unique: true,
-required: true
-},
-
-password: {
-type: String,
-required: true
-},
-
-role: {
-type: String,
-default: "admin"
-},
-
-createdAt: {
-type: Date,
-default: Date.now
-}
-
-});
-
-const User = mongoose.model("User", userSchema);
 
 
 /* ROOT ROUTE */
@@ -148,7 +117,6 @@ res.json(customers);
 app.post("/add-booking", async (req, res) => {
 
 const {
-
 customerName,
 customerPhone,
 eventType,
@@ -156,12 +124,9 @@ packageName,
 totalAmount,
 advancePaid,
 eventDate
-
 } = req.body;
 
-
 const balanceDue = totalAmount - advancePaid;
-
 
 const count = await Booking.countDocuments();
 
@@ -170,12 +135,9 @@ const year = new Date().getFullYear();
 const invoiceNumber =
 `DP-${year}-${String(count + 1).padStart(5,"0")}`;
 
-
 const status = balanceDue === 0 ? "Paid" : "Pending";
 
-
 await Booking.create({
-
 customerName,
 customerPhone,
 eventType,
@@ -186,7 +148,6 @@ balanceDue,
 eventDate,
 invoiceNumber,
 status
-
 });
 
 res.send("Booking Added Successfully");
@@ -223,11 +184,9 @@ pendingAmount += b.balanceDue;
 });
 
 res.json({
-
 totalBookings: bookings.length,
 totalIncome,
 pendingAmount
-
 });
 
 });
@@ -264,17 +223,14 @@ new Date(b.eventDate).getMonth();
 monthlyBookings[month]++;
 
 totalAdvance += b.advancePaid;
-
 totalPending += b.balanceDue;
 
 });
 
 res.json({
-
 monthlyBookings,
 totalAdvance,
 totalPending
-
 });
 
 });
@@ -305,14 +261,49 @@ const hashedPassword =
 await bcrypt.hash(password, 10);
 
 await User.create({
-
 username,
 password: hashedPassword,
 role
-
 });
 
 res.send("User created successfully");
+
+});
+
+
+/* USER LOGIN */
+
+app.post("/user-login", async (req, res) => {
+
+const { username, password } = req.body;
+
+const user = await User.findOne({ username });
+
+if(!user){
+return res.status(404).send("User not found");
+}
+
+const match =
+await bcrypt.compare(password, user.password);
+
+if(!match){
+return res.status(401).send("Wrong password");
+}
+
+const token = jwt.sign(
+{
+id: user._id,
+role: user.role
+},
+process.env.JWT_SECRET,
+{ expiresIn: "1d" }
+);
+
+res.json({
+message: "Login successful",
+token,
+role: user.role
+});
 
 });
 
