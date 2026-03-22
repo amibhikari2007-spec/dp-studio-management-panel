@@ -70,15 +70,21 @@ if(!isMatch){
 return res.status(401).send("Wrong password");
 }
 
+/* Add role inside token */
+
 const token = jwt.sign(
-{ id: admin._id },
+{
+id: admin._id,
+role: "super_admin"
+},
 process.env.JWT_SECRET,
 { expiresIn: "1d" }
 );
 
 res.json({
 message: "Login successful",
-token
+token,
+role: "super_admin"
 });
 
 });
