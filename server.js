@@ -259,6 +259,39 @@ res.json({
 monthlyBookings,
 totalAdvance,
 totalPending
+    /* Create New User */
+
+app.post("/create-user", async (req, res) => {
+
+const { username, password, role } = req.body;
+
+if (!username || !password) {
+
+return res.status(400).send("Missing fields");
+
+}
+
+const existing = await User.findOne({ username });
+
+if (existing) {
+
+return res.status(400).send("User already exists");
+
+}
+
+const newUser = new User({
+
+username,
+password,
+role
+
+});
+
+await newUser.save();
+
+res.send("User created successfully");
+
+});
 
 });
 
