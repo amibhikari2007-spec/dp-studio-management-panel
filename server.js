@@ -205,3 +205,12 @@ pendingAmount
 });
 
 });
+/* Get Customers for dropdown */
+
+app.get("/customers-dropdown", async (req, res) => {
+
+const customers = await Customer.find().sort({ name: 1 });
+
+res.json(customers);
+
+});
