@@ -805,8 +805,10 @@
             return div.innerHTML;
         }
 
-        // Initialize balance display
-        document.addEventListener('DOMContentLoaded', calculateBalance);
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateBalance();
+            loadCustomers();
+        });
     </script>
 </body>
 </html>
