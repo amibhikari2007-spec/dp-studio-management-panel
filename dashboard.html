@@ -707,6 +707,43 @@ margin-right:10px;
 
         // Load stats on page load
         document.addEventListener('DOMContentLoaded', loadStats);
+        function toggleTheme(){
+
+const body=document.body;
+
+body.classList.toggle("dark-mode");
+
+if(body.classList.contains("dark-mode")){
+
+localStorage.setItem("theme","dark");
+
+document.getElementById("themeToggle").innerText="☀️ Light";
+
+}else{
+
+localStorage.setItem("theme","light");
+
+document.getElementById("themeToggle").innerText="🌙 Dark";
+
+}
+
+}
+        function loadTheme(){
+
+const savedTheme=localStorage.getItem("theme");
+
+if(savedTheme==="dark"){
+
+document.body.classList.add("dark-mode");
+
+document.getElementById("themeToggle").innerText="☀️ Light";
+
+}
+
+}
+
+document.addEventListener("DOMContentLoaded",loadTheme);
     </script>
+    
 </body>
 </html>
