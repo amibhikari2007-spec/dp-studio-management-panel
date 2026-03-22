@@ -4,6 +4,7 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Customer=require("./Customer");
+const Booking=require("./Booking");
 require("dotenv").config();
 
 const Admin = require("./Admin");
@@ -104,5 +105,68 @@ app.get("/customers-list",async(req,res)=>{
 const customers=await Customer.find();
 
 res.json(customers);
+
+});
+/* Add Booking */
+
+app.post("/add-booking",async(req,res)=>{
+
+const{
+
+customerName,
+
+eventType,
+
+packageName,
+
+totalAmount,
+
+advancePaid,
+
+eventDate
+
+}=req.body;
+
+/* Balance Calculation */
+
+const balanceDue=totalAmount-advancePaid;
+
+/* Invoice Number Generator */
+
+const count=await Booking.countDocuments();
+
+const year=new Date().getFullYear();
+
+const invoiceNumber=`DP-${year}-${String(count+1).padStart(5,"0")}`;
+
+/* Status */
+
+const status=balanceDue===0?"Paid":"Pending";
+
+/* Save Booking */
+
+await Booking.create({
+
+customerName,
+
+eventType,
+
+packageName,
+
+totalAmount,
+
+advancePaid,
+
+balanceDue,
+
+eventDate,
+
+invoiceNumber,
+
+status
+
+});
+
+res.send("Booking Added Successfully");
 
 });
