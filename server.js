@@ -170,3 +170,12 @@ status
 res.send("Booking Added Successfully");
 
 });
+/* Get All Bookings */
+
+app.get("/bookings-list", async (req, res) => {
+
+const bookings = await Booking.find().sort({createdAt:-1});
+
+res.json(bookings);
+
+});
