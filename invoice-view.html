@@ -500,181 +500,41 @@
     </div>
 
     <script>
-        // Check authentication
-        if (!localStorage.getItem("token")) {
-            window.location = "/admin.html";
-        }
 
-        // Get invoice ID from URL
-        const params = new URLSearchParams(window.location.search);
-        const invoiceId = params.get("id");
+if (!localStorage.getItem("token")) {
+window.location = "/admin.html";
+}
 
-        // Load invoice details
-        async function loadInvoice() {
-            try {
-                const response = await fetch("/bookings-list");
-                if (!response.ok) {
-                    throw new Error("Failed to load invoices");
-                }
+let invoice = null;
 
-                const data = await response.json();
-                const invoice = data.find(i => i._id === invoiceId);
-
-                if (!invoice) {
-                    displayError("Invoice not found");
-                    return;
-                }
-
-                displayInvoice(invoice);
-            } catch (error) {
-                console.error("Error loading invoice:", error);
-                displayError("Failed to load invoice. Please try again.");
-            }
-        }
-
-        // Display invoice
-        function displayInvoice(invoice) {
-            const invoiceNumber = invoice.invoiceNumber || `INV-${String(Math.floor(Math.random() * 10000)).padStart(5, '0')}`;
-            const eventDate = new Date(invoice.eventDate);
-            const formattedDate = eventDate.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'short', 
-                day: 'numeric' 
-            }).toUpperCase();
-
-            const totalAmount = invoice.totalAmount || 0;
-            const advancePaid = invoice.advancePaid || 0;
-            const balanceDue = invoice.balanceDue || (totalAmount - advancePaid);
-
-            // Update header
-            document.getElementById("invoiceNum").textContent = invoiceNumber;
-            document.getElementById("eventDateSpan").textContent = formattedDate;
-            document.getElementById("statusBadge").textContent = invoice.status || "PENDING";
-            document.getElementById("footerDate").textContent = formattedDate;
-
-            // Update status bar color
-            const statusBadge = document.getElementById("statusBadge");
-            if ((invoice.status || "").toLowerCase().includes("paid")) {
-                statusBadge.style.background = "#e8f5e9";
-                statusBadge.style.color = "#2e7d32";
-            }
-
-            // Create content HTML
-            const contentHTML = `
-                <!-- Bill To & Invoice Info -->
-                <div class="billing-grid">
-                    <div class="billing-section">
-                        <h3>Bill To</h3>
-                        <div class="bill-to-name">${escapeHtml(invoice.customerName)}</div>
-                        <div class="event-badge">${escapeHtml(invoice.eventType)}</div>
-                    </div>
-
-                    <div class="billing-section">
-                        <div class="invoice-details">
-                            <div class="detail-row">
-                                <span class="detail-label">Invoice Number</span>
-                                <span class="detail-value">${escapeHtml(invoiceNumber)}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Invoice Date</span>
-                                <span class="detail-value">${formattedDate}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span class="detail-label">Package</span>
-                                <span class="detail-value" style="font-size: 14px;">${escapeHtml(invoice.packageName)}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Payment Summary -->
-                <div class="payment-summary">
-                    <h3>Payment Summary</h3>
-                    <table class="payment-table">
-                        <thead>
-                            <tr>
-                                <th class="desc-col">Description</th>
-                                <th class="status-col">Status</th>
-                                <th class="amount-col">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="desc-col">
-                                    <div class="desc-main">${escapeHtml(invoice.packageName)}</div>
-                                    <div class="desc-sub">Full service package</div>
-                                </td>
-                                <td class="status-col">
-                                    <span class="payment-badge badge-total">Total</span>
-                                </td>
-                                <td class="amount-col">Rs. ${totalAmount.toLocaleString('en-IN', {minimumFractionDigits: 3})}</td>
-                            </tr>
-                            <tr>
-                                <td class="desc-col">
-                                    <div class="desc-main">Advance Payment</div>
-                                    <div class="desc-sub">Received on booking</div>
-                                </td>
-                                <td class="status-col">
-                                    <span class="payment-badge badge-paid">Paid</span>
-                                </td>
-                                <td class="amount-col amount-negative">- Rs. ${advancePaid.toLocaleString('en-IN', {minimumFractionDigits: 3})}</td>
-                            </tr>
-                            <tr>
-                                <td class="desc-col">
-                                    <div class="desc-main">Balance Due</div>
-                                    <div class="desc-sub">${balanceDue > 0 ? 'PENDING' : 'PAID'}</div>
-                                </td>
-                                <td class="status-col">
-                                    <span class="payment-badge ${balanceDue > 0 ? 'badge-pending' : 'badge-paid'}">${balanceDue > 0 ? 'PENDING' : 'PAID'}</span>
-                                </td>
-                                <td class="amount-col amount-due">Rs. ${balanceDue.toLocaleString('en-IN', {minimumFractionDigits: 3})}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-            document.getElementById("invoiceContent").innerHTML = contentHTML;
-        }
-
-        // Display error
-        function displayError(message) {
-            const errorHTML = `
-                <div style="text-align: center; padding: 60px 40px;">
-                    <p style="font-size: 16px; color: #c41e3a; margin-bottom: 20px;">⚠️ ${escapeHtml(message)}</p>
-                    <button class="btn btn-primary" onclick="history.back()" style="display: inline-block;">Go Back</button>
-                </div>
-            `;
-            document.getElementById("invoiceContent").innerHTML = errorHTML;
-        }
-
-        // Download PDF (placeholder)
-        function downloadPDF() {
-            alert("PDF download feature will be implemented soon!");
-        }
-
-        // Escape HTML to prevent XSS
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text || '';
-            return div.innerHTML;
-        }
-
-        // Load invoice on page load
-       let invoice; // make invoice global
-
+// Load invoice automatically
 document.addEventListener('DOMContentLoaded', loadInvoice);
+
 
 async function loadInvoice(){
 
+try{
+
 const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
 
-const res = await fetch("/bookings-list");
+const invoiceId = params.get("id");
 
-const data = await res.json();
+if(!invoiceId){
 
-invoice = data.find(i => i._id === id);
+alert("Invoice ID missing");
+
+return;
+
+}
+
+const response = await fetch("/bookings-list");
+
+const data = await response.json();
+
+// FIXED comparison here
+invoice = data.find(i =>
+String(i._id) === String(invoiceId)
+);
 
 if(!invoice){
 
@@ -684,10 +544,185 @@ return;
 
 }
 
-/* your existing invoice display code continues here */
+displayInvoice(invoice);
+
+}catch(error){
+
+console.error(error);
+
+alert("Failed to load invoice");
 
 }
 
+}
+
+
+// Display invoice content
+
+function displayInvoice(invoice){
+
+const invoiceNumber =
+invoice.invoiceNumber;
+
+const eventDate =
+new Date(invoice.eventDate)
+.toLocaleDateString("en-IN",{
+day:"2-digit",
+month:"short",
+year:"numeric"
+}).toUpperCase();
+
+
+document.getElementById("invoiceNum")
+.textContent = invoiceNumber;
+
+document.getElementById("eventDateSpan")
+.textContent = eventDate;
+
+document.getElementById("statusBadge")
+.textContent = invoice.status;
+
+document.getElementById("footerDate")
+.textContent = eventDate;
+
+
+// Inject invoice details
+
+document.getElementById("invoiceContent").innerHTML = `
+
+<div class="billing-grid">
+
+<div class="billing-section">
+
+<h3>Bill To</h3>
+
+<div class="bill-to-name">
+${invoice.customerName}
+</div>
+
+<div class="event-badge">
+${invoice.eventType}
+</div>
+
+</div>
+
+
+<div class="billing-section">
+
+<div class="invoice-details">
+
+<div class="detail-row">
+
+<span class="detail-label">
+Invoice Number
+</span>
+
+<span class="detail-value">
+${invoice.invoiceNumber}
+</span>
+
+</div>
+
+
+<div class="detail-row">
+
+<span class="detail-label">
+Invoice Date
+</span>
+
+<span class="detail-value">
+${eventDate}
+</span>
+
+</div>
+
+
+<div class="detail-row">
+
+<span class="detail-label">
+Package
+</span>
+
+<span class="detail-value">
+${invoice.packageName}
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="payment-summary">
+
+<h3>Payment Summary</h3>
+
+<table class="payment-table">
+
+<thead>
+
+<tr>
+
+<th>Description</th>
+
+<th>Status</th>
+
+<th>Amount</th>
+
+</tr>
+
+</thead>
+
+
+<tbody>
+
+<tr>
+
+<td>${invoice.packageName}</td>
+
+<td>Total</td>
+
+<td>₹${invoice.totalAmount}</td>
+
+</tr>
+
+
+<tr>
+
+<td>Advance Payment</td>
+
+<td>Paid</td>
+
+<td>- ₹${invoice.advancePaid}</td>
+
+</tr>
+
+
+<tr>
+
+<td>Balance Due</td>
+
+<td>${invoice.status}</td>
+
+<td>₹${invoice.balanceDue}</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+`;
+
+}
+
+
+// WhatsApp sender
 
 function sendWhatsApp(){
 
@@ -701,7 +736,7 @@ return;
 
 if(!invoice.customerPhone){
 
-alert("Customer phone number missing");
+alert("Customer phone missing");
 
 return;
 
@@ -728,13 +763,29 @@ ${window.location.href}
 
 Thank you for choosing DP Studio & Light 📸`;
 
-const encodedMessage = encodeURIComponent(message);
+const encodedMessage =
+encodeURIComponent(message);
 
-const url = `https://wa.me/${invoice.customerPhone}?text=${encodedMessage}`;
+window.open(
 
-window.open(url, "_blank");
+`https://wa.me/${invoice.customerPhone}?text=${encodedMessage}`,
+
+"_blank"
+
+);
 
 }
-    </script>
+
+
+// Download PDF placeholder
+
+function downloadPDF(){
+
+window.print();
+
+}
+
+</script>
+    
 </body>
 </html>
