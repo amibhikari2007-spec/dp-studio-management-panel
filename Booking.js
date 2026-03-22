@@ -1,5 +1,7 @@
 const bookingSchema = new mongoose.Schema({
 
+  const mongoose = require("mongoose");
+
 customerName: String,
 
 customerPhone: String,
