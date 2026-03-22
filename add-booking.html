@@ -638,31 +638,23 @@
         // Load customers on page load
         document.addEventListener('DOMContentLoaded', loadCustomers);
 
-        // Load customers from database
+        // Load customers into dropdown
         async function loadCustomers() {
             try {
-                const response = await fetch("/customers-list");
-                if (!response.ok) {
-                    throw new Error("Failed to load customers");
-                }
-                customersData = await response.json();
-                populateCustomerDropdown(customersData);
+                const res = await fetch("/customers-dropdown");
+                const customers = await res.json();
+                let html = '<option value="">Select Customer</option>';
+                customers.forEach(c => {
+                    html += `<option value="${escapeHtml(c.name)}">
+                    ${escapeHtml(c.name)}
+                    </option>`;
+                });
+                document.getElementById("customerName").innerHTML = html;
+                customersData = customers;
             } catch (error) {
                 console.error("Error loading customers:", error);
-                // Continue without loading customers
+                // Continue without loading customers - allow manual entry
             }
-        }
-
-        // Populate customer dropdown
-        function populateCustomerDropdown(customers) {
-            const select = document.getElementById("customerName");
-            const options = ['<option value="">Select Customer</option>'];
-            
-            customers.forEach(customer => {
-                options.push(`<option value="${escapeHtml(customer.name)}">${escapeHtml(customer.name)}</option>`);
-            });
-            
-            select.innerHTML = options.join('');
         }
 
         // Handle customer selection
@@ -677,19 +669,6 @@
                 manualInput.style.display = 'block';
                 manualInput.value = '';
             }
-        }
-
-        // Get final customer name (from dropdown or manual input)
-        function getFinalCustomerName() {
-            const selectedValue = document.getElementById("customerName").value;
-            const manualInput = document.getElementById("manualCustomer").value.trim();
-            
-            if (selectedValue) {
-                return selectedValue;
-            } else if (manualInput) {
-                return manualInput;
-            }
-            return '';
         }
 
         // Calculate balance
@@ -720,7 +699,13 @@
         async function handleSubmit(event) {
             event.preventDefault();
 
-            const customerName = getFinalCustomerName();
+            let customerName = document.getElementById("customerName").value;
+            const manualCustomer = document.getElementById("manualCustomer").value.trim();
+            
+            if (!customerName && manualCustomer) {
+                customerName = manualCustomer;
+            }
+
             const eventType = document.getElementById("eventType").value;
             const packageName = document.getElementById("packageName").value.trim();
             const totalAmount = parseFloat(document.getElementById("totalAmount").value);
@@ -782,7 +767,7 @@
                     showMessage("✓ Booking saved successfully!", "success");
                     document.getElementById("bookingForm").reset();
                     calculateBalance();
-                    populateCustomerDropdown(customersData);
+                    loadCustomers();
                     document.getElementById("manualCustomer").style.display = 'block';
                     
                     // Reset balance display
