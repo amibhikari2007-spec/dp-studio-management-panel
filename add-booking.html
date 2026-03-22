@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Booking - DP Studio & Light</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #4a90e2;
+            --primary-dark: #357abd;
+            --secondary-color: #f39c12;
+            --background: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --border-color: #ecf0f1;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--background) 0%, #eef2f7 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 25px 30px;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-title h1 {
+            font-size: 22px;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .header-right a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-right a:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .page-title {
+            margin-bottom: 35px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        .page-title h2 {
+            font-size: 32px;
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .page-title p {
+            color: var(--text-light);
+            font-size: 14px;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-card h3 {
+            font-size: 20px;
+            margin-bottom: 30px;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-card h3::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            border-radius: 2px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            animation: fadeIn 0.6s ease-out;
+            animation-fill-mode: both;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.2s; }
+        .form-group:nth-child(3) { animation-delay: 0.3s; }
+        .form-group:nth-child(4) { animation-delay: 0.4s; }
+        .form-group:nth-child(5) { animation-delay: 0.5s; }
+        .form-group:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 13px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            color: var(--text-dark);
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.08);
+        }
+
+        input::placeholder {
+            color: #a0a0a0;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a90e2' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 40px;
+        }
+
+        /* Amount Section */
+        .amount-section {
+            grid-column: 1 / -1;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+        }
+
+        .amount-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .amount-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .amount-input-group {
+            position: relative;
+        }
+
+        .amount-input-group label {
+            margin-bottom: 8px;
+        }
+
+        .amount-input-group input {
+            padding-right: 30px;
+        }
+
+        .currency {
+            position: absolute;
+            right: 15px;
+            top: 40px;
+            color: var(--text-light);
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .balance-display {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid var(--border-color);
+        }
+
+        .balance-label {
+            color: var(--text-light);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .balance-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .balance-amount.due {
+            color: var(--danger);
+        }
+
+        .balance-amount.paid {
+            color: var(--success);
+        }
+
+        /* Button Group */
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.4s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Message Box */
+        .message {
+            padding: 16px 18px;
+            border-radius: 10px;
+            margin-top: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            border-left: 4px solid transparent;
+            display: none;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .message.success {
+            background: #f0fdf4;
+            color: #16a34a;
+            border-left-color: #16a34a;
+        }
+
+        .message.error {
+            background: #fef2f2;
+            color: #dc2626;
+            border-left-color: #dc2626;
+        }
+
+        .message.warning {
+            background: #fffbeb;
+            color: #d97706;
+            border-left-color: #d97706;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-light);
+            font-size: 12px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 60px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(74, 144, 226, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .container {
+                padding: 20px 15px;
+            }
+
+            .form-card {
+                padding: 25px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .amount-section {
+                padding: 15px;
+            }
+
+            .amount-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .balance-display {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title h2 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="header-left">
+                <div class="logo">DP</div>
+                <div class="header-title">
+                    <h1>Add Booking</h1>
+                </div>
+            </div>
+            <div class="header-right">
+                <a href="/dashboard.html">← Back to Dashboard</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Page Title -->
+        <div class="page-title">
+            <h2>Create New Booking</h2>
+            <p>Add a new event booking with complete details and payment information</p>
+        </div>
+
+        <!-- Booking Form -->
+        <div class="form-card">
+            <h3>Booking Details</h3>
+
+            <form id="bookingForm" onsubmit="handleSubmit(event)">
+                <div class="form-grid">
+                    <!-- Customer Name -->
+                    <div class="form-group">
+                        <label for="customerName">Customer Name *</label>
+                        <input 
+                            type="text" 
+                            id="customerName" 
+                            placeholder="Enter customer name"
+                            required
+                        >
+                    </div>
+
+                    <!-- Event Type -->
+                    <div class="form-group">
+                        <label for="eventType">Event Type *</label>
+                        <select id="eventType" required onchange="updateEventType()">
+                            <option value="">Select Event Type</option>
+                            <option value="Wedding">Wedding</option>
+                            <option value="Corporate">Corporate Event</option>
+                            <option value="Birthday">Birthday Party</option>
+                            <option value="Reception">Reception</option>
+                            <option value="Rice Ceremony">Rice Ceremony</option>
+                            <option value="Lighting Only">Lighting Only</option>
+                            <option value="Custom Event">Custom Event</option>
+                        </select>
+                    </div>
+
+                    <!-- Package Name -->
+                    <div class="form-group">
+                        <label for="packageName">Package Name *</label>
+                        <input 
+                            type="text" 
+                            id="packageName" 
+                            placeholder="e.g., Premium Package, Basic Setup"
+                            required
+                        >
+                    </div>
+
+                    <!-- Event Date -->
+                    <div class="form-group">
+                        <label for="eventDate">Event Date *</label>
+                        <input 
+                            type="date" 
+                            id="eventDate"
+                            required
+                        >
+                    </div>
+
+                    <!-- Amount Section -->
+                    <div class="amount-section">
+                        <h4>💰 Payment Details</h4>
+                        <div class="amount-grid">
+                            <div class="amount-input-group">
+                                <label for="totalAmount">Total Amount *</label>
+                                <input 
+                                    type="number" 
+                                    id="totalAmount" 
+                                    placeholder="0.00"
+                                    min="0"
+                                    step="100"
+                                    required
+                                    onchange="calculateBalance()"
+                                    oninput="calculateBalance()"
+                                >
+                                <span class="currency">₹</span>
+                            </div>
+
+                            <div class="amount-input-group">
+                                <label for="advancePaid">Advance Paid *</label>
+                                <input 
+                                    type="number" 
+                                    id="advancePaid" 
+                                    placeholder="0.00"
+                                    min="0"
+                                    step="100"
+                                    required
+                                    onchange="calculateBalance()"
+                                    oninput="calculateBalance()"
+                                >
+                                <span class="currency">₹</span>
+                            </div>
+                        </div>
+
+                        <!-- Balance Display -->
+                        <div class="balance-display">
+                            <span class="balance-label">Balance Due</span>
+                            <span class="balance-amount" id="balanceAmount">₹ 0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save Booking</button>
+                    <button type="reset" class="btn btn-secondary">Clear Form</button>
+                </div>
+
+                <!-- Message -->
+                <div id="message" class="message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2024 DP Studio & Light Management. Professional Booking Management System.</p>
+    </footer>
+
+    <script>
+        // Check authentication
+        if (!localStorage.getItem("token")) {
+            window.location = "/admin.html";
+        }
+
+        // Calculate balance
+        function calculateBalance() {
+            const totalAmount = parseFloat(document.getElementById("totalAmount").value) || 0;
+            const advancePaid = parseFloat(document.getElementById("advancePaid").value) || 0;
+            const balance = totalAmount - advancePaid;
+
+            const balanceElement = document.getElementById("balanceAmount");
+            balanceElement.textContent = '₹ ' + balance.toFixed(2);
+
+            if (balance > 0) {
+                balanceElement.className = 'balance-amount due';
+            } else if (balance < 0) {
+                balanceElement.className = 'balance-amount paid';
+            } else {
+                balanceElement.className = 'balance-amount';
+            }
+        }
+
+        // Update event type
+        function updateEventType() {
+            const eventType = document.getElementById("eventType").value;
+            // You can add logic here to suggest package names based on event type
+        }
+
+        // Handle form submission
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const customerName = document.getElementById("customerName").value.trim();
+            const eventType = document.getElementById("eventType").value;
+            const packageName = document.getElementById("packageName").value.trim();
+            const totalAmount = parseFloat(document.getElementById("totalAmount").value);
+            const advancePaid = parseFloat(document.getElementById("advancePaid").value);
+            const eventDate = document.getElementById("eventDate").value;
+
+            // Validation
+            if (!customerName || !eventType || !packageName || !eventDate) {
+                showMessage("Please fill in all required fields", "warning");
+                return;
+            }
+
+            if (isNaN(totalAmount) || totalAmount <= 0) {
+                showMessage("Please enter a valid total amount", "error");
+                return;
+            }
+
+            if (isNaN(advancePaid) || advancePaid < 0) {
+                showMessage("Please enter a valid advance amount", "error");
+                return;
+            }
+
+            if (advancePaid > totalAmount) {
+                showMessage("Advance paid cannot be more than total amount", "error");
+                return;
+            }
+
+            const btn = document.getElementById("submitBtn");
+            btn.innerHTML = '<span class="loading"></span> Saving...';
+            btn.disabled = true;
+
+            const booking = {
+                customerName,
+                eventType,
+                packageName,
+                totalAmount,
+                advancePaid,
+                eventDate,
+                balanceDue: totalAmount - advancePaid
+            };
+
+            try {
+                const response = await fetch("/add-booking", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(booking)
+                });
+
+                const data = await response.text();
+
+                if (response.ok) {
+                    showMessage("✓ Booking saved successfully!", "success");
+                    document.getElementById("bookingForm").reset();
+                    calculateBalance();
+                    
+                    // Reset balance display
+                    setTimeout(() => {
+                        document.getElementById("message").classList.remove("show");
+                    }, 3000);
+                } else {
+                    showMessage("Error: " + data, "error");
+                }
+            } catch (error) {
+                showMessage("Connection error. Please try again.", "error");
+                console.error("Error:", error);
+            } finally {
+                btn.innerHTML = 'Save Booking';
+                btn.disabled = false;
+            }
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const messageBox = document.getElementById("message");
+            messageBox.textContent = text;
+            messageBox.className = `message show ${type}`;
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageBox.classList.remove("show");
+            }, 5000);
+        }
+
+        // Initialize balance display
+        document.addEventListener('DOMContentLoaded', calculateBalance);
+    </script>
+</body>
+</html>
