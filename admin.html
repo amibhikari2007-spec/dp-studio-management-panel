@@ -422,9 +422,15 @@
                     localStorage.setItem('token', data.token);
                     
                     // Redirect after a short delay for visual feedback
-                    setTimeout(() => {
-                        window.location = '/dashboard.html';
-                    }, 800);
+                   if(data.role === "super_admin"){
+
+window.location.href = "/superadmin.html";
+
+}else{
+
+window.location.href = "/dashboard.html";
+
+}
                 } else {
                     showResult(data.message || 'Login failed. Please try again.', 'error');
                     loginBtn.disabled = false;
