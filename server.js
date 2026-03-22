@@ -18,6 +18,25 @@ app.use(express.static(__dirname));
 mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log("MongoDB Connected"))
 .catch(err => console.log(err));
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+
+username: String,
+
+password: String,
+
+role: {
+
+type: String,
+
+default: "admin"
+
+}
+
+});
+
+const User = mongoose.model("User", userSchema);
 
 /* Root test route */
 app.get("/", (req, res) => {
