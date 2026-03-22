@@ -620,39 +620,44 @@
         // Initialize charts
         function initializeCharts(data) {
             // Bookings Chart
-            const bookingsCtx = document.getElementById('bookingsChart').getContext('2d');
-            bookingsChart = new Chart(bookingsCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    datasets: [{
-                        label: 'Bookings',
-                        data: [5, 8, 6, 9, 7, 10, 8, 11, 9, 12, 10, data.totalBookings || 0],
-                        backgroundColor: 'rgba(74, 144, 226, 0.7)',
-                        borderColor: 'rgba(74, 144, 226, 1)',
-                        borderWidth: 2,
-                        borderRadius: 8,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0, 0, 0, 0.05)'
-                            }
-                        }
-                    }
-                }
-            });
+            async function loadMonthlyBookingsChart(){
+
+const res = await fetch("/dashboard-chart-data");
+
+const data = await res.json();
+
+const ctx = document
+.getElementById("monthlyBookingsChart")
+.getContext("2d");
+
+new Chart(ctx, {
+
+type: "bar",
+
+data: {
+
+labels: [
+
+"Jan","Feb","Mar","Apr","May","Jun",
+"Jul","Aug","Sep","Oct","Nov","Dec"
+
+],
+
+datasets: [{
+
+label: "Bookings",
+
+data: data.monthlyBookings
+
+}]
+
+}
+
+});
+
+}
+
+loadMonthlyBookingsChart();
 
             // Revenue Chart
             const revenueCtx = document.getElementById('revenueChart').getContext('2d');
