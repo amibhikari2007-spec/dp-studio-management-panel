@@ -179,3 +179,29 @@ const bookings = await Booking.find().sort({createdAt:-1});
 res.json(bookings);
 
 });
+/* Dashboard Stats */
+
+app.get("/dashboard-stats", async (req, res) => {
+
+const bookings = await Booking.find();
+
+let totalIncome = 0;
+let pendingAmount = 0;
+
+bookings.forEach(b => {
+
+totalIncome += b.advancePaid;
+
+pendingAmount += b.balanceDue;
+
+});
+
+res.json({
+
+totalBookings: bookings.length,
+totalIncome,
+pendingAmount
+
+});
+
+});
