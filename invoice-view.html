@@ -501,7 +501,7 @@
         <button class="btn btn-secondary" onclick="history.back()">← Go Back</button>
     </div>
 
-    <script>
+ <script>
 
 if (!localStorage.getItem("token")) {
 window.location = "/admin.html";
@@ -509,8 +509,7 @@ window.location = "/admin.html";
 
 let invoice = null;
 
-// Load invoice automatically
-document.addEventListener('DOMContentLoaded', loadInvoice);
+document.addEventListener("DOMContentLoaded", loadInvoice);
 
 
 async function loadInvoice(){
@@ -518,30 +517,40 @@ async function loadInvoice(){
 try{
 
 const params = new URLSearchParams(window.location.search);
-
 const invoiceId = params.get("id");
 
 if(!invoiceId){
 
 alert("Invoice ID missing");
-
 return;
 
 }
 
-const response = await fetch("/bookings-list");
+/* FIX: use absolute URL (works everywhere) */
+
+const response = await fetch(
+window.location.origin + "/bookings-list"
+);
+
+/* FIX: check server response */
+
+if(!response.ok){
+
+throw new Error("API not responding");
+
+}
 
 const data = await response.json();
 
-// FIXED comparison here
+/* FIX: correct MongoDB id comparison */
+
 invoice = data.find(i =>
-String(i._id) === String(invoiceId)
+String(i._id).trim() === String(invoiceId).trim()
 );
 
 if(!invoice){
 
 alert("Invoice not found");
-
 return;
 
 }
@@ -551,7 +560,6 @@ displayInvoice(invoice);
 }catch(error){
 
 console.error(error);
-
 alert("Failed to load invoice");
 
 }
@@ -559,12 +567,10 @@ alert("Failed to load invoice");
 }
 
 
-// Display invoice content
+
+/* DISPLAY INVOICE */
 
 function displayInvoice(invoice){
-
-const invoiceNumber =
-invoice.invoiceNumber;
 
 const eventDate =
 new Date(invoice.eventDate)
@@ -575,20 +581,18 @@ year:"numeric"
 }).toUpperCase();
 
 
-document.getElementById("invoiceNum")
-.textContent = invoiceNumber;
+document.getElementById("invoiceNum").textContent =
+invoice.invoiceNumber;
 
-document.getElementById("eventDateSpan")
-.textContent = eventDate;
+document.getElementById("eventDateSpan").textContent =
+eventDate;
 
-document.getElementById("statusBadge")
-.textContent = invoice.status;
+document.getElementById("statusBadge").textContent =
+invoice.status;
 
-document.getElementById("footerDate")
-.textContent = eventDate;
+document.getElementById("footerDate").textContent =
+eventDate;
 
-
-// Inject invoice details
 
 document.getElementById("invoiceContent").innerHTML = `
 
@@ -614,41 +618,18 @@ ${invoice.eventType}
 <div class="invoice-details">
 
 <div class="detail-row">
-
-<span class="detail-label">
-Invoice Number
-</span>
-
-<span class="detail-value">
-${invoice.invoiceNumber}
-</span>
-
+<span class="detail-label">Invoice Number</span>
+<span class="detail-value">${invoice.invoiceNumber}</span>
 </div>
 
-
 <div class="detail-row">
-
-<span class="detail-label">
-Invoice Date
-</span>
-
-<span class="detail-value">
-${eventDate}
-</span>
-
+<span class="detail-label">Invoice Date</span>
+<span class="detail-value">${eventDate}</span>
 </div>
 
-
 <div class="detail-row">
-
-<span class="detail-label">
-Package
-</span>
-
-<span class="detail-value">
-${invoice.packageName}
-</span>
-
+<span class="detail-label">Package</span>
+<span class="detail-value">${invoice.packageName}</span>
 </div>
 
 </div>
@@ -665,52 +646,31 @@ ${invoice.packageName}
 <table class="payment-table">
 
 <thead>
-
 <tr>
-
 <th>Description</th>
-
 <th>Status</th>
-
 <th>Amount</th>
-
 </tr>
-
 </thead>
-
 
 <tbody>
 
 <tr>
-
 <td>${invoice.packageName}</td>
-
 <td>Total</td>
-
 <td>₹${invoice.totalAmount}</td>
-
 </tr>
 
-
 <tr>
-
 <td>Advance Payment</td>
-
 <td>Paid</td>
-
 <td>- ₹${invoice.advancePaid}</td>
-
 </tr>
 
-
 <tr>
-
 <td>Balance Due</td>
-
 <td>${invoice.status}</td>
-
 <td>₹${invoice.balanceDue}</td>
-
 </tr>
 
 </tbody>
@@ -724,14 +684,14 @@ ${invoice.packageName}
 }
 
 
-// WhatsApp sender
+
+/* WHATSAPP BUTTON */
 
 function sendWhatsApp(){
 
 if(!invoice){
 
-alert("Invoice data not loaded yet");
-
+alert("Invoice not loaded yet");
 return;
 
 }
@@ -739,7 +699,6 @@ return;
 if(!invoice.customerPhone){
 
 alert("Customer phone missing");
-
 return;
 
 }
@@ -765,12 +724,9 @@ ${window.location.href}
 
 Thank you for choosing DP Studio & Light 📸`;
 
-const encodedMessage =
-encodeURIComponent(message);
-
 window.open(
 
-`https://wa.me/${invoice.customerPhone}?text=${encodedMessage}`,
+`https://wa.me/${invoice.customerPhone}?text=${encodeURIComponent(message)}`,
 
 "_blank"
 
@@ -779,49 +735,29 @@ window.open(
 }
 
 
-// Download PDF placeholder
+
+/* DOWNLOAD PDF */
 
 function downloadPDF(){
 
+if(!invoice){
+
+alert("Invoice not loaded yet");
+return;
+
+}
+
 const element = document.querySelector(".container");
 
-const invoiceNumber =
-invoice?.invoiceNumber || "invoice";
+html2pdf().from(element).set({
 
-const opt = {
+margin:5,
+filename:`${invoice.invoiceNumber}.pdf`,
+html2canvas:{scale:3},
+jsPDF:{unit:"mm",format:"a4"}
 
-margin: [5,5,5,5],
-
-filename: `${invoiceNumber}.pdf`,
-
-image: { type: "jpeg", quality: 1 },
-
-html2canvas: {
-
-scale: 3,
-useCORS: true,
-scrollY: 0
-
-},
-
-jsPDF: {
-
-unit: "mm",
-
-format: "a4",
-
-orientation: "portrait"
-
-},
-
-pagebreak: {
-
-mode: ['avoid-all', 'css', 'legacy']
+}).save();
 
 }
 
-};
-
-html2pdf().set(opt).from(element).save();
-
-}
+</script>
