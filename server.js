@@ -59,33 +59,76 @@ app.post("/admin/login", async (req, res) => {
 
 const { username, password } = req.body;
 
-const admin = await Admin.findOne({ username });
+/* check Admin collection first */
 
-if(!admin){
-return res.status(404).send("Admin not found");
+let user = await Admin.findOne({ username });
+
+let role = "super_admin";
+
+/* if not admin → check Users collection */
+
+if(!user){
+
+user = await User.findOne({ username });
+
+role = "staff";
+
 }
 
-const isMatch = await bcrypt.compare(password, admin.password);
+if(!user){
+
+return res.status(404).send("User not found");
+
+}
+
+/* password verify */
+
+const isMatch = await bcrypt.compare(password, user.password);
 
 if(!isMatch){
+
 return res.status(401).send("Wrong password");
+
 }
 
-/* Add role inside token */
+/* create token */
 
 const token = jwt.sign(
-{
-id: admin._id,
-role: "super_admin"
-},
+
+{ id: user._id, role },
+
 process.env.JWT_SECRET,
+
 { expiresIn: "1d" }
+
 );
 
+/* activity tracker (optional if enabled) */
+
+try{
+
+await Activity.create({
+
+username,
+
+action:"LOGIN",
+
+details:"User logged in"
+
+});
+
+}catch(err){}
+
+/* response */
+
 res.json({
-message: "Login successful",
+
+message:"Login successful",
+
 token,
-role: "super_admin"
+
+role
+
 });
 
 });
