@@ -696,6 +696,7 @@ margin-right:10px;
     </footer>
 
     <script>
+        
         // Check authentication
         if (!localStorage.getItem("token")) {
             window.location = "/admin.html";
@@ -831,6 +832,27 @@ margin-right:10px;
             div.textContent = text;
             return div.innerHTML;
         }
+        function toggleTheme(){
+
+const body=document.body;
+
+body.classList.toggle("dark-mode");
+
+if(body.classList.contains("dark-mode")){
+
+localStorage.setItem("theme","dark");
+
+document.getElementById("themeToggle").innerText="☀️ Light";
+
+}else{
+
+localStorage.setItem("theme","light");
+
+document.getElementById("themeToggle").innerText="🌙 Dark";
+
+}
+
+}
     </script>
 </body>
 </html>
