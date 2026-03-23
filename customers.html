@@ -30,6 +30,20 @@
 --danger: #e74c3c;
 
 }
+        body.dark-mode {
+
+--background: #0f172a;
+--card-bg: #1e293b;
+
+--text-dark: #f1f5f9;
+--text-light: #94a3b8;
+
+--border-color: #334155;
+
+--primary-color: #3b82f6;
+--primary-dark: #2563eb;
+
+}
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, var(--background) 0%, #eef2f7 100%);
@@ -558,6 +572,26 @@
                 <a href="/dashboard.html">← Back to Dashboard</a>
             </div>
         </div>
+        <div class="header-right">
+
+<button onclick="toggleTheme()" id="themeToggle"
+style="
+background: rgba(255,255,255,0.2);
+border:none;
+padding:8px 15px;
+border-radius:20px;
+color:white;
+cursor:pointer;
+margin-right:10px;
+">
+
+🌙 Dark
+
+</button>
+
+<a href="/dashboard.html">← Back to Dashboard</a>
+
+</div>
     </header>
 
     <!-- Main Container -->
