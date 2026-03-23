@@ -26,11 +26,22 @@
             --warning: #f39c12;
         }
 
+        body.dark-mode {
+            --background: #0f172a;
+            --card-bg: #1e293b;
+            --text-dark: #f1f5f9;
+            --text-light: #94a3b8;
+            --border-color: #334155;
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, var(--background) 0%, #eef2f7 100%);
             color: var(--text-dark);
             min-height: 100vh;
+            transition: background 0.3s ease;
         }
 
         /* Header */
@@ -76,6 +87,31 @@
             font-size: 22px;
             font-weight: 700;
             font-family: 'Playfair Display', serif;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .header-right a {
@@ -130,11 +166,12 @@
 
         /* Form Card */
         .form-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 15px;
             padding: 40px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             animation: slideUp 0.6s ease-out;
+            transition: background 0.3s ease;
         }
 
         @keyframes slideUp {
@@ -213,19 +250,18 @@
             font-family: 'Poppins', sans-serif;
             font-size: 13px;
             color: var(--text-dark);
-            background: #f8f9fa;
+            background: var(--card-bg);
             transition: all 0.3s ease;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: var(--primary-color);
-            background: white;
             box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.08);
         }
 
         input::placeholder {
-            color: #a0a0a0;
+            color: var(--text-light);
         }
 
         select {
@@ -237,10 +273,17 @@
             padding-right: 40px;
         }
 
+        .form-helper {
+            color: var(--text-light);
+            display: block;
+            margin-top: 8px;
+            font-size: 11px;
+        }
+
         /* Amount Section */
         .amount-section {
             grid-column: 1 / -1;
-            background: #f8f9fa;
+            background: var(--border-color);
             padding: 25px;
             border-radius: 12px;
             border: 2px solid var(--border-color);
@@ -284,13 +327,14 @@
         }
 
         .balance-display {
-            background: white;
+            background: var(--card-bg);
             padding: 15px 20px;
             border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border: 2px solid var(--border-color);
+            transition: all 0.3s ease;
         }
 
         .balance-label {
@@ -423,6 +467,7 @@
             font-size: 12px;
             border-top: 1px solid var(--border-color);
             margin-top: 60px;
+            transition: border 0.3s ease;
         }
 
         .loading {
@@ -495,6 +540,7 @@
                 </div>
             </div>
             <div class="header-right">
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
                 <a href="/dashboard.html">← Back to Dashboard</a>
             </div>
         </div>
@@ -517,10 +563,10 @@
                     <!-- Customer Name -->
                     <div class="form-group">
                         <label for="customerName">Customer Name *</label>
-                        <select id="customerName"  onchange="handleCustomerSelection()">
+                        <select id="customerName" required onchange="handleCustomerSelection()">
                             <option value="">Select Customer</option>
                         </select>
-                        <small style="color:#7f8c8d; display: block; margin-top: 8px; font-size: 11px;">
+                        <small class="form-helper">
                             If customer not listed, type manually below
                         </small>
                         <input 
@@ -530,17 +576,17 @@
                             style="margin-top: 10px;"
                         />
                     </div>
+
+                    <!-- Customer Phone -->
                     <div class="form-group">
-<label for="customerPhone">Customer WhatsApp *</label>
-
-<input
-type="text"
-id="customerPhone"
-placeholder="Example: 919876543210"
-required
->
-
-</div>
+                        <label for="customerPhone">Customer WhatsApp *</label>
+                        <input
+                            type="text"
+                            id="customerPhone"
+                            placeholder="Example: 919876543210"
+                            required
+                        >
+                    </div>
 
                     <!-- Event Type -->
                     <div class="form-group">
@@ -646,8 +692,39 @@ required
 
         let customersData = [];
 
-        // Load customers on page load
-        document.addEventListener('DOMContentLoaded', loadCustomers);
+        // Load theme and customers on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            loadCustomers();
+            calculateBalance();
+        });
+
+        // Toggle theme
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle("dark-mode");
+            
+            const themeBtn = document.getElementById("themeToggle");
+            if (body.classList.contains("dark-mode")) {
+                localStorage.setItem("theme", "dark");
+                themeBtn.textContent = "☀️ Light";
+            } else {
+                localStorage.setItem("theme", "light");
+                themeBtn.textContent = "🌙 Dark";
+            }
+        }
+
+        // Load theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark") {
+                document.body.classList.add("dark-mode");
+                const themeBtn = document.getElementById("themeToggle");
+                if (themeBtn) {
+                    themeBtn.textContent = "☀️ Light";
+                }
+            }
+        }
 
         // Load customers into dropdown
         async function loadCustomers() {
@@ -717,15 +794,22 @@ required
                 customerName = manualCustomer;
             }
 
+            const customerPhone = document.getElementById("customerPhone").value.trim();
             const eventType = document.getElementById("eventType").value;
             const packageName = document.getElementById("packageName").value.trim();
             const totalAmount = parseFloat(document.getElementById("totalAmount").value);
             const advancePaid = parseFloat(document.getElementById("advancePaid").value);
             const eventDate = document.getElementById("eventDate").value;
+            const balanceDue = totalAmount - advancePaid;
 
             // Validation
             if (!customerName) {
                 showMessage("Please select or enter a customer name", "warning");
+                return;
+            }
+
+            if (!customerPhone) {
+                showMessage("Please enter customer phone number", "warning");
                 return;
             }
 
@@ -749,23 +833,21 @@ required
                 return;
             }
 
-            const customerPhone =
-document.getElementById("customerPhone").value.trim();
+            const btn = document.getElementById("submitBtn");
+            btn.innerHTML = '<span class="loading"></span> Saving...';
+            btn.disabled = true;
 
-const balanceDue = totalAmount - advancePaid;
+            const booking = {
+                customerName,
+                customerPhone,
+                eventType,
+                packageName,
+                totalAmount,
+                advancePaid,
+                eventDate,
+                balanceDue
+            };
 
-const booking = {
-
-customerName,
-customerPhone,
-eventType,
-packageName,
-totalAmount,
-advancePaid,
-eventDate,
-balanceDue
-
-};
             try {
                 const response = await fetch("/add-booking", {
                     method: "POST",
@@ -818,11 +900,6 @@ balanceDue
             div.textContent = text || '';
             return div.innerHTML;
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            calculateBalance();
-            loadCustomers();
-        });
     </script>
 </body>
 </html>
