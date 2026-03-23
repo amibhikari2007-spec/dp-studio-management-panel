@@ -12,7 +12,7 @@
             box-sizing: border-box;
         }
 
-       :root {
+        :root {
             --primary-color: #4a90e2;
             --primary-dark: #357abd;
             --secondary-color: #f39c12;
@@ -41,12 +41,7 @@
             background: linear-gradient(135deg, var(--background) 0%, #eef2f7 100%);
             color: var(--text-dark);
             min-height: 100vh;
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--background) 0%, #eef2f7 100%);
-            color: var(--text-dark);
-            min-height: 100vh;
+            transition: background 0.3s ease;
         }
 
         /* Header */
@@ -92,6 +87,31 @@
             font-size: 22px;
             font-weight: 700;
             font-family: 'Playfair Display', serif;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
 
         .header-right a {
@@ -146,12 +166,13 @@
 
         /* Form Section */
         .form-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             margin-bottom: 40px;
             animation: slideUp 0.6s ease-out;
+            transition: background 0.3s ease;
         }
 
         @keyframes slideUp {
@@ -227,19 +248,18 @@
             font-family: 'Poppins', sans-serif;
             font-size: 13px;
             color: var(--text-dark);
-            background: #f8f9fa;
+            background: var(--card-bg);
             transition: all 0.3s ease;
         }
 
         input:focus {
             outline: none;
             border-color: var(--primary-color);
-            background: white;
             box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.08);
         }
 
         input::placeholder {
-            color: #a0a0a0;
+            color: var(--text-light);
         }
 
         .button-group {
@@ -342,11 +362,12 @@
 
         /* Table Section */
         .table-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             animation: slideUp 0.6s ease-out 0.1s both;
+            transition: background 0.3s ease;
         }
 
         .table-header {
@@ -385,13 +406,14 @@
             border: 2px solid var(--border-color);
             border-radius: 10px;
             font-family: 'Poppins', sans-serif;
-            background: #f8f9fa;
+            background: var(--card-bg);
+            color: var(--text-dark);
         }
 
         .customer-count {
             font-size: 12px;
             color: var(--text-light);
-            background: var(--background);
+            background: var(--border-color);
             padding: 8px 14px;
             border-radius: 20px;
             font-weight: 600;
@@ -439,7 +461,7 @@
         tbody tr:nth-child(5) { animation-delay: 0.2s; }
 
         tbody tr:hover {
-            background: #f8f9fa;
+            background: var(--border-color);
             transform: scale(1.01);
         }
 
@@ -497,6 +519,7 @@
             font-size: 12px;
             border-top: 1px solid var(--border-color);
             margin-top: 60px;
+            transition: border 0.3s ease;
         }
 
         .loading {
@@ -567,29 +590,10 @@
                 </div>
             </div>
             <div class="header-right">
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
                 <a href="/dashboard.html">← Back to Dashboard</a>
             </div>
         </div>
-        <div class="header-right">
-
-<button onclick="toggleTheme()" id="themeToggle"
-style="
-background: rgba(255,255,255,0.2);
-border:none;
-padding:8px 15px;
-border-radius:20px;
-color:white;
-cursor:pointer;
-margin-right:10px;
-">
-
-🌙 Dark
-
-</button>
-
-<a href="/dashboard.html">← Back to Dashboard</a>
-
-</div>
     </header>
 
     <!-- Main Container -->
@@ -696,7 +700,6 @@ margin-right:10px;
     </footer>
 
     <script>
-        
         // Check authentication
         if (!localStorage.getItem("token")) {
             window.location = "/admin.html";
@@ -705,7 +708,37 @@ margin-right:10px;
         let allCustomers = [];
 
         // Load customers on page load
-        document.addEventListener('DOMContentLoaded', loadCustomers);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            loadCustomers();
+        });
+
+        // Toggle theme
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle("dark-mode");
+            
+            const themeBtn = document.getElementById("themeToggle");
+            if (body.classList.contains("dark-mode")) {
+                localStorage.setItem("theme", "dark");
+                themeBtn.textContent = "☀️ Light";
+            } else {
+                localStorage.setItem("theme", "light");
+                themeBtn.textContent = "🌙 Dark";
+            }
+        }
+
+        // Load theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem("theme");
+            if (savedTheme === "dark") {
+                document.body.classList.add("dark-mode");
+                const themeBtn = document.getElementById("themeToggle");
+                if (themeBtn) {
+                    themeBtn.textContent = "☀️ Light";
+                }
+            }
+        }
 
         // Handle form submission
         async function handleSubmit(event) {
@@ -832,27 +865,6 @@ margin-right:10px;
             div.textContent = text;
             return div.innerHTML;
         }
-        function toggleTheme(){
-
-const body=document.body;
-
-body.classList.toggle("dark-mode");
-
-if(body.classList.contains("dark-mode")){
-
-localStorage.setItem("theme","dark");
-
-document.getElementById("themeToggle").innerText="☀️ Light";
-
-}else{
-
-localStorage.setItem("theme","light");
-
-document.getElementById("themeToggle").innerText="🌙 Dark";
-
-}
-
-}
     </script>
 </body>
 </html>
