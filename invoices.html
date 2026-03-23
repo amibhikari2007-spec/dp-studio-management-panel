@@ -799,6 +799,33 @@ Edit Payment
             div.textContent = text || '';
             return div.innerHTML;
         }
+        async function editBooking(id){
+
+const newAdvance = prompt("Enter new advance amount");
+
+if(!newAdvance) return;
+
+await fetch("/update-booking/" + id, {
+
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+advancePaid:Number(newAdvance)
+
+})
+
+});
+
+alert("Payment updated successfully");
+
+location.reload();
+
+}
     </script>
 </body>
 </html>
