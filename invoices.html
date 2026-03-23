@@ -125,6 +125,7 @@ padding:30px;
 
 <script>
 
+// Redirect if not logged in
 if(!localStorage.getItem("token")){
 window.location="/admin.html";
 }
@@ -133,15 +134,20 @@ let allInvoices=[];
 
 loadInvoices();
 
+// LOAD INVOICES (TOKEN PROTECTED)
 async function loadInvoices(){
 
 try{
 
-const response=await fetch("/bookings-list");
+const response = await fetch("/bookings-list",{
+headers:{
+"Authorization":"Bearer " + localStorage.getItem("token")
+}
+});
 
 if(!response.ok) throw new Error("Load failed");
 
-allInvoices=await response.json();
+allInvoices = await response.json();
 
 renderInvoices();
 
@@ -172,13 +178,13 @@ return;
 
 }
 
-const rows=allInvoices.map(invoice=>{
+const rows = allInvoices.map(invoice=>{
 
-const invoiceNumber=invoice.invoiceNumber || `INV-${invoice._id.slice(0,6).toUpperCase()}`;
+const invoiceNumber = invoice.invoiceNumber || `INV-${invoice._id.slice(0,6).toUpperCase()}`;
 
-const total=invoice.totalAmount || 0;
-const paid=invoice.paidAmount || 0;
-const pending=invoice.pendingAmount || (total-paid);
+const total = invoice.totalAmount || 0;
+const advance = invoice.advancePaid || 0;
+const pending = invoice.balanceDue || (total-advance);
 
 return `
 <tr>
@@ -186,7 +192,7 @@ return `
 <td>${invoice.customerName || "-"}</td>
 <td>${invoice.eventType || "-"}</td>
 <td>₹ ${total}</td>
-<td>₹ ${paid}</td>
+<td>₹ ${advance}</td>
 <td>₹ ${pending}</td>
 <td>${invoice.status || "Pending"}</td>
 
@@ -204,7 +210,7 @@ return `
 }).join("");
 
 
-document.getElementById("tableBody").innerHTML=rows;
+document.getElementById("tableBody").innerHTML = rows;
 
 }
 
@@ -219,6 +225,7 @@ window.location=`/invoice-download.html?id=${id}`;
 }
 
 
+// EDIT PAYMENT (SUPER ADMIN ONLY ROUTE PROTECTED)
 async function editPayment(id){
 
 const amount = prompt("Enter new advance amount");
@@ -227,15 +234,21 @@ if(!amount) return;
 
 try{
 
-const response = await fetch(`/update-booking/${id}`, {
+const response = await fetch(`/update-booking/${id}`,{
 method:"PUT",
 headers:{
-"Content-Type":"application/json"
+"Content-Type":"application/json",
+"Authorization":"Bearer " + localStorage.getItem("token")
 },
 body:JSON.stringify({
 advancePaid:Number(amount)
 })
 });
+
+if(response.status === 403){
+alert("Only Super Admin can edit payment");
+return;
+}
 
 if(!response.ok) throw new Error("Update failed");
 
@@ -248,8 +261,6 @@ loadInvoices();
 console.error(err);
 
 alert("Payment update failed");
-
-}
 
 }
 
