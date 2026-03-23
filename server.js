@@ -1,58 +1,407 @@
-app.put("/update-booking/:id",
-verifyToken,
-superAdminOnly,
-async (req,res)=>{
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
+/* MODELS */
+
+const Activity = require("./Activity");
+const Customer = require("./Customer");
+const Booking = require("./Booking");
+const Admin = require("./Admin");
+const User = require("./User");
+
+/* CREATE EXPRESS APP */
+
+const app = express();
+
+/* MIDDLEWARE */
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static(__dirname));
+
+/* DATABASE */
+
+mongoose.connect(process.env.MONGO_URI)
+.then(()=>console.log("MongoDB Connected"))
+.catch(err=>console.log(err));
+
+
+/* JWT VERIFY */
+
+function verifyToken(req,res,next){
+
+const authHeader = req.headers.authorization;
+
+if(!authHeader){
+return res.status(401).send("Access denied");
+}
+
+const token = authHeader.split(" ")[1];
 
 try{
 
-const booking = await Booking.findById(req.params.id);
+const decoded =
+jwt.verify(token,process.env.JWT_SECRET);
+
+req.user = decoded;
+
+next();
+
+}catch(err){
+
+res.status(401).send("Invalid token");
+
+}
+
+}
+
+
+/* ROLE CHECK */
+
+function superAdminOnly(req,res,next){
+
+if(req.user.role !== "super_admin"){
+
+return res.status(403)
+.send("Super Admin required");
+
+}
+
+next();
+
+}
+
+
+/* ROOT */
+
+app.get("/",(req,res)=>{
+
+res.redirect("/admin.html");
+
+});
+
+
+/* CREATE ADMIN */
+
+app.get("/create-admin",async(req,res)=>{
+
+const existing =
+await Admin.findOne({
+
+username:"owner@dpstudio"
+
+});
+
+if(existing){
+
+return res.send("Admin exists");
+
+}
+
+const hashed =
+await bcrypt.hash("dpstudio123",10);
+
+await Admin.create({
+
+username:"owner@dpstudio",
+
+password:hashed
+
+});
+
+res.send("Admin created");
+
+});
+
+
+/* LOGIN */
+
+app.post("/admin/login",async(req,res)=>{
+
+const {username,password} = req.body;
+
+let user =
+await Admin.findOne({username});
+
+let role="super_admin";
+
+if(!user){
+
+user =
+await User.findOne({username});
+
+role="staff";
+
+}
+
+if(!user){
+
+return res.status(404)
+.send("User not found");
+
+}
+
+const match =
+await bcrypt.compare(password,user.password);
+
+if(!match){
+
+return res.status(401)
+.send("Wrong password");
+
+}
+
+const token =
+jwt.sign(
+
+{ id:user._id, role },
+
+process.env.JWT_SECRET,
+
+{ expiresIn:"1d" }
+
+);
+
+await Activity.create({
+
+username,
+
+action:"LOGIN",
+
+details:"User logged in"
+
+});
+
+res.json({
+
+token,
+
+role
+
+});
+
+});
+
+
+/* ADD CUSTOMER */
+
+app.post("/add-customer",
+verifyToken,
+async(req,res)=>{
+
+const {name,phone,address} = req.body;
+
+await Customer.create({
+
+name,
+phone,
+address
+
+});
+
+res.send("Customer added");
+
+});
+
+
+/* CUSTOMER LIST */
+
+app.get("/customers-list",
+verifyToken,
+async(req,res)=>{
+
+const data =
+await Customer.find();
+
+res.json(data);
+
+});
+
+
+/* ADD BOOKING */
+
+app.post("/add-booking",
+verifyToken,
+async(req,res)=>{
+
+const {
+
+customerName,
+customerPhone,
+eventType,
+packageName,
+totalAmount,
+advancePaid,
+eventDate
+
+} = req.body;
+
+let balanceDue =
+totalAmount - advancePaid;
+
+if(balanceDue < 0){
+
+balanceDue = 0;
+
+}
+
+const count =
+await Booking.countDocuments();
+
+const year =
+new Date().getFullYear();
+
+const invoiceNumber =
+`DP-${year}-${String(count+1).padStart(5,"0")}`;
+
+const status =
+balanceDue === 0
+? "Paid"
+: "Pending";
+
+await Booking.create({
+
+customerName,
+customerPhone,
+eventType,
+packageName,
+totalAmount,
+advancePaid,
+balanceDue,
+eventDate,
+invoiceNumber,
+status
+
+});
+
+res.send("Booking added");
+
+});
+
+
+/* BOOKINGS LIST */
+
+app.get("/bookings-list",
+verifyToken,
+async(req,res)=>{
+
+const data =
+await Booking.find()
+.sort({createdAt:-1});
+
+res.json(data);
+
+});
+
+
+/* SINGLE BOOKING */
+
+app.get("/booking/:id",
+verifyToken,
+async(req,res)=>{
+
+const booking =
+await Booking.findById(req.params.id);
 
 if(!booking){
-return res.status(404).send("Booking not found");
+
+return res.status(404)
+.send("Booking not found");
+
 }
 
-let newAdvance = req.body.advancePaid;
+res.json(booking);
 
-// prevent overpayment
+});
+
+
+/* UPDATE PAYMENT */
+
+app.put("/update-booking/:id",
+verifyToken,
+superAdminOnly,
+async(req,res)=>{
+
+try{
+
+const booking =
+await Booking.findById(req.params.id);
+
+if(!booking){
+
+return res.status(404)
+.send("Booking not found");
+
+}
+
+let newAdvance =
+req.body.advancePaid;
+
 if(newAdvance > booking.totalAmount){
-newAdvance = booking.totalAmount;
+
+newAdvance =
+booking.totalAmount;
+
 }
 
-// prevent negative values
 if(newAdvance < 0){
+
 newAdvance = 0;
+
 }
 
-booking.advancePaid = newAdvance;
+booking.advancePaid =
+newAdvance;
 
 booking.balanceDue =
-booking.totalAmount - booking.advancePaid;
+booking.totalAmount -
+booking.advancePaid;
 
-if(booking.balanceDue <= 0){
-booking.balanceDue = 0;
-booking.status = "Paid";
-}else{
-booking.status = "Pending";
-}
+booking.status =
+booking.balanceDue === 0
+? "Paid"
+: "Pending";
 
 await booking.save();
 
 await Activity.create({
 
 username:req.user.id,
+
 action:"PAYMENT_UPDATED",
+
 details:`Updated ${booking.invoiceNumber}`
 
 });
 
-res.send("Payment updated successfully");
+res.send("Payment updated");
 
 }catch(err){
 
 console.log(err);
 
-res.status(500).send("Payment update failed");
+res.status(500)
+.send("Payment update failed");
 
 }
+
+});
+
+
+/* START SERVER */
+
+const PORT =
+process.env.PORT || 10000;
+
+app.listen(PORT,()=>{
+
+console.log(
+"Server running on port "+PORT
+
+);
 
 });
