@@ -215,7 +215,45 @@ await Booking.find().sort({ createdAt: -1 });
 res.json(bookings);
 
 });
+/* UPDATE BOOKING PAYMENT */
 
+app.put("/update-booking/:id", async (req, res) => {
+
+const {
+
+advancePaid
+
+} = req.body;
+
+const booking = await Booking.findById(req.params.id);
+
+if(!booking){
+
+return res.status(404).send("Booking not found");
+
+}
+
+/* update advance */
+
+booking.advancePaid = advancePaid;
+
+/* recalculate balance */
+
+booking.balanceDue =
+booking.totalAmount - advancePaid;
+
+/* update status */
+
+booking.status =
+booking.balanceDue === 0
+? "Paid"
+: "Pending";
+
+await booking.save();
+
+res.send("Booking updated successfully");
+
+});
 
 /* DASHBOARD STATS */
 
