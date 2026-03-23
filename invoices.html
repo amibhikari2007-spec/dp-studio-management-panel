@@ -221,17 +221,20 @@ window.location=`/invoice-download.html?id=${id}`;
 
 async function editPayment(id){
 
-const amount=prompt("Enter new payment amount");
+const amount = prompt("Enter new advance amount");
 
 if(!amount) return;
 
 try{
 
-const response=await fetch(`/update-payment/${id}`,
-{
+const response = await fetch(`/update-booking/${id}`, {
 method:"PUT",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({paidAmount:Number(amount)})
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+advancePaid:Number(amount)
+})
 });
 
 if(!response.ok) throw new Error("Update failed");
@@ -245,6 +248,8 @@ loadInvoices();
 console.error(err);
 
 alert("Payment update failed");
+
+}
 
 }
 
