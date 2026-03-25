@@ -697,6 +697,30 @@ res.status(500).send("Invoice generation failed");
 }
 
 });
+  /* =========================
+   PUBLIC BOOKING FETCH FOR INVOICE
+========================= */
+
+app.get("/booking/:id", async (req, res) => {
+
+try {
+
+const booking = await Booking.findById(req.params.id);
+
+if (!booking) {
+return res.status(404).send("Booking not found");
+}
+
+res.json(booking);
+
+} catch (err) {
+
+console.log(err);
+res.status(500).send("Error loading booking");
+
+}
+
+});
 
 /* =========================
    START SERVER
