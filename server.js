@@ -74,17 +74,17 @@ res.status(401).send("Invalid token");
    SUPER ADMIN CHECK
 ========================= */
 
-function isSuperAdmin(req, res, next) {
+function superAdminOnly(req,res,next){
 
-  if (!req.user) {
-    return res.status(403).json({ success:false });
-  }
+if(!req.user){
+return res.status(403).send("Access denied");
+}
 
-  if (req.user.role !== "super_admin") {
-    return res.status(403).json({ success:false });
-  }
+if(req.user.role !== "super_admin"){
+return res.status(403).send("Super Admin required");
+}
 
-  next();
+next();
 
 }
 
@@ -292,8 +292,6 @@ status
 });
 
 
-/* ACTIVITY LOG */
-
 await Activity.create({
 
 username:req.user.username,
@@ -308,7 +306,6 @@ device:
 req.headers["user-agent"]
 
 });
-
 
 res.send("Booking added");
 
@@ -395,8 +392,6 @@ booking.balanceDue===0
 await booking.save();
 
 
-/* ACTIVITY LOG */
-
 await Activity.create({
 
 username:req.user.username,
@@ -411,7 +406,6 @@ device:
 req.headers["user-agent"]
 
 });
-
 
 res.send("Payment updated");
 
@@ -428,7 +422,7 @@ res.status(500)
 
 
 /* =========================
-   DASHBOARD STATS (FIXED)
+   DASHBOARD STATS
 ========================= */
 
 app.get("/dashboard-stats",
@@ -506,107 +500,74 @@ res.status(500)
 }
 
 });
-// ==============================
-// SUPER ADMIN DELETE SYSTEM
-// ==============================
 
-// check super admin
-function isSuperAdmin(req, res, next) {
 
-  if (!req.session.user) {
-    return res.status(403).json({ success:false });
-  }
+/* =========================
+   SUPER ADMIN DELETE BOOKING
+========================= */
 
-  if (req.session.user.role !== "superadmin") {
-    return res.status(403).json({ success:false });
-  }
+app.delete("/superadmin/delete-booking/:id",
+verifyToken,
+superAdminOnly,
+async (req,res)=>{
 
-  next();
+try{
+
+const bookingId=req.params.id;
+
+await Booking.findByIdAndDelete(bookingId);
+
+await Activity.create({
+
+username:req.user.username,
+action:"BOOKING_DELETED",
+details:"Deleted booking "+bookingId,
+
+ipAddress:
+req.headers["x-forwarded-for"] ||
+req.socket.remoteAddress,
+
+device:
+req.headers["user-agent"]
+
+});
+
+res.json({success:true});
+
+}catch(err){
+
+console.log(err);
+
+res.json({success:false});
+
 }
 
+});
 
-// get all bookings
+
+/* =========================
+   SUPER ADMIN BOOKINGS LIST
+========================= */
+
 app.get("/superadmin/bookings",
 verifyToken,
-isSuperAdmin,
-async (req, res) => {
+superAdminOnly,
+async (req,res)=>{
 
-  try {
+try{
 
-    const bookings =
-    await Booking.find().sort({ createdAt:-1 });
+const bookings=
+await Booking.find()
+.sort({createdAt:-1});
 
-    res.json(bookings);
+res.json(bookings);
 
-  }
+}catch(err){
 
-  catch(err){
+console.log(err);
+res.status(500).json([]);
 
-    console.log(err);
-    res.status(500).json([]);
-
-  }
-
-});
-// delete booking + invoice
-app.delete("/superadmin/delete-booking/:id", isSuperAdmin, async (req, res) => {
-
-  try {
-
-    const bookingId = req.params.id;
-
-    // delete booking
-    await Booking.findByIdAndDelete(bookingId);
-
-    // delete invoice
-  app.delete("/superadmin/delete-booking/:id",
-verifyToken,
-isSuperAdmin,
-async (req, res) => {
-
-  try {
-
-    const bookingId = req.params.id;
-
-    await Booking.findByIdAndDelete(bookingId);
-
-    await Activity.create({
-      username: req.user.username,
-      action: "BOOKING_DELETED",
-      details: "Deleted booking " + bookingId,
-      ipAddress: req.ip,
-      device: req.headers["user-agent"]
-    });
-
-    res.json({ success:true });
-
-  }
-
-  catch(err){
-
-    console.log(err);
-    res.json({ success:false });
-
-  }
-
-});
-    // save log
-    await Activity.create({
-      username: req.session.user.username,
-      action: "delete",
-      details: "Deleted booking " + bookingId,
-      ipAddress: req.ip,
-      device: req.headers["user-agent"]
-    });
-
-    res.json({ success: true });
-
-  } catch (err) {
-
-    console.log(err);
-    res.json({ success: false });
-
-  }
+}
 
 });
 
