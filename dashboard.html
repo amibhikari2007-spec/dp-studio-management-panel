@@ -779,12 +779,52 @@
       }
     }
 
-    /* ── THEME ── */
-    function toggleTheme() {
-      const isLight = document.body.classList.toggle("light");
-      localStorage.setItem("theme", isLight ? "light" : "dark");
-      document.getElementById("themeToggle").textContent = isLight ? "🌑 Dark" : "🌙 Dark";
+   /* ── THEME SYSTEM (FINAL FIX) ── */
 
+function toggleTheme(){
+
+const isLight =
+document.body.classList.toggle("light");
+
+localStorage.setItem(
+"theme",
+isLight ? "light" : "dark"
+);
+
+const btn =
+document.getElementById("themeToggle");
+
+btn.textContent =
+isLight
+? "🌙 Dark"
+: "☀️ Light";
+
+updateChartColors(isLight);
+
+}
+
+
+function loadTheme(){
+
+const saved =
+localStorage.getItem("theme");
+
+const btn =
+document.getElementById("themeToggle");
+
+if(saved === "light"){
+
+document.body.classList.add("light");
+
+btn.textContent="🌙 Dark";
+
+}else{
+
+btn.textContent="☀️ Light";
+
+}
+
+}
       // Update chart colors on theme switch
       const gridColor  = isLight ? "rgba(0,0,0,0.06)"  : "rgba(255,255,255,0.05)";
       const tickColor  = isLight ? "#8a96a8" : "#5a6478";
