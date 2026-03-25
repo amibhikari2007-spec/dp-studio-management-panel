@@ -627,7 +627,17 @@
 
   <script>
     /* ── AUTH ── */
-    if (!localStorage.getItem("token")) window.location = "/admin.html";
+fetch("/check-auth", {
+  credentials: "include"
+})
+.then(res => {
+  if (!res.ok) {
+    window.location = "/admin.html";
+  }
+})
+.catch(() => {
+  window.location = "/admin.html";
+});
 
     let allActivities = [];
 
@@ -732,32 +742,40 @@
     }
 
     /* ── LOAD ── */
-    async function loadActivity() {
-      try {
-        const res = await fetch("/activity-list", {
-          headers: { Authorization: "Bearer " + localStorage.getItem("token") }
-        });
+  async function loadActivity() {
+  try {
 
-        if (res.status === 403) {
-          showToast("Only Super Admin allowed", "error");
-          setTimeout(() => window.location = "/dashboard.html", 1500);
-          return;
-        }
+    const res = await fetch("/activity-list", {
+      credentials: "include"
+    });
 
-        if (!res.ok) throw new Error("Failed");
-
-        allActivities = await res.json();
-        updateStats(allActivities);
-        renderActivity(allActivities);
-
-      } catch (err) {
-        console.error(err);
-        document.getElementById("activityTable").innerHTML =
-          `<tr class="state-row"><td colspan="6">⚠ Failed to load activity logs</td></tr>`;
-        document.getElementById("tableCount").textContent = "Error";
-        showToast("Failed to load activity logs", "error");
-      }
+    if (res.status === 403) {
+      showToast("Only Super Admin allowed", "error");
+      setTimeout(() => window.location = "/dashboard.html", 1500);
+      return;
     }
+
+    if (!res.ok) throw new Error("Failed");
+
+    allActivities = await res.json();
+
+    updateStats(allActivities);
+
+    renderActivity(allActivities);
+
+  } catch (err) {
+
+    console.error(err);
+
+    document.getElementById("activityTable").innerHTML =
+      `<tr class="state-row"><td colspan="6">⚠ Failed to load activity logs</td></tr>`;
+
+    document.getElementById("tableCount").textContent = "Error";
+
+    showToast("Failed to load activity logs", "error");
+
+  }
+}
 
     /* ── NAV ── */
     function goDashboard() { window.location = "/dashboard.html"; }
@@ -767,7 +785,7 @@
     }
 
     loadActivity();
-    <script>
+  
 
 /* ===============================
    SUPER ADMIN BOOKING MANAGEMENT
@@ -783,11 +801,7 @@ async function loadBookings() {
   try {
 
     const res = await fetch("/superadmin/bookings", {
-
-      headers: {
-        Authorization: "Bearer " + localStorage.getItem("token")
-      }
-
+      credentials: "include"
     });
 
     if (!res.ok) throw new Error("Failed");
@@ -808,7 +822,6 @@ async function loadBookings() {
   }
 
 }
-
 
 /* RENDER BOOKINGS */
 
@@ -881,9 +894,7 @@ async function deleteBooking(id) {
 
       method: "DELETE",
 
-      headers: {
-        Authorization: "Bearer " + localStorage.getItem("token")
-      }
+     credentials: "include"
 
     });
 
@@ -922,7 +933,7 @@ async function deleteBooking(id) {
 
 loadBookings();
 
-</script>
+
   </script>
 </body>
 </html>
