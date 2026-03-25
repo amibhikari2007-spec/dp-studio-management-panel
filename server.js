@@ -502,6 +502,76 @@ res.status(500)
 }
 
 });
+// ==============================
+// SUPER ADMIN DELETE SYSTEM
+// ==============================
+
+// check super admin
+function isSuperAdmin(req, res, next) {
+
+  if (!req.session.user) {
+    return res.status(403).json({ success:false });
+  }
+
+  if (req.session.user.role !== "superadmin") {
+    return res.status(403).json({ success:false });
+  }
+
+  next();
+}
+
+
+// get all bookings
+app.get("/superadmin/bookings", isSuperAdmin, async (req, res) => {
+
+  try {
+
+    const bookings = await Booking.find().sort({ createdAt: -1 });
+
+    res.json(bookings);
+
+  } catch (err) {
+
+    console.log(err);
+    res.status(500).json([]);
+
+  }
+
+});
+
+
+// delete booking + invoice
+app.delete("/superadmin/delete-booking/:id", isSuperAdmin, async (req, res) => {
+
+  try {
+
+    const bookingId = req.params.id;
+
+    // delete booking
+    await Booking.findByIdAndDelete(bookingId);
+
+    // delete invoice
+    await Invoice.deleteOne({ bookingId: bookingId });
+
+    // save log
+    await Activity.create({
+      username: req.session.user.username,
+      action: "delete",
+      details: "Deleted booking " + bookingId,
+      ipAddress: req.ip,
+      device: req.headers["user-agent"]
+    });
+
+    res.json({ success: true });
+
+  } catch (err) {
+
+    console.log(err);
+    res.json({ success: false });
+
+  }
+
+});
 
 
 /* =========================
