@@ -629,25 +629,25 @@ res.status(500).send("Failed to create user");
 
 });
 /* =========================
-   PUBLIC INVOICE PDF ROUTE
+   PUBLIC INVOICE ROUTE
 ========================= */
 
-app.get("/invoice/:invoiceNumber", async (req,res)=>{
+app.get("/public-invoice/:invoiceNumber", async (req, res) => {
 
-try{
+try {
 
 const booking =
 await Booking.findOne({
-invoiceNumber:req.params.invoiceNumber
+invoiceNumber: req.params.invoiceNumber
 });
 
-if(!booking){
+if (!booking) {
 return res.status(404).send("Invoice not found");
 }
 
-const pdf = require("pdfkit");
+const PDFDocument = require("pdfkit");
 
-const doc = new pdf();
+const doc = new PDFDocument();
 
 res.setHeader(
 "Content-Type",
@@ -665,46 +665,38 @@ doc.pipe(res);
 /* HEADER */
 
 doc.fontSize(20)
-.text("DP Studio & Light",{
-align:"center"
-});
+.text("DP Studio & Light", { align: "center" });
 
 doc.moveDown();
 
 
-/* CUSTOMER INFO */
+/* DETAILS */
 
 doc.fontSize(12)
 .text(`Invoice Number: ${booking.invoiceNumber}`)
-.text(`Customer Name: ${booking.customerName}`)
+.text(`Customer: ${booking.customerName}`)
 .text(`Phone: ${booking.customerPhone}`)
-.text(`Event Type: ${booking.eventType}`)
-.text(`Event Date: ${booking.eventDate}`);
+.text(`Event: ${booking.eventType}`)
+.text(`Date: ${booking.eventDate}`)
 
 doc.moveDown();
 
-
-/* PAYMENT INFO */
-
-doc.text(`Total Amount: ₹${booking.totalAmount}`);
-doc.text(`Advance Paid: ₹${booking.advancePaid}`);
-doc.text(`Balance Due: ₹${booking.balanceDue}`);
-doc.text(`Status: ${booking.status}`);
-
+doc.text(`Total: ₹${booking.totalAmount}`)
+.text(`Paid: ₹${booking.advancePaid}`)
+.text(`Balance: ₹${booking.balanceDue}`)
+.text(`Status: ${booking.status}`);
 
 doc.end();
 
-}catch(err){
+} catch (err) {
 
 console.log(err);
 
-res.status(500)
-.send("Failed to generate invoice");
+res.status(500).send("Invoice generation failed");
 
 }
 
 });
-
 
 /* =========================
    START SERVER
