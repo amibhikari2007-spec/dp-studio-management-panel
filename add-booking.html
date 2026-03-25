@@ -847,11 +847,15 @@
             const booking = { customerName, customerPhone, eventType, packageName, totalAmount, advancePaid, eventDate, balanceDue };
 
             try {
-                const response = await fetch("/add-booking", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(booking)
-                });
+               const response = await fetch("/add-booking", {
+method: "POST",
+headers: {
+"Content-Type": "application/json",
+Authorization:
+"Bearer " + localStorage.getItem("token")
+},
+body: JSON.stringify(booking)
+});
 
                 const data = await response.text();
 
