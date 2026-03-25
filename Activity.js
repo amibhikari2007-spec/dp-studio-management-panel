@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-const activitySchema = new mongoose.Schema({
-
+const activitySchema = new mongoose.Schema(
+{
 username:{
 type:String,
 required:true
@@ -15,11 +15,23 @@ required:true
 details:{
 type:String,
 required:true
+},
+
+ipAddress:{
+type:String,
+default:"--"
+},
+
+device:{
+type:String,
+default:"Unknown"
 }
 
-},{
-timestamps:true   // ✅ THIS LINE FIXES INVALID DATE
-});
+},
+{
+timestamps:true
+}
+);
 
 module.exports =
 mongoose.model("Activity",activitySchema);
