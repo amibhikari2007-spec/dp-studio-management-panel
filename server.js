@@ -6,8 +6,6 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-/* MODELS */
-
 const Activity = require("./Activity");
 const Customer = require("./Customer");
 const Booking = require("./Booking");
@@ -16,13 +14,19 @@ const User = require("./User");
 
 const app = express();
 
-/* MIDDLEWARE */
+
+/* =========================
+   MIDDLEWARE
+========================= */
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-/* DATABASE CONNECTION */
+
+/* =========================
+   DATABASE CONNECTION
+========================= */
 
 mongoose.connect(process.env.MONGO_URI,{
 serverSelectionTimeoutMS:5000
@@ -34,7 +38,9 @@ process.exit(1);
 });
 
 
-/* JWT VERIFY */
+/* =========================
+   JWT VERIFY
+========================= */
 
 function verifyToken(req,res,next){
 
@@ -64,7 +70,9 @@ res.status(401).send("Invalid token");
 }
 
 
-/* SUPER ADMIN CHECK */
+/* =========================
+   SUPER ADMIN CHECK
+========================= */
 
 function superAdminOnly(req,res,next){
 
@@ -77,14 +85,18 @@ next();
 }
 
 
-/* ROOT ROUTE */
+/* =========================
+   ROOT ROUTE
+========================= */
 
 app.get("/",(req,res)=>{
 res.redirect("/admin.html");
 });
 
 
-/* CREATE DEFAULT ADMIN */
+/* =========================
+   CREATE DEFAULT ADMIN
+========================= */
 
 app.get("/create-admin",async(req,res)=>{
 
@@ -108,7 +120,9 @@ res.send("Admin created successfully");
 });
 
 
-/* LOGIN */
+/* =========================
+   LOGIN
+========================= */
 
 app.post("/admin/login",async(req,res)=>{
 
@@ -146,12 +160,22 @@ process.env.JWT_SECRET,
 { expiresIn:"1d" }
 );
 
+
 /* ACTIVITY LOG */
 
 await Activity.create({
+
 username:user.username,
 action:"LOGIN",
-details:"User logged in"
+details:"User logged in",
+
+ipAddress:
+req.headers["x-forwarded-for"] ||
+req.socket.remoteAddress,
+
+device:
+req.headers["user-agent"]
+
 });
 
 res.json({token,role});
@@ -159,7 +183,9 @@ res.json({token,role});
 });
 
 
-/* ADD CUSTOMER */
+/* =========================
+   ADD CUSTOMER
+========================= */
 
 app.post("/add-customer",
 verifyToken,
@@ -174,7 +200,9 @@ res.send("Customer added");
 });
 
 
-/* CUSTOMER LIST */
+/* =========================
+   CUSTOMER LIST
+========================= */
 
 app.get("/customers-list",
 verifyToken,
@@ -188,7 +216,9 @@ res.json(data);
 });
 
 
-/* ADD BOOKING */
+/* =========================
+   ADD BOOKING
+========================= */
 
 app.post("/add-booking",
 verifyToken,
@@ -221,9 +251,13 @@ const invoiceNumber=
 `DP-${year}-${String(count+1).padStart(5,"0")}`;
 
 const status=
-balanceDue===0?"Paid":"Pending";
+balanceDue===0
+? "Paid"
+: "Pending";
+
 
 await Booking.create({
+
 customerName,
 customerPhone,
 eventType,
@@ -234,37 +268,53 @@ balanceDue,
 eventDate,
 invoiceNumber,
 status
+
 });
 
 
 /* ACTIVITY LOG */
 
 await Activity.create({
+
 username:req.user.username,
 action:"BOOKING_CREATED",
-details:`Created ${invoiceNumber}`
+details:`Created ${invoiceNumber}`,
+
+ipAddress:
+req.headers["x-forwarded-for"] ||
+req.socket.remoteAddress,
+
+device:
+req.headers["user-agent"]
+
 });
+
 
 res.send("Booking added");
 
 });
 
 
-/* BOOKINGS LIST */
+/* =========================
+   BOOKINGS LIST
+========================= */
 
 app.get("/bookings-list",
 verifyToken,
 async(req,res)=>{
 
 const data=
-await Booking.find().sort({createdAt:-1});
+await Booking.find()
+.sort({createdAt:-1});
 
 res.json(data);
 
 });
 
 
-/* SINGLE BOOKING */
+/* =========================
+   SINGLE BOOKING
+========================= */
 
 app.get("/booking/:id",
 verifyToken,
@@ -274,7 +324,8 @@ const booking=
 await Booking.findById(req.params.id);
 
 if(!booking){
-return res.status(404).send("Booking not found");
+return res.status(404)
+.send("Booking not found");
 }
 
 res.json(booking);
@@ -282,7 +333,9 @@ res.json(booking);
 });
 
 
-/* UPDATE PAYMENT */
+/* =========================
+   UPDATE PAYMENT
+========================= */
 
 app.put("/update-booking/:id",
 verifyToken,
@@ -295,7 +348,8 @@ const booking=
 await Booking.findById(req.params.id);
 
 if(!booking){
-return res.status(404).send("Booking not found");
+return res.status(404)
+.send("Booking not found");
 }
 
 let newAdvance=req.body.advancePaid;
@@ -314,7 +368,9 @@ booking.balanceDue=
 booking.totalAmount-booking.advancePaid;
 
 booking.status=
-booking.balanceDue===0?"Paid":"Pending";
+booking.balanceDue===0
+? "Paid"
+: "Pending";
 
 await booking.save();
 
@@ -322,10 +378,20 @@ await booking.save();
 /* ACTIVITY LOG */
 
 await Activity.create({
+
 username:req.user.username,
 action:"PAYMENT_UPDATED",
-details:`Updated ${booking.invoiceNumber}`
+details:`Updated ${booking.invoiceNumber}`,
+
+ipAddress:
+req.headers["x-forwarded-for"] ||
+req.socket.remoteAddress,
+
+device:
+req.headers["user-agent"]
+
 });
+
 
 res.send("Payment updated");
 
@@ -333,14 +399,17 @@ res.send("Payment updated");
 
 console.log(err);
 
-res.status(500).send("Payment update failed");
+res.status(500)
+.send("Payment update failed");
 
 }
 
 });
 
 
-/* ACTIVITY LIST ROUTE (FIXES YOUR ERROR) */
+/* =========================
+   ACTIVITY LIST
+========================= */
 
 app.get("/activity-list",
 verifyToken,
@@ -360,20 +429,25 @@ res.json(activities);
 
 console.log(err);
 
-res.status(500).send("Failed to load activity");
+res.status(500)
+.send("Failed to load activity");
 
 }
 
 });
 
 
-/* START SERVER */
+/* =========================
+   START SERVER
+========================= */
 
 const PORT=
-process.env.PORT||10000;
+process.env.PORT || 10000;
 
 app.listen(PORT,()=>{
 
-console.log("Server running on port "+PORT);
+console.log(
+"Server running on port "+PORT
+);
 
 });
