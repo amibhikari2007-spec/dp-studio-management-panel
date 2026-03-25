@@ -259,9 +259,12 @@ alert("Invoice ID missing");
 return;
 }
 
-const response=await fetch("/booking/"+id,{
+const params = new URLSearchParams(window.location.search);
+const isPublic = params.get("public");
 
-headers:{
+const response = await fetch("/booking/"+id,{
+
+headers: isPublic ? {} : {
 Authorization:
 "Bearer "+localStorage.getItem("token")
 }
