@@ -74,13 +74,17 @@ res.status(401).send("Invalid token");
    SUPER ADMIN CHECK
 ========================= */
 
-function superAdminOnly(req,res,next){
+function isSuperAdmin(req, res, next) {
 
-if(req.user.role!=="super_admin"){
-return res.status(403).send("Super Admin required");
-}
+  if (!req.user) {
+    return res.status(403).json({ success:false });
+  }
 
-next();
+  if (req.user.role !== "super_admin") {
+    return res.status(403).json({ success:false });
+  }
+
+  next();
 
 }
 
@@ -522,15 +526,21 @@ function isSuperAdmin(req, res, next) {
 
 
 // get all bookings
-app.get("/superadmin/bookings", isSuperAdmin, async (req, res) => {
+app.get("/superadmin/bookings",
+verifyToken,
+isSuperAdmin,
+async (req, res) => {
 
   try {
 
-    const bookings = await Booking.find().sort({ createdAt: -1 });
+    const bookings =
+    await Booking.find().sort({ createdAt:-1 });
 
     res.json(bookings);
 
-  } catch (err) {
+  }
+
+  catch(err){
 
     console.log(err);
     res.status(500).json([]);
@@ -538,8 +548,6 @@ app.get("/superadmin/bookings", isSuperAdmin, async (req, res) => {
   }
 
 });
-
-
 // delete booking + invoice
 app.delete("/superadmin/delete-booking/:id", isSuperAdmin, async (req, res) => {
 
@@ -551,8 +559,37 @@ app.delete("/superadmin/delete-booking/:id", isSuperAdmin, async (req, res) => {
     await Booking.findByIdAndDelete(bookingId);
 
     // delete invoice
-    await Invoice.deleteOne({ bookingId: bookingId });
+  app.delete("/superadmin/delete-booking/:id",
+verifyToken,
+isSuperAdmin,
+async (req, res) => {
 
+  try {
+
+    const bookingId = req.params.id;
+
+    await Booking.findByIdAndDelete(bookingId);
+
+    await Activity.create({
+      username: req.user.username,
+      action: "BOOKING_DELETED",
+      details: "Deleted booking " + bookingId,
+      ipAddress: req.ip,
+      device: req.headers["user-agent"]
+    });
+
+    res.json({ success:true });
+
+  }
+
+  catch(err){
+
+    console.log(err);
+    res.json({ success:false });
+
+  }
+
+});
     // save log
     await Activity.create({
       username: req.session.user.username,
