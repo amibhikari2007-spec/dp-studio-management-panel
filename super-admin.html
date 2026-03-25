@@ -1,833 +1,717 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin Panel - DP Studio & Light</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-color: #4a90e2;
-            --primary-dark: #357abd;
-            --background: #f5f7fa;
-            --card-bg: #ffffff;
-            --text-dark: #2c3e50;
-            --text-light: #7f8c8d;
-            --border-color: #ecf0f1;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --warning: #f39c12;
-        }
-
-        body.dark-mode {
-            --background: #0f172a;
-            --card-bg: #1e293b;
-            --text-dark: #f1f5f9;
-            --text-light: #94a3b8;
-            --border-color: #334155;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, var(--background) 0%, #eef2f7 100%);
-            color: var(--text-dark);
-            min-height: 100vh;
-            transition: background 0.3s ease;
-        }
-
-        /* Header */
-        header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 25px 30px;
-            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .logo {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 24px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .header-title h1 {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            font-family: 'Playfair Display', serif;
-            letter-spacing: -0.5px;
-        }
-
-        .header-title p {
-            font-size: 12px;
-            opacity: 0.9;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .theme-toggle {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .theme-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .user-badge {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Container */
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        .page-title {
-            margin-bottom: 35px;
-            animation: slideDown 0.6s ease-out;
-        }
-
-        .page-title h2 {
-            font-size: 32px;
-            font-family: 'Playfair Display', serif;
-            margin-bottom: 8px;
-            color: var(--text-dark);
-        }
-
-        .page-title p {
-            color: var(--text-light);
-            font-size: 14px;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Activity Section */
-        .activity-section {
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            animation: slideUp 0.6s ease-out;
-            transition: background 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--text-dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-title::before {
-            content: '';
-            width: 4px;
-            height: 24px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            border-radius: 2px;
-        }
-
-        .activity-controls {
-            display: flex;
-            gap: 15px;
-            flex: 1;
-            min-width: 300px;
-        }
-
-        .activity-search {
-            flex: 1;
-            padding: 10px 14px;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
-            background: var(--card-bg);
-            color: var(--text-dark);
-            transition: all 0.3s ease;
-        }
-
-        .activity-search:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
-        }
-
-        .activity-search::placeholder {
-            color: var(--text-light);
-        }
-
-        .activity-filter {
-            padding: 10px 14px;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-family: 'Poppins', sans-serif;
-            background: var(--card-bg);
-            color: var(--text-dark);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .activity-filter:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-
-        /* Activity Stats */
-        .activity-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .activity-stat {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.2);
-            animation: slideUp 0.6s ease-out;
-            animation-fill-mode: both;
-        }
-
-        .activity-stat:nth-child(1) { animation-delay: 0.1s; }
-        .activity-stat:nth-child(2) { animation-delay: 0.2s; }
-        .activity-stat:nth-child(3) { animation-delay: 0.3s; }
-
-        .stat-icon {
-            font-size: 32px;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        /* Activity Table */
-        .activity-table-wrapper {
-            overflow-x: auto;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-        }
-
-        .activity-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-
-        .activity-table thead {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
-            color: white;
-        }
-
-        .activity-table th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .activity-table td {
-            padding: 14px 15px;
-            border-bottom: 1px solid var(--border-color);
-            color: var(--text-dark);
-        }
-
-        .activity-table tbody tr {
-            transition: all 0.3s ease;
-            animation: fadeIn 0.6s ease-out;
-            animation-fill-mode: both;
-        }
-
-        .activity-table tbody tr:nth-child(1) { animation-delay: 0s; }
-        .activity-table tbody tr:nth-child(2) { animation-delay: 0.05s; }
-        .activity-table tbody tr:nth-child(3) { animation-delay: 0.1s; }
-        .activity-table tbody tr:nth-child(4) { animation-delay: 0.15s; }
-        .activity-table tbody tr:nth-child(5) { animation-delay: 0.2s; }
-        .activity-table tbody tr:nth-child(n+6) { animation-delay: 0.25s; }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .activity-table tbody tr:hover {
-            background: var(--border-color);
-            transform: translateX(4px);
-        }
-
-        .user-cell {
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .action-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            width: fit-content;
-        }
-
-        .action-login {
-            background: rgba(39, 174, 96, 0.2);
-            color: var(--success);
-        }
-
-        .action-logout {
-            background: rgba(231, 76, 60, 0.2);
-            color: var(--danger);
-        }
-
-        .action-create {
-            background: rgba(74, 144, 226, 0.2);
-            color: var(--primary-color);
-        }
-
-        .action-update {
-            background: rgba(243, 156, 18, 0.2);
-            color: var(--warning);
-        }
-
-        .action-delete {
-            background: rgba(231, 76, 60, 0.2);
-            color: var(--danger);
-        }
-
-        .action-view {
-            background: rgba(126, 81, 237, 0.2);
-            color: #7e51ed;
-        }
-
-        .timestamp {
-            font-size: 12px;
-            color: var(--text-light);
-            white-space: nowrap;
-        }
-
-        .ip-address {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: var(--text-light);
-        }
-
-        .activity-empty {
-            text-align: center;
-            padding: 60px 20px;
-        }
-
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-            opacity: 0.5;
-        }
-
-        .empty-icon + p {
-            color: var(--text-light);
-            font-size: 14px;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 30px 20px;
-            color: var(--text-light);
-            font-size: 12px;
-            border-top: 1px solid var(--border-color);
-            margin-top: 60px;
-        }
-
-        /* Responsive */
-        @media (max-width: 968px) {
-            .section-header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .activity-controls {
-                flex-direction: column;
-                min-width: 100%;
-            }
-
-            .activity-stats {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header-container {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
-            }
-
-            .container {
-                padding: 20px 15px;
-            }
-
-            .activity-section {
-                padding: 20px;
-            }
-
-            .activity-table {
-                font-size: 12px;
-            }
-
-            .activity-table th,
-            .activity-table td {
-                padding: 10px;
-            }
-
-            .page-title h2 {
-                font-size: 26px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin Panel - DP Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #10141c;
+      --surface2: #161c28;
+      --border: rgba(255,255,255,0.07);
+      --blue: #4f8ef7;
+      --blue-glow: rgba(79,142,247,0.25);
+      --green: #2dd4a0;
+      --amber: #f5a623;
+      --red: #f76f6f;
+      --purple: #a78bfa;
+      --text: #e8edf5;
+      --muted: #5a6478;
+      --font-head: 'Syne', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-mono);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── GRID BACKGROUND ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(167,139,250,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(167,139,250,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      animation: gridDrift 20s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes gridDrift {
+      from { transform: translateY(0); }
+      to   { transform: translateY(40px); }
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,12,16,0.88);
+      backdrop-filter: blur(14px);
+      animation: slideDown 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    .header-left { display: flex; align-items: center; gap: 14px; }
+
+    .header-icon {
+      width: 42px; height: 42px;
+      background: var(--purple);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      box-shadow: 0 0 22px rgba(167,139,250,0.35);
+      animation: pulse 3s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 22px rgba(167,139,250,0.35); }
+      50%       { box-shadow: 0 0 38px rgba(167,139,250,0.6); }
+    }
+
+    .header-title {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .header-sub {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    /* SUPER ADMIN BADGE */
+    .sa-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--purple);
+      background: rgba(167,139,250,0.1);
+      border: 1px solid rgba(167,139,250,0.25);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .sa-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--purple);
+      animation: blip 2s ease-in-out infinite;
+    }
+
+    @keyframes blip {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.3; transform: scale(0.6); }
+    }
+
+    .header-buttons { display: flex; gap: 10px; align-items: center; }
+
+    .hdr-btn {
+      padding: 8px 18px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .hdr-btn:hover {
+      color: var(--blue);
+      border-color: var(--blue);
+      background: var(--blue-glow);
+    }
+
+    .hdr-btn.danger:hover {
+      color: var(--red);
+      border-color: var(--red);
+      background: rgba(247,111,111,0.1);
+    }
+
+    /* ── CONTAINER ── */
+    .container {
+      position: relative;
+      z-index: 5;
+      padding: 44px 40px;
+      animation: fadeUp 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes fadeUp {
+      from { transform: translateY(24px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .stat-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      opacity: 0;
+      animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-chip:nth-child(1) { animation-delay: 0.3s; }
+    .stat-chip:nth-child(2) { animation-delay: 0.4s; }
+    .stat-chip:nth-child(3) { animation-delay: 0.5s; }
+
+    .stat-chip:hover { transform: translateY(-3px); border-color: rgba(167,139,250,0.25); }
+
+    .stat-chip::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--chip-color, var(--purple));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .stat-chip:hover::before { transform: scaleX(1); }
+
+    .chip-icon {
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .chip-label {
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .chip-value {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    /* ── TABLE CARD ── */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .table-header {
+      padding: 22px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-header-left { display: flex; align-items: center; gap: 12px; }
+
+    .table-title {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .live-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--green);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .live-dot::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blip 1.5s ease-in-out infinite;
+    }
+
+    .table-count {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: var(--surface2);
+    }
+
+    .filter-btn {
+      padding: 5px 14px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: rgba(167,139,250,0.12);
+      color: var(--purple);
+      border-color: rgba(167,139,250,0.3);
+    }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead tr { background: var(--surface2); }
+
+    th {
+      padding: 13px 20px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      opacity: 0;
+      transform: translateX(-10px);
+      animation: rowIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(167,139,250,0.04); }
+
+    @keyframes rowIn {
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    td {
+      padding: 14px 20px;
+      font-size: 12px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    /* ── CELL STYLES ── */
+    .cell-user {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .user-avatar {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-head);
+      flex-shrink: 0;
+      color: white;
+    }
+
+    .action-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      letter-spacing: 0.3px;
+    }
+
+    .action-login    { background: rgba(45,212,160,0.1);  color: var(--green); }
+    .action-update   { background: rgba(79,142,247,0.1);  color: var(--blue); }
+    .action-delete   { background: rgba(247,111,111,0.1); color: var(--red); }
+    .action-create   { background: rgba(167,139,250,0.1); color: var(--purple); }
+    .action-download { background: rgba(245,166,35,0.1);  color: var(--amber); }
+    .action-default  { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+    .ip-cell {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.3px;
+    }
+
+    .device-cell {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .time-cell {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── EMPTY / LOADING ── */
+    .state-row td {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .loader {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .loader span {
+      width: 6px; height: 6px;
+      background: var(--purple);
+      border-radius: 50%;
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+
+    .loader span:nth-child(2) { animation-delay: 0.2s; }
+    .loader span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40%            { transform: translateY(-8px); opacity: 1; }
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 30px; right: 30px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 13px;
+      display: flex; align-items: center; gap: 10px;
+      z-index: 9999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+      backdrop-filter: blur(12px);
+      max-width: 320px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    #toast.show { transform: translateY(0); opacity: 1; }
+    .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      header { padding: 16px 20px; }
+      .container { padding: 24px 16px; }
+      .stats-row { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="header-container">
-            <div class="header-left">
-                <div class="logo">DP</div>
-                <div class="header-title">
-                    <h1>DP Studio & Light</h1>
-                    <p>Super Admin Panel</p>
-                </div>
-            </div>
-            <div class="header-right">
-                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
-                <div class="user-badge">👑 Super Admin</div>
-                <button class="logout-btn" onclick="confirmLogout()">Logout</button>
-            </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <div class="header-icon">🛡</div>
+      <div>
+        <div class="header-title">Super Admin Panel</div>
+        <div class="header-sub">DP Studio & Light</div>
+      </div>
+    </div>
+    <div class="header-buttons">
+      <span class="sa-badge">Super Admin</span>
+      <button class="hdr-btn" onclick="goDashboard()">← Dashboard</button>
+      <button class="hdr-btn danger" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- Container -->
+  <div class="container">
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-chip" style="--chip-color: var(--purple)">
+        <span class="chip-icon">📋</span>
+        <div>
+          <div class="chip-label">Total Logs</div>
+          <div class="chip-value" id="statTotal">—</div>
         </div>
-    </header>
-
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Page Title -->
-        <div class="page-title">
-            <h2>Super Admin Dashboard</h2>
-            <p>System monitoring and activity logs</p>
+      </div>
+      <div class="stat-chip" style="--chip-color: var(--green)">
+        <span class="chip-icon">👥</span>
+        <div>
+          <div class="chip-label">Unique Users</div>
+          <div class="chip-value" id="statUsers">—</div>
         </div>
-
-        <!-- Activity Logs Section -->
-        <div class="activity-section">
-            <div class="section-header">
-                <div class="section-title">Activity Logs</div>
-                <div class="activity-controls">
-                    <input 
-                        type="text" 
-                        id="activitySearch" 
-                        placeholder="Search by user, action, or details..."
-                        onkeyup="filterActivityLogs()"
-                        class="activity-search"
-                    >
-                    <select id="actionFilter" class="activity-filter" onchange="filterActivityLogs()">
-                        <option value="">All Actions</option>
-                        <option value="login">Login</option>
-                        <option value="logout">Logout</option>
-                        <option value="create">Create</option>
-                        <option value="update">Update</option>
-                        <option value="delete">Delete</option>
-                        <option value="view">View</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Activity Stats -->
-            <div class="activity-stats">
-                <div class="activity-stat">
-                    <div class="stat-icon">📊</div>
-                    <div>
-                        <div class="stat-label">Total Activities</div>
-                        <div class="stat-value" id="totalActivities">0</div>
-                    </div>
-                </div>
-                <div class="activity-stat">
-                    <div class="stat-icon">👤</div>
-                    <div>
-                        <div class="stat-label">Active Users</div>
-                        <div class="stat-value" id="activeUsers">0</div>
-                    </div>
-                </div>
-                <div class="activity-stat">
-                    <div class="stat-icon">🕐</div>
-                    <div>
-                        <div class="stat-label">Last Activity</div>
-                        <div class="stat-value" id="lastActivity">--</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Activity Table -->
-            <div class="activity-table-wrapper">
-                <table class="activity-table">
-                    <thead>
-                        <tr>
-                            <th>User</th>
-                            <th>Action</th>
-                            <th>Details</th>
-                            <th>IP Address</th>
-                            <th>Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody id="activityTable">
-                        <tr>
-                            <td colspan="5" class="activity-empty">
-                                <div class="empty-icon">📋</div>
-                                <p>Loading activity logs...</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+      </div>
+      <div class="stat-chip" style="--chip-color: var(--amber)">
+        <span class="chip-icon">🕐</span>
+        <div>
+          <div class="chip-label">Last Activity</div>
+          <div class="chip-value" id="statLast" style="font-size:13px; margin-top:2px">—</div>
         </div>
+      </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        <p>© 2024 DP Studio & Light Management. Super Admin Dashboard - System Monitoring.</p>
-    </footer>
+    <!-- Table Card -->
+    <div class="table-card">
 
-    <script>
-        // Check authentication
-        if (!localStorage.getItem("token")) {
-            window.location = "/admin.html";
-        }
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="table-title">Activity Logs</div>
+          <span class="live-dot">Live</span>
+        </div>
+        <span class="table-count" id="tableCount">Loading…</span>
+      </div>
 
-        let allActivities = [];
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterAction('all', this)">All</button>
+        <button class="filter-btn" onclick="filterAction('login', this)">Login</button>
+        <button class="filter-btn" onclick="filterAction('create', this)">Create</button>
+        <button class="filter-btn" onclick="filterAction('update', this)">Update</button>
+        <button class="filter-btn" onclick="filterAction('delete', this)">Delete</button>
+        <button class="filter-btn" onclick="filterAction('download', this)">Download</button>
+      </div>
 
-        // Load theme and activities on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadTheme();
-            loadActivityLogs();
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Action</th>
+              <th>Details</th>
+              <th>IP Address</th>
+              <th>Device</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="activityTable">
+            <tr class="state-row">
+              <td colspan="6">
+                <div class="loader"><span></span><span></span><span></span></div>
+                <div>Loading activity logs…</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast">
+    <span class="toast-dot"></span>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script>
+    /* ── AUTH ── */
+    if (!localStorage.getItem("token")) window.location = "/admin.html";
+
+    let allActivities = [];
+
+    /* ── TOAST ── */
+    function showToast(msg, type = "info") {
+      const toast = document.getElementById("toast");
+      const colors = { success: "#2dd4a0", error: "#f76f6f", info: "#a78bfa", warn: "#f5a623" };
+      toast.querySelector(".toast-dot").style.background = colors[type] || colors.info;
+      document.getElementById("toastMsg").textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+
+    /* ── DATE FORMAT ── */
+    function formatDate(date) {
+      if (!date) return "--";
+      return new Date(date).toLocaleString("en-IN", {
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    /* ── ACTION TAG ── */
+    function actionTag(action) {
+      const a = (action || "").toLowerCase();
+      const map = {
+        login:    "action-login",
+        update:   "action-update",
+        edit:     "action-update",
+        delete:   "action-delete",
+        remove:   "action-delete",
+        create:   "action-create",
+        add:      "action-create",
+        download: "action-download",
+        export:   "action-download",
+      };
+      let cls = "action-default";
+      for (const [key, val] of Object.entries(map)) {
+        if (a.includes(key)) { cls = val; break; }
+      }
+      return `<span class="action-tag ${cls}">${action || "--"}</span>`;
+    }
+
+    /* ── AVATAR ── */
+    function avatar(name) {
+      const initials = (name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      return `<div class="user-avatar">${initials}</div>`;
+    }
+
+    /* ── UPDATE STATS ── */
+    function updateStats(activities) {
+      document.getElementById("statTotal").textContent = activities.length;
+      const unique = new Set(activities.map(a => a.username).filter(Boolean)).size;
+      document.getElementById("statUsers").textContent = unique || "—";
+      const latest = activities.reduce((acc, a) => {
+        const t = new Date(a.createdAt);
+        return (!acc || t > acc) ? t : acc;
+      }, null);
+      document.getElementById("statLast").textContent = latest
+        ? latest.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
+        : "—";
+    }
+
+    /* ── RENDER ── */
+    function renderActivity(activities) {
+      const tbody = document.getElementById("activityTable");
+      document.getElementById("tableCount").textContent =
+        `${activities.length} record${activities.length !== 1 ? "s" : ""}`;
+
+      if (!activities.length) {
+        tbody.innerHTML = `<tr class="state-row"><td colspan="6">No activity found</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = activities.map((a, i) => `
+        <tr style="animation-delay:${i * 0.04}s">
+          <td>
+            <div class="cell-user">
+              ${avatar(a.username)}
+              <span>${a.username || "--"}</span>
+            </div>
+          </td>
+          <td>${actionTag(a.action)}</td>
+          <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; color:var(--muted)">${a.details || "--"}</td>
+          <td><span class="ip-cell">${a.ipAddress || "--"}</span></td>
+          <td><span class="device-cell">${a.device || "--"}</span></td>
+          <td><span class="time-cell">${formatDate(a.createdAt)}</span></td>
+        </tr>
+      `).join("");
+    }
+
+    /* ── FILTER ── */
+    function filterAction(type, btn) {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const filtered = type === "all"
+        ? allActivities
+        : allActivities.filter(a => (a.action || "").toLowerCase().includes(type));
+
+      renderActivity(filtered);
+    }
+
+    /* ── LOAD ── */
+    async function loadActivity() {
+      try {
+        const res = await fetch("/activity-list", {
+          headers: { Authorization: "Bearer " + localStorage.getItem("token") }
         });
 
-        // Toggle theme
-        function toggleTheme() {
-            const body = document.body;
-            body.classList.toggle("dark-mode");
-            
-            const themeBtn = document.getElementById("themeToggle");
-            if (body.classList.contains("dark-mode")) {
-                localStorage.setItem("theme", "dark");
-                themeBtn.textContent = "☀️ Light";
-            } else {
-                localStorage.setItem("theme", "light");
-                themeBtn.textContent = "🌙 Dark";
-            }
+        if (res.status === 403) {
+          showToast("Only Super Admin allowed", "error");
+          setTimeout(() => window.location = "/dashboard.html", 1500);
+          return;
         }
 
-        // Load theme
-        function loadTheme() {
-            const savedTheme = localStorage.getItem("theme");
-            if (savedTheme === "dark") {
-                document.body.classList.add("dark-mode");
-                const themeBtn = document.getElementById("themeToggle");
-                if (themeBtn) {
-                    themeBtn.textContent = "☀️ Light";
-                }
-            }
-        }
+        if (!res.ok) throw new Error("Failed");
 
-        // Load activity logs
-        async function loadActivityLogs() {
-            try {
-                const response = await fetch("/activity-list", {
-                    headers: {
-                        "Authorization": "Bearer " + localStorage.getItem("token")
-                    }
-                });
+        allActivities = await res.json();
+        updateStats(allActivities);
+        renderActivity(allActivities);
 
-                if (response.status === 403) {
-                    alert("Only Super Admin allowed");
-                    window.location = "/dashboard.html";
-                    return;
-                }
+      } catch (err) {
+        console.error(err);
+        document.getElementById("activityTable").innerHTML =
+          `<tr class="state-row"><td colspan="6">⚠ Failed to load activity logs</td></tr>`;
+        document.getElementById("tableCount").textContent = "Error";
+        showToast("Failed to load activity logs", "error");
+      }
+    }
 
-                if (!response.ok) {
-                    throw new Error("Failed to load activity logs");
-                }
+    /* ── NAV ── */
+    function goDashboard() { window.location = "/dashboard.html"; }
+    function logout() {
+      localStorage.removeItem("token");
+      window.location = "/admin.html";
+    }
 
-                allActivities = await response.json();
-                renderActivityLogs(allActivities);
-                updateActivityStats(allActivities);
-            } catch (error) {
-                console.error("Error loading activity logs:", error);
-                displayActivityError("Failed to load activity logs");
-            }
-        }
-
-        // Render activity logs
-        function renderActivityLogs(activities) {
-            const tableBody = document.getElementById("activityTable");
-
-            if (!activities || activities.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="activity-empty">
-                            <div class="empty-icon">📋</div>
-                            <p>No activity logs found</p>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tableBody.innerHTML = activities.map(activity => {
-                const actionClass = `action-${activity.action.toLowerCase()}`;
-                const timestamp = formatDate(activity.createdAt || activity.timestamp);
-
-                return `
-                    <tr>
-                        <td><span class="user-cell">${escapeHtml(activity.username || 'Unknown')}</span></td>
-                        <td><span class="action-badge ${actionClass}">${escapeHtml(activity.action)}</span></td>
-                        <td>${escapeHtml(activity.details || '--')}</td>
-                        <td><span class="ip-address">${escapeHtml(activity.ipAddress || '--')}</span></td>
-                        <td><span class="timestamp">${timestamp}</span></td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        // Filter activity logs
-        function filterActivityLogs() {
-            const searchInput = document.getElementById("activitySearch").value.toLowerCase();
-            const actionFilter = document.getElementById("actionFilter").value;
-
-            const filtered = allActivities.filter(activity => {
-                const matchesSearch = 
-                    (activity.username || '').toLowerCase().includes(searchInput) ||
-                    (activity.action || '').toLowerCase().includes(searchInput) ||
-                    (activity.details || '').toLowerCase().includes(searchInput);
-
-                const matchesAction = !actionFilter || activity.action.toLowerCase() === actionFilter.toLowerCase();
-
-                return matchesSearch && matchesAction;
-            });
-
-            renderActivityLogs(filtered);
-        }
-
-        // Update activity statistics
-        function updateActivityStats(activities) {
-            if (!activities || activities.length === 0) {
-                document.getElementById("totalActivities").textContent = "0";
-                document.getElementById("activeUsers").textContent = "0";
-                document.getElementById("lastActivity").textContent = "--";
-                return;
-            }
-
-            // Total activities
-            document.getElementById("totalActivities").textContent = activities.length;
-
-            // Active users (unique usernames)
-            const uniqueUsers = new Set(activities.map(a => a.username).filter(Boolean));
-            document.getElementById("activeUsers").textContent = uniqueUsers.size;
-
-            // Last activity
-            if (activities.length > 0) {
-                const lastActivityTime = formatTime(activities[0].createdAt || activities[0].timestamp);
-                document.getElementById("lastActivity").textContent = lastActivityTime;
-            }
-        }
-
-        // Format date
-        function formatDate(dateString) {
-            try {
-                const date = new Date(dateString);
-                return date.toLocaleString('en-IN', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
-            } catch (e) {
-                return 'Invalid Date';
-            }
-        }
-
-        // Format time for display
-        function formatTime(dateString) {
-            try {
-                const date = new Date(dateString);
-                const now = new Date();
-                const diffMs = now - date;
-                const diffMins = Math.floor(diffMs / 60000);
-                const diffHours = Math.floor(diffMs / 3600000);
-                const diffDays = Math.floor(diffMs / 86400000);
-
-                if (diffMins < 1) return 'Just now';
-                if (diffMins < 60) return `${diffMins}m ago`;
-                if (diffHours < 24) return `${diffHours}h ago`;
-                if (diffDays < 7) return `${diffDays}d ago`;
-
-                return date.toLocaleDateString('en-IN');
-            } catch (e) {
-                return '--';
-            }
-        }
-
-        // Display error
-        function displayActivityError(message) {
-            const tableBody = document.getElementById("activityTable");
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="activity-empty">
-                        <div class="empty-icon">❌</div>
-                        <p>${escapeHtml(message)}</p>
-                    </td>
-                </tr>
-            `;
-        }
-
-        // Escape HTML
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text || '';
-            return div.innerHTML;
-        }
-
-        // Confirm logout
-        function confirmLogout() {
-            if (confirm("Are you sure you want to logout?")) {
-                logout();
-            }
-        }
-
-        // Logout
-        function logout() {
-            localStorage.removeItem("token");
-            localStorage.removeItem("role");
-            window.location = "/admin.html";
-        }
-    </script>
+    loadActivity();
+  </script>
 </body>
 </html>
