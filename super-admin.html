@@ -462,7 +462,197 @@
     #toast.show { transform: translateY(0); opacity: 1; }
     .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-    /* ── SCROLLBAR ── */
+    .hdr-btn.create {
+      color: var(--purple);
+      border-color: rgba(167,139,250,0.35);
+      background: rgba(167,139,250,0.08);
+    }
+    .hdr-btn.create:hover {
+      background: rgba(167,139,250,0.18);
+      border-color: var(--purple);
+      color: #fff;
+    }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 480px;
+      padding: 36px;
+      position: relative;
+      transform: translateY(30px) scale(0.97);
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(167,139,250,0.1);
+    }
+
+    .modal-overlay.open .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 30px; height: 30px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all 0.2s ease;
+      line-height: 1;
+    }
+
+    .modal-close:hover { color: var(--red); border-color: var(--red); background: rgba(247,111,111,0.1); }
+
+    .modal-icon {
+      width: 48px; height: 48px;
+      background: rgba(167,139,250,0.12);
+      border: 1px solid rgba(167,139,250,0.25);
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .modal-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.4px;
+      margin-bottom: 28px;
+    }
+
+    /* ── FORM ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-label {
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .form-input, .form-select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      width: 100%;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: rgba(167,139,250,0.5);
+      box-shadow: 0 0 0 3px rgba(167,139,250,0.08);
+    }
+
+    .form-input::placeholder { color: var(--muted); }
+
+    .form-select option { background: var(--surface2); color: var(--text); }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      padding: 11px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+    .btn-create {
+      flex: 2;
+      padding: 11px;
+      background: var(--purple);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-create:hover { background: #b89efb; box-shadow: 0 4px 20px rgba(167,139,250,0.35); }
+    .btn-create:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-create .btn-spinner {
+      display: none;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-create.loading .btn-label { display: none; }
+    .btn-create.loading .btn-spinner { display: block; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
@@ -487,6 +677,7 @@
     </div>
     <div class="header-buttons">
       <span class="sa-badge">Super Admin</span>
+      <button class="hdr-btn create" onclick="openCreateUser()">+ Create User</button>
       <button class="hdr-btn" onclick="goDashboard()">← Dashboard</button>
       <button class="hdr-btn danger" onclick="logout()">Logout</button>
     </div>
@@ -596,6 +787,50 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal-overlay" id="createUserModal" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <button class="modal-close" onclick="closeCreateUser()">✕</button>
+      <div class="modal-icon">👤</div>
+      <div class="modal-title">Create New User</div>
+      <div class="modal-sub">Fill in the details to add a new user to the system.</div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" id="cu_name" type="text" placeholder="e.g. Rahul Das" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" id="cu_phone" type="tel" placeholder="+91 98765 43210" />
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="cu_email" type="email" placeholder="user@example.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" id="cu_password" type="password" placeholder="Min. 6 characters" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-select" id="cu_role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeCreateUser()">Cancel</button>
+        <button class="btn-create" id="createBtn" onclick="createUser()">
+          <span class="btn-label">Create User</span>
+          <span class="btn-spinner"></span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Toast -->
@@ -777,6 +1012,71 @@
         ? allLogs
         : allLogs.filter(l => (l.action || "").toLowerCase().includes(type));
       renderLogs(filtered);
+    }
+
+    /* ── CREATE USER MODAL ── */
+    function openCreateUser() {
+      document.getElementById("createUserModal").classList.add("open");
+      document.getElementById("cu_name").focus();
+    }
+
+    function closeCreateUser() {
+      document.getElementById("createUserModal").classList.remove("open");
+      // Reset form
+      ["cu_name","cu_phone","cu_email","cu_password"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      document.getElementById("cu_role").value = "user";
+      const btn = document.getElementById("createBtn");
+      btn.classList.remove("loading");
+      btn.disabled = false;
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById("createUserModal")) closeCreateUser();
+    }
+
+    async function createUser() {
+      const name     = document.getElementById("cu_name").value.trim();
+      const phone    = document.getElementById("cu_phone").value.trim();
+      const email    = document.getElementById("cu_email").value.trim();
+      const password = document.getElementById("cu_password").value;
+      const role     = document.getElementById("cu_role").value;
+
+      if (!name)     { showToast("Name is required", "warn"); return; }
+      if (!email)    { showToast("Email is required", "warn"); return; }
+      if (!password || password.length < 6) { showToast("Password must be at least 6 characters", "warn"); return; }
+
+      const btn = document.getElementById("createBtn");
+      btn.classList.add("loading");
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("/superadmin/create-user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token")
+          },
+          body: JSON.stringify({ name, phone, email, password, role })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && (data.success || data._id || data.user)) {
+          showToast("User created successfully!", "success");
+          closeCreateUser();
+          loadActivity();
+        } else {
+          showToast(data.message || "Failed to create user", "error");
+          btn.classList.remove("loading");
+          btn.disabled = false;
+        }
+      } catch (err) {
+        showToast("Network error. Please try again.", "error");
+        btn.classList.remove("loading");
+        btn.disabled = false;
+      }
     }
 
     /* ── NAV ── */
