@@ -461,6 +461,27 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+    /* ── LIGHT MODE ── */
+    body.light {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --surface2: #eef2f7;
+      --border: rgba(0,0,0,0.08);
+      --text: #1a2035;
+      --muted: #8a96a8;
+      --blue-glow: rgba(79,142,247,0.15);
+    }
+
+    body.light::before {
+      background-image:
+        linear-gradient(rgba(79,142,247,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.06) 1px, transparent 1px);
+    }
+
+    body.light header {
+      background: rgba(245,247,250,0.9);
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 900px) {
       .stats-grid { grid-template-columns: 1fr 1fr; }
@@ -490,6 +511,7 @@
     <div class="header-right">
       <button class="hdr-btn theme-btn" id="themeToggle" onclick="toggleTheme()">☀️ Light</button>
       <div class="user-badge">👤 Admin</div>
+      <button class="hdr-btn" id="themeToggle" onclick="toggleTheme()">🌙 Dark</button>
       <button class="hdr-btn" onclick="confirmLogout()">Logout</button>
     </div>
   </header>
@@ -725,6 +747,67 @@
       }
     }
 
+    /* ── THEME TOGGLE ── */
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle("light");
+      localStorage.setItem("theme", isLight ? "light" : "dark");
+      document.getElementById("themeToggle").textContent = isLight ? "🌙 Dark" : "☀️ Light";
+      updateChartColors(isLight);
+    }
+
+    function updateChartColors(isLight) {
+      const tickColor  = isLight ? "#8892a4" : "#5a6478";
+      const gridColor  = isLight ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.05)";
+      const legendColor = isLight ? "#8892a4" : "#5a6478";
+      if (bookingsChart) {
+        bookingsChart.options.scales.y.ticks.color = tickColor;
+        bookingsChart.options.scales.x.ticks.color = tickColor;
+        bookingsChart.options.scales.y.grid.color  = gridColor;
+        bookingsChart.update();
+      }
+      if (revenueChart) {
+        revenueChart.options.plugins.legend.labels.color = legendColor;
+        revenueChart.update();
+      }
+    }
+
+    function loadTheme() {
+      const saved = localStorage.getItem("theme");
+      if (saved === "light") {
+        document.body.classList.add("light");
+        document.getElementById("themeToggle").textContent = "🌙 Dark";
+      }
+    }
+
+    /* ── THEME ── */
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle("light");
+      localStorage.setItem("theme", isLight ? "light" : "dark");
+      document.getElementById("themeToggle").textContent = isLight ? "🌑 Dark" : "🌙 Dark";
+
+      // Update chart colors on theme switch
+      const gridColor  = isLight ? "rgba(0,0,0,0.06)"  : "rgba(255,255,255,0.05)";
+      const tickColor  = isLight ? "#8a96a8" : "#5a6478";
+      if (bookingsChart) {
+        bookingsChart.options.scales.y.grid.color   = gridColor;
+        bookingsChart.options.scales.y.ticks.color  = tickColor;
+        bookingsChart.options.scales.x.ticks.color  = tickColor;
+        bookingsChart.update();
+      }
+      if (revenueChart) {
+        revenueChart.options.plugins.legend.labels.color = tickColor;
+        revenueChart.update();
+      }
+    }
+
+    function loadTheme() {
+      if (localStorage.getItem("theme") === "light") {
+        document.body.classList.add("light");
+        const btn = document.getElementById("themeToggle");
+        if (btn) btn.textContent = "🌑 Dark";
+      }
+    }
+
     /* ── AUTH ACTIONS ── */
     function confirmLogout() {
       if (confirm("Are you sure you want to logout?")) {
@@ -733,7 +816,7 @@
       }
     }
 
-    document.addEventListener("DOMContentLoaded", loadStats);
+    document.addEventListener("DOMContentLoaded", () => { loadTheme(); loadStats(); });
   </script>
 </body>
 </html>
