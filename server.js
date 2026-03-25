@@ -333,7 +333,7 @@ res.json(data);
    SINGLE BOOKING
 ========================= */
 
-app.get("/booking/:id",
+app.get("/private-booking/:id",
 verifyToken,
 async(req,res)=>{
 
