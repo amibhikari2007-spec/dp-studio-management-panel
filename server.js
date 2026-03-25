@@ -570,6 +570,64 @@ res.status(500).json([]);
 }
 
 });
+app.post("/create-user",
+verifyToken,
+superAdminOnly,
+async (req,res)=>{
+
+try{
+
+const {username,password,fullName,phone,role} = req.body;
+
+if(!username || !password){
+return res.status(400).send("Missing required fields");
+}
+
+const exists = await User.findOne({username});
+
+if(exists){
+return res.status(400).send("User already exists");
+}
+
+const hashed = await bcrypt.hash(password,10);
+
+await User.create({
+
+username,
+password:hashed,
+fullName,
+phone,
+role
+
+});
+
+
+await Activity.create({
+
+username:req.user.username,
+action:"USER_CREATED",
+details:"Created user "+username,
+
+ipAddress:
+req.headers["x-forwarded-for"] ||
+req.socket.remoteAddress,
+
+device:req.headers["user-agent"]
+
+});
+
+
+res.send("User created successfully");
+
+}catch(err){
+
+console.log(err);
+
+res.status(500).send("Failed to create user");
+
+}
+
+});
 
 
 /* =========================
