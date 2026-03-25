@@ -231,9 +231,11 @@ Back
 
 <script>
 
-/* LOGIN CHECK */
+// Allow public access if opened from WhatsApp link
+const params = new URLSearchParams(window.location.search);
+const isPublic = params.get("public");
 
-if(!localStorage.getItem("token")){
+if(!localStorage.getItem("token") && !isPublic){
 window.location="/admin.html";
 }
 
@@ -446,7 +448,6 @@ document.getElementById("invoiceContent").innerHTML=`
 
 
 /* WHATSAPP */
-
 function sendWhatsApp(){
 
 if(!invoice.customerPhone){
@@ -457,7 +458,10 @@ return;
 
 }
 
-const msg=encodeURIComponent(
+const publicLink =
+window.location.href + "&public=1";
+
+const msg = encodeURIComponent(
 
 `DP Studio & Light
 
@@ -474,7 +478,7 @@ Advance: ₹${invoice.advancePaid}
 Pending: ₹${invoice.balanceDue}
 
 View Invoice:
-${window.location.href}
+${publicLink}
 
 Thank you 📸`
 
@@ -482,12 +486,12 @@ Thank you 📸`
 
 window.open(
 
-"https://wa.me/"+invoice.customerPhone+"?text="+msg
+"https://wa.me/91"+invoice.customerPhone+"?text="+msg,
+"_blank"
 
 );
 
 }
-
 
 /* PDF DOWNLOAD */
 
