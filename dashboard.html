@@ -25,6 +25,27 @@
       --font-mono: 'DM Mono', monospace;
     }
 
+    /* ── LIGHT MODE OVERRIDES ── */
+    body.light {
+      --bg: #f0f4fb;
+      --surface: #ffffff;
+      --surface2: #e8edf8;
+      --border: rgba(0,0,0,0.08);
+      --text: #1a1f2e;
+      --muted: #8892a4;
+      --blue-glow: rgba(79,142,247,0.15);
+    }
+
+    body.light::before {
+      background-image:
+        linear-gradient(rgba(79,142,247,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.07) 1px, transparent 1px);
+    }
+
+    body.light header {
+      background: rgba(240,244,251,0.92);
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -467,6 +488,7 @@
       </div>
     </div>
     <div class="header-right">
+      <button class="hdr-btn theme-btn" id="themeToggle" onclick="toggleTheme()">☀️ Light</button>
       <div class="user-badge">👤 Admin</div>
       <button class="hdr-btn" onclick="confirmLogout()">Logout</button>
     </div>
