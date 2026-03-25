@@ -628,7 +628,9 @@
   <script>
     /* ── AUTH ── */
 fetch("/check-auth", {
-  credentials: "include"
+  headers: {
+  Authorization: "Bearer " + localStorage.getItem("token")
+}
 })
 .then(res => {
   if (!res.ok) {
