@@ -15,6 +15,7 @@ required:true
 
 role:{
 type:String,
+enum:["staff","admin","super_admin"],
 default:"staff"
 },
 
