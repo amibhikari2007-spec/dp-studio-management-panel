@@ -491,6 +491,61 @@
 
   <!-- Container -->
   <div class="container">
+    <div class="table-card" style="margin-top:30px">
+
+  <div class="table-header">
+
+    <div class="table-header-left">
+
+      <div class="table-title">Bookings Management</div>
+
+      <span class="live-dot">Super Admin Only</span>
+
+    </div>
+
+    <span class="table-count" id="bookingCount">Loading…</span>
+
+  </div>
+
+
+  <div class="table-wrap">
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>Client</th>
+
+          <th>Event</th>
+
+          <th>Date</th>
+
+          <th>Total Amount</th>
+
+          <th>Action</th>
+
+        </tr>
+
+      </thead>
+
+
+      <tbody id="bookingTable">
+
+        <tr class="state-row">
+
+          <td colspan="5">Loading bookings…</td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
 
     <!-- Stats Row -->
     <div class="stats-row">
@@ -712,6 +767,162 @@
     }
 
     loadActivity();
+    <script>
+
+/* ===============================
+   SUPER ADMIN BOOKING MANAGEMENT
+=============================== */
+
+let allBookings = [];
+
+
+/* LOAD BOOKINGS */
+
+async function loadBookings() {
+
+  try {
+
+    const res = await fetch("/superadmin/bookings", {
+
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("token")
+      }
+
+    });
+
+    if (!res.ok) throw new Error("Failed");
+
+    allBookings = await res.json();
+
+    renderBookings(allBookings);
+
+  }
+
+  catch (err) {
+
+    console.error(err);
+
+    document.getElementById("bookingTable").innerHTML =
+      `<tr class="state-row"><td colspan="5">⚠ Failed to load bookings</td></tr>`;
+
+  }
+
+}
+
+
+/* RENDER BOOKINGS */
+
+function renderBookings(bookings) {
+
+  const tbody = document.getElementById("bookingTable");
+
+  document.getElementById("bookingCount").textContent =
+    bookings.length + " records";
+
+
+  if (!bookings.length) {
+
+    tbody.innerHTML =
+      `<tr class="state-row"><td colspan="5">No bookings found</td></tr>`;
+
+    return;
+
+  }
+
+
+  tbody.innerHTML = bookings.map(b => `
+
+<tr>
+
+<td>${b.clientName || "--"}</td>
+
+<td>${b.eventType || "--"}</td>
+
+<td>${new Date(b.date).toLocaleDateString("en-IN")}</td>
+
+<td>₹ ${b.totalAmount || 0}</td>
+
+<td>
+
+<button onclick="deleteBooking('${b._id}')"
+style="
+padding:6px 12px;
+background:#f76f6f;
+color:white;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-size:11px;
+">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`).join("");
+
+}
+
+
+/* DELETE BOOKING */
+
+async function deleteBooking(id) {
+
+  if (!confirm("Delete booking + invoice permanently?")) return;
+
+
+  try {
+
+    const res = await fetch("/superadmin/delete-booking/" + id, {
+
+      method: "DELETE",
+
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("token")
+      }
+
+    });
+
+
+    const result = await res.json();
+
+
+    if (result.success) {
+
+      showToast("Booking deleted successfully", "success");
+
+      loadBookings();
+
+      loadActivity();
+
+    }
+
+    else {
+
+      showToast("Delete failed", "error");
+
+    }
+
+  }
+
+  catch (err) {
+
+    console.error(err);
+
+    showToast("Server error", "error");
+
+  }
+
+}
+
+
+loadBookings();
+
+</script>
   </script>
 </body>
 </html>
