@@ -631,7 +631,7 @@
                         <!-- Customer Name -->
                         <div class="form-group">
                             <label for="customerName">Customer Name *</label>
-                            <select id="customerName" required onchange="handleCustomerSelection()">
+                            <select id="customerName" onchange="handleCustomerSelection()">
                                 <option value="">Select Customer</option>
                             </select>
                             <small class="form-helper">If not listed, type below</small>
@@ -833,7 +833,7 @@
             const eventDate     = document.getElementById("eventDate").value;
             const balanceDue    = totalAmount - advancePaid;
 
-            if (!customerName)                        { showMessage("Please select or enter a customer name", "warning"); return; }
+            if (!customerName && manualCustomer)                        { showMessage("Please select or enter a customer name", "warning"); return; }
             if (!customerPhone)                       { showMessage("Please enter customer phone number", "warning"); return; }
             if (!eventType || !packageName || !eventDate) { showMessage("Please fill in all required fields", "warning"); return; }
             if (isNaN(totalAmount) || totalAmount<=0) { showMessage("Please enter a valid total amount", "error"); return; }
