@@ -732,7 +732,12 @@
     /* ── LOAD STATS ── */
     async function loadStats() {
       try {
-        const res = await fetch("/dashboard-stats");
+       const res = await fetch("/dashboard-stats",{
+headers:{
+Authorization:
+"Bearer " + localStorage.getItem("token")
+}
+});
         if (!res.ok) throw new Error("fail");
         const data = await res.json();
 
