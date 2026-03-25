@@ -1,874 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Super Admin Panel - DP Studio</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-
-  <style>
-    :root {
-      --bg: #0a0c10;
-      --surface: #10141c;
-      --surface2: #161c28;
-      --border: rgba(255,255,255,0.07);
-      --blue: #4f8ef7;
-      --blue-glow: rgba(79,142,247,0.25);
-      --green: #2dd4a0;
-      --amber: #f5a623;
-      --red: #f76f6f;
-      --purple: #a78bfa;
-      --text: #e8edf5;
-      --muted: #5a6478;
-      --font-head: 'Syne', sans-serif;
-      --font-mono: 'DM Mono', monospace;
-    }
-
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: var(--font-mono);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ── GRID BACKGROUND ── */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(167,139,250,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(167,139,250,0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-      animation: gridDrift 20s linear infinite;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    @keyframes gridDrift {
-      from { transform: translateY(0); }
-      to   { transform: translateY(40px); }
-    }
-
-    /* ── HEADER ── */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      padding: 20px 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-      background: rgba(10,12,16,0.88);
-      backdrop-filter: blur(14px);
-      animation: slideDown 0.5s cubic-bezier(0.16,1,0.3,1) both;
-    }
-
-    @keyframes slideDown {
-      from { transform: translateY(-100%); opacity: 0; }
-      to   { transform: translateY(0); opacity: 1; }
-    }
-
-    .header-left { display: flex; align-items: center; gap: 14px; }
-
-    .header-icon {
-      width: 42px; height: 42px;
-      background: var(--purple);
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      font-size: 18px;
-      box-shadow: 0 0 22px rgba(167,139,250,0.35);
-      animation: pulse 3s ease-in-out infinite;
-      flex-shrink: 0;
-    }
-
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 22px rgba(167,139,250,0.35); }
-      50%       { box-shadow: 0 0 38px rgba(167,139,250,0.6); }
-    }
-
-    .header-title {
-      font-family: var(--font-head);
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .header-sub {
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-top: 2px;
-    }
-
-    /* SUPER ADMIN BADGE */
-    .sa-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: var(--purple);
-      background: rgba(167,139,250,0.1);
-      border: 1px solid rgba(167,139,250,0.25);
-      padding: 4px 12px;
-      border-radius: 20px;
-    }
-
-    .sa-badge::before {
-      content: '';
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--purple);
-      animation: blip 2s ease-in-out infinite;
-    }
-
-    @keyframes blip {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%       { opacity: 0.3; transform: scale(0.6); }
-    }
-
-    .header-buttons { display: flex; gap: 10px; align-items: center; }
-
-    .hdr-btn {
-      padding: 8px 18px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      border-radius: 8px;
-      font-size: 11px;
-      font-family: var(--font-mono);
-      letter-spacing: 0.5px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .hdr-btn:hover {
-      color: var(--blue);
-      border-color: var(--blue);
-      background: var(--blue-glow);
-    }
-
-    .hdr-btn.danger:hover {
-      color: var(--red);
-      border-color: var(--red);
-      background: rgba(247,111,111,0.1);
-    }
-
-    /* ── CONTAINER ── */
-    .container {
-      position: relative;
-      z-index: 5;
-      padding: 44px 40px;
-      animation: fadeUp 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both;
-    }
-
-    @keyframes fadeUp {
-      from { transform: translateY(24px); opacity: 0; }
-      to   { transform: translateY(0); opacity: 1; }
-    }
-
-    /* ── STATS ROW ── */
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 30px;
-    }
-
-    .stat-chip {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 18px 22px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      opacity: 0;
-      animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .stat-chip:nth-child(1) { animation-delay: 0.3s; }
-    .stat-chip:nth-child(2) { animation-delay: 0.4s; }
-    .stat-chip:nth-child(3) { animation-delay: 0.5s; }
-
-    .stat-chip:hover { transform: translateY(-3px); border-color: rgba(167,139,250,0.25); }
-
-    .stat-chip::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--chip-color, var(--purple));
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.3s ease;
-    }
-
-    .stat-chip:hover::before { transform: scaleX(1); }
-
-    .chip-icon {
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-
-    .chip-label {
-      font-size: 10px;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 4px;
-    }
-
-    .chip-value {
-      font-family: var(--font-head);
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    /* ── TABLE CARD ── */
-    .table-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    .table-header {
-      padding: 22px 28px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .table-header-left { display: flex; align-items: center; gap: 12px; }
-
-    .table-title {
-      font-family: var(--font-head);
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .live-dot {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      color: var(--green);
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-    }
-
-    .live-dot::before {
-      content: '';
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: blip 1.5s ease-in-out infinite;
-    }
-
-    .table-count {
-      font-size: 11px;
-      color: var(--muted);
-      background: var(--surface2);
-      padding: 4px 12px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-    }
-
-    /* ── FILTER BAR ── */
-    .filter-bar {
-      padding: 14px 28px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      background: var(--surface2);
-    }
-
-    .filter-btn {
-      padding: 5px 14px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      border-radius: 20px;
-      font-size: 11px;
-      font-family: var(--font-mono);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      letter-spacing: 0.3px;
-    }
-
-    .filter-btn.active, .filter-btn:hover {
-      background: rgba(167,139,250,0.12);
-      color: var(--purple);
-      border-color: rgba(167,139,250,0.3);
-    }
-
-    /* ── TABLE ── */
-    .table-wrap { overflow-x: auto; }
-
-    table { width: 100%; border-collapse: collapse; }
-
-    thead tr { background: var(--surface2); }
-
-    th {
-      padding: 13px 20px;
-      text-align: left;
-      font-size: 10px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      font-weight: 500;
-      white-space: nowrap;
-    }
-
-    tbody tr {
-      border-bottom: 1px solid var(--border);
-      opacity: 0;
-      transform: translateX(-10px);
-      animation: rowIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
-      transition: background 0.2s ease;
-    }
-
-    tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: rgba(167,139,250,0.04); }
-
-    @keyframes rowIn {
-      to { opacity: 1; transform: translateX(0); }
-    }
-
-    td {
-      padding: 14px 20px;
-      font-size: 12px;
-      color: var(--text);
-      white-space: nowrap;
-    }
-
-    /* ── CELL STYLES ── */
-    .cell-user {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-    }
-
-    .user-avatar {
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, var(--purple), var(--blue));
-      display: grid;
-      place-items: center;
-      font-size: 11px;
-      font-weight: 700;
-      font-family: var(--font-head);
-      flex-shrink: 0;
-      color: white;
-    }
-
-    .action-tag {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 5px;
-      font-size: 11px;
-      letter-spacing: 0.3px;
-    }
-
-    .action-login    { background: rgba(45,212,160,0.1);  color: var(--green); }
-    .action-update   { background: rgba(79,142,247,0.1);  color: var(--blue); }
-    .action-delete   { background: rgba(247,111,111,0.1); color: var(--red); }
-    .action-create   { background: rgba(167,139,250,0.1); color: var(--purple); }
-    .action-download { background: rgba(245,166,35,0.1);  color: var(--amber); }
-    .action-default  { background: rgba(255,255,255,0.05); color: var(--muted); }
-
-    .ip-cell {
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.3px;
-    }
-
-    .device-cell {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .time-cell {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    /* ── EMPTY / LOADING ── */
-    .state-row td {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .loader {
-      display: inline-flex;
-      gap: 5px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .loader span {
-      width: 6px; height: 6px;
-      background: var(--purple);
-      border-radius: 50%;
-      animation: bounce 1.2s ease-in-out infinite;
-    }
-
-    .loader span:nth-child(2) { animation-delay: 0.2s; }
-    .loader span:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes bounce {
-      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-      40%            { transform: translateY(-8px); opacity: 1; }
-    }
-
-    /* ── TOAST ── */
-    #toast {
-      position: fixed;
-      bottom: 30px; right: 30px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 20px;
-      font-size: 13px;
-      display: flex; align-items: center; gap: 10px;
-      z-index: 9999;
-      transform: translateY(80px);
-      opacity: 0;
-      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
-      backdrop-filter: blur(12px);
-      max-width: 320px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
-    }
-
-    #toast.show { transform: translateY(0); opacity: 1; }
-    .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 900px) {
-      header { padding: 16px 20px; }
-      .container { padding: 24px 16px; }
-      .stats-row { grid-template-columns: 1fr; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Super Admin Panel - DP Studio</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+body{
+background:#0a0c10;
+color:#e8edf5;
+font-family:'DM Mono',monospace;
+margin:0;
+}
+header{
+padding:18px 30px;
+display:flex;
+justify-content:space-between;
+background:#10141c;
+border-bottom:1px solid rgba(255,255,255,.08);
+}
+button{
+cursor:pointer;
+}
+.container{
+padding:30px;
+}
+.table-card{
+background:#10141c;
+border:1px solid rgba(255,255,255,.08);
+border-radius:12px;
+margin-bottom:30px;
+}
+.table-header{
+padding:16px 24px;
+display:flex;
+justify-content:space-between;
+border-bottom:1px solid rgba(255,255,255,.08);
+}
+table{
+width:100%;
+border-collapse:collapse;
+}
+th,td{
+padding:12px 18px;
+font-size:13px;
+}
+thead{
+background:#161c28;
+}
+tbody tr{
+border-bottom:1px solid rgba(255,255,255,.05);
+}
+.state-row td{
+text-align:center;
+padding:50px;
+color:#5a6478;
+}
+.delete-btn{
+background:#f76f6f;
+color:white;
+border:none;
+padding:6px 14px;
+border-radius:6px;
+}
+</style>
 </head>
 <body>
 
-  <!-- Header -->
-  <header>
-    <div class="header-left">
-      <div class="header-icon">🛡</div>
-      <div>
-        <div class="header-title">Super Admin Panel</div>
-        <div class="header-sub">DP Studio & Light</div>
-      </div>
-    </div>
-    <div class="header-buttons">
-      <span class="sa-badge">Super Admin</span>
-      <button class="hdr-btn" onclick="goDashboard()">← Dashboard</button>
-      <button class="hdr-btn danger" onclick="logout()">Logout</button>
-    </div>
-  </header>
+<header>
+<div>
+<b>Super Admin Panel</b>
+</div>
 
-  <!-- Container -->
-  <div class="container">
-    <div class="table-card" style="margin-top:30px">
-
-  <div class="table-header">
-
-    <div class="table-header-left">
-
-      <div class="table-title">Bookings Management</div>
-
-      <span class="live-dot">Super Admin Only</span>
-
-    </div>
-
-    <span class="table-count" id="bookingCount">Loading…</span>
-
-  </div>
+<div>
+<button onclick="goDashboard()">Dashboard</button>
+<button onclick="logout()">Logout</button>
+</div>
+</header>
 
 
-  <div class="table-wrap">
+<div class="container">
 
-    <table>
+<!-- BOOKINGS -->
+<div class="table-card">
 
-      <thead>
+<div class="table-header">
+<div>Bookings Management</div>
+<div id="bookingCount">Loading…</div>
+</div>
 
-        <tr>
+<table>
 
-          <th>Client</th>
+<thead>
+<tr>
+<th>Client</th>
+<th>Event</th>
+<th>Date</th>
+<th>Total Amount</th>
+<th>Action</th>
+</tr>
+</thead>
 
-          <th>Event</th>
+<tbody id="bookingTable">
 
-          <th>Date</th>
+<tr class="state-row">
+<td colspan="5">Loading bookings…</td>
+</tr>
 
-          <th>Total Amount</th>
+</tbody>
 
-          <th>Action</th>
-
-        </tr>
-
-      </thead>
-
-
-      <tbody id="bookingTable">
-
-        <tr class="state-row">
-
-          <td colspan="5">Loading bookings…</td>
-
-        </tr>
-
-      </tbody>
-
-    </table>
-
-  </div>
+</table>
 
 </div>
 
-    <!-- Stats Row -->
-    <div class="stats-row">
-      <div class="stat-chip" style="--chip-color: var(--purple)">
-        <span class="chip-icon">📋</span>
-        <div>
-          <div class="chip-label">Total Logs</div>
-          <div class="chip-value" id="statTotal">—</div>
-        </div>
-      </div>
-      <div class="stat-chip" style="--chip-color: var(--green)">
-        <span class="chip-icon">👥</span>
-        <div>
-          <div class="chip-label">Unique Users</div>
-          <div class="chip-value" id="statUsers">—</div>
-        </div>
-      </div>
-      <div class="stat-chip" style="--chip-color: var(--amber)">
-        <span class="chip-icon">🕐</span>
-        <div>
-          <div class="chip-label">Last Activity</div>
-          <div class="chip-value" id="statLast" style="font-size:13px; margin-top:2px">—</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Table Card -->
-    <div class="table-card">
+<!-- ACTIVITY LOGS -->
+<div class="table-card">
 
-      <div class="table-header">
-        <div class="table-header-left">
-          <div class="table-title">Activity Logs</div>
-          <span class="live-dot">Live</span>
-        </div>
-        <span class="table-count" id="tableCount">Loading…</span>
-      </div>
+<div class="table-header">
+<div>Activity Logs</div>
+<div id="tableCount">Loading…</div>
+</div>
 
-      <!-- Filter Bar -->
-      <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterAction('all', this)">All</button>
-        <button class="filter-btn" onclick="filterAction('login', this)">Login</button>
-        <button class="filter-btn" onclick="filterAction('create', this)">Create</button>
-        <button class="filter-btn" onclick="filterAction('update', this)">Update</button>
-        <button class="filter-btn" onclick="filterAction('delete', this)">Delete</button>
-        <button class="filter-btn" onclick="filterAction('download', this)">Download</button>
-      </div>
+<table>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Action</th>
-              <th>Details</th>
-              <th>IP Address</th>
-              <th>Device</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody id="activityTable">
-            <tr class="state-row">
-              <td colspan="6">
-                <div class="loader"><span></span><span></span><span></span></div>
-                <div>Loading activity logs…</div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+<thead>
+<tr>
+<th>User</th>
+<th>Action</th>
+<th>Details</th>
+<th>Time</th>
+</tr>
+</thead>
 
-    </div>
-  </div>
+<tbody id="activityTable">
 
-  <!-- Toast -->
-  <div id="toast">
-    <span class="toast-dot"></span>
-    <span id="toastMsg"></span>
-  </div>
+<tr class="state-row">
+<td colspan="4">Loading logs…</td>
+</tr>
 
-  <script>
-    /* ── AUTH ── */
-fetch("/check-auth", {
-  headers: {
-  Authorization: "Bearer " + localStorage.getItem("token")
-}
-})
-.then(res => {
-  if (!res.ok) {
-    window.location = "/admin.html";
-  }
-})
-.catch(() => {
-  window.location = "/admin.html";
-});
+</tbody>
 
-    let allActivities = [];
+</table>
 
-    /* ── TOAST ── */
-    function showToast(msg, type = "info") {
-      const toast = document.getElementById("toast");
-      const colors = { success: "#2dd4a0", error: "#f76f6f", info: "#a78bfa", warn: "#f5a623" };
-      toast.querySelector(".toast-dot").style.background = colors[type] || colors.info;
-      document.getElementById("toastMsg").textContent = msg;
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 3000);
-    }
+</div>
 
-    /* ── DATE FORMAT ── */
-    function formatDate(date) {
-      if (!date) return "--";
-      return new Date(date).toLocaleString("en-IN", {
-        day: "2-digit", month: "short", year: "numeric",
-        hour: "2-digit", minute: "2-digit"
-      });
-    }
+</div>
 
-    /* ── ACTION TAG ── */
-    function actionTag(action) {
-      const a = (action || "").toLowerCase();
-      const map = {
-        login:    "action-login",
-        update:   "action-update",
-        edit:     "action-update",
-        delete:   "action-delete",
-        remove:   "action-delete",
-        create:   "action-create",
-        add:      "action-create",
-        download: "action-download",
-        export:   "action-download",
-      };
-      let cls = "action-default";
-      for (const [key, val] of Object.entries(map)) {
-        if (a.includes(key)) { cls = val; break; }
-      }
-      return `<span class="action-tag ${cls}">${action || "--"}</span>`;
-    }
 
-    /* ── AVATAR ── */
-    function avatar(name) {
-      const initials = (name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-      return `<div class="user-avatar">${initials}</div>`;
-    }
+<script>
 
-    /* ── UPDATE STATS ── */
-    function updateStats(activities) {
-      document.getElementById("statTotal").textContent = activities.length;
-      const unique = new Set(activities.map(a => a.username).filter(Boolean)).size;
-      document.getElementById("statUsers").textContent = unique || "—";
-      const latest = activities.reduce((acc, a) => {
-        const t = new Date(a.createdAt);
-        return (!acc || t > acc) ? t : acc;
-      }, null);
-      document.getElementById("statLast").textContent = latest
-        ? latest.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
-        : "—";
-    }
+/* AUTH CHECK */
 
-    /* ── RENDER ── */
-    function renderActivity(activities) {
-      const tbody = document.getElementById("activityTable");
-      document.getElementById("tableCount").textContent =
-        `${activities.length} record${activities.length !== 1 ? "s" : ""}`;
+const token=localStorage.getItem("token");
 
-      if (!activities.length) {
-        tbody.innerHTML = `<tr class="state-row"><td colspan="6">No activity found</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = activities.map((a, i) => `
-        <tr style="animation-delay:${i * 0.04}s">
-          <td>
-            <div class="cell-user">
-              ${avatar(a.username)}
-              <span>${a.username || "--"}</span>
-            </div>
-          </td>
-          <td>${actionTag(a.action)}</td>
-          <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; color:var(--muted)">${a.details || "--"}</td>
-          <td><span class="ip-cell">${a.ipAddress || "--"}</span></td>
-          <td><span class="device-cell">${a.device || "--"}</span></td>
-          <td><span class="time-cell">${formatDate(a.createdAt)}</span></td>
-        </tr>
-      `).join("");
-    }
-
-    /* ── FILTER ── */
-    function filterAction(type, btn) {
-      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      const filtered = type === "all"
-        ? allActivities
-        : allActivities.filter(a => (a.action || "").toLowerCase().includes(type));
-
-      renderActivity(filtered);
-    }
-
-    /* ── LOAD ── */
-  async function loadActivity() {
-  try {
-
-    const res = await fetch("/activity-list", {
-      credentials: "include"
-    });
-
-    if (res.status === 403) {
-      showToast("Only Super Admin allowed", "error");
-      setTimeout(() => window.location = "/dashboard.html", 1500);
-      return;
-    }
-
-    if (!res.ok) throw new Error("Failed");
-
-    allActivities = await res.json();
-
-    updateStats(allActivities);
-
-    renderActivity(allActivities);
-
-  } catch (err) {
-
-    console.error(err);
-
-    document.getElementById("activityTable").innerHTML =
-      `<tr class="state-row"><td colspan="6">⚠ Failed to load activity logs</td></tr>`;
-
-    document.getElementById("tableCount").textContent = "Error";
-
-    showToast("Failed to load activity logs", "error");
-
-  }
+if(!token){
+window.location="/admin.html";
 }
 
-    /* ── NAV ── */
-    function goDashboard() { window.location = "/dashboard.html"; }
-    function logout() {
-      localStorage.removeItem("token");
-      window.location = "/admin.html";
-    }
 
-    loadActivity();
-  
+/* DASHBOARD NAV */
 
-/* ===============================
-   SUPER ADMIN BOOKING MANAGEMENT
-=============================== */
+function goDashboard(){
+window.location="/dashboard.html";
+}
 
-let allBookings = [];
+function logout(){
+localStorage.removeItem("token");
+window.location="/admin.html";
+}
 
 
 /* LOAD BOOKINGS */
 
-async function loadBookings() {
+async function loadBookings(){
 
-  try {
+try{
 
-    const res = await fetch("/superadmin/bookings", {
-      credentials: "include"
-    });
+const res=await fetch("/superadmin/bookings",{
 
-    if (!res.ok) throw new Error("Failed");
+headers:{
+Authorization:"Bearer "+localStorage.getItem("token")
+}
 
-    allBookings = await res.json();
+});
 
-    renderBookings(allBookings);
+if(!res.ok) throw new Error();
 
-  }
+const data=await res.json();
 
-  catch (err) {
+renderBookings(data);
 
-    console.error(err);
+}catch(err){
 
-    document.getElementById("bookingTable").innerHTML =
-      `<tr class="state-row"><td colspan="5">⚠ Failed to load bookings</td></tr>`;
-
-  }
+document.getElementById("bookingTable").innerHTML=
+`<tr class="state-row"><td colspan="5">Failed to load bookings</td></tr>`;
 
 }
 
-/* RENDER BOOKINGS */
-
-function renderBookings(bookings) {
-
-  const tbody = document.getElementById("bookingTable");
-
-  document.getElementById("bookingCount").textContent =
-    bookings.length + " records";
+}
 
 
-  if (!bookings.length) {
+function renderBookings(bookings){
 
-    tbody.innerHTML =
-      `<tr class="state-row"><td colspan="5">No bookings found</td></tr>`;
+document.getElementById("bookingCount").innerText=
+bookings.length+" records";
 
-    return;
+if(!bookings.length){
 
-  }
+document.getElementById("bookingTable").innerHTML=
+`<tr class="state-row"><td colspan="5">No bookings found</td></tr>`;
 
+return;
 
-  tbody.innerHTML = bookings.map(b => `
+}
+
+document.getElementById("bookingTable").innerHTML=
+
+bookings.map(b=>`
 
 <tr>
 
-<td>${b.clientName || "--"}</td>
+<td>${b.customerName||"--"}</td>
 
-<td>${b.eventType || "--"}</td>
+<td>${b.eventType||"--"}</td>
 
-<td>${new Date(b.date).toLocaleDateString("en-IN")}</td>
+<td>${new Date(b.eventDate).toLocaleDateString()}</td>
 
-<td>₹ ${b.totalAmount || 0}</td>
+<td>₹ ${b.totalAmount||0}</td>
 
 <td>
 
-<button onclick="deleteBooking('${b._id}')"
-style="
-padding:6px 12px;
-background:#f76f6f;
-color:white;
-border:none;
-border-radius:6px;
-cursor:pointer;
-font-size:11px;
-">
+<button class="delete-btn"
+onclick="deleteBooking('${b._id}')">
 
 Delete
 
@@ -885,57 +251,103 @@ Delete
 
 /* DELETE BOOKING */
 
-async function deleteBooking(id) {
+async function deleteBooking(id){
 
-  if (!confirm("Delete booking + invoice permanently?")) return;
+if(!confirm("Delete booking permanently?")) return;
 
+const res=await fetch("/superadmin/delete-booking/"+id,{
 
-  try {
+method:"DELETE",
 
-    const res = await fetch("/superadmin/delete-booking/" + id, {
+headers:{
+Authorization:"Bearer "+localStorage.getItem("token")
+}
 
-      method: "DELETE",
+});
 
-     credentials: "include"
+const data=await res.json();
 
-    });
+if(data.success){
 
+loadBookings();
+loadActivity();
 
-    const result = await res.json();
-
-
-    if (result.success) {
-
-      showToast("Booking deleted successfully", "success");
-
-      loadBookings();
-
-      loadActivity();
-
-    }
-
-    else {
-
-      showToast("Delete failed", "error");
-
-    }
-
-  }
-
-  catch (err) {
-
-    console.error(err);
-
-    showToast("Server error", "error");
-
-  }
+}
 
 }
 
 
+/* LOAD ACTIVITY */
+
+async function loadActivity(){
+
+try{
+
+const res=await fetch("/activity-list",{
+
+headers:{
+Authorization:"Bearer "+localStorage.getItem("token")
+}
+
+});
+
+if(!res.ok) throw new Error();
+
+const logs=await res.json();
+
+renderLogs(logs);
+
+}catch(err){
+
+document.getElementById("activityTable").innerHTML=
+`<tr class="state-row"><td colspan="4">Failed to load logs</td></tr>`;
+
+}
+
+}
+
+
+function renderLogs(logs){
+
+document.getElementById("tableCount").innerText=
+logs.length+" records";
+
+if(!logs.length){
+
+document.getElementById("activityTable").innerHTML=
+`<tr class="state-row"><td colspan="4">No logs found</td></tr>`;
+
+return;
+
+}
+
+document.getElementById("activityTable").innerHTML=
+
+logs.map(l=>`
+
+<tr>
+
+<td>${l.username||"--"}</td>
+
+<td>${l.action||"--"}</td>
+
+<td>${l.details||"--"}</td>
+
+<td>${new Date(l.createdAt).toLocaleString()}</td>
+
+</tr>
+
+`).join("");
+
+}
+
+
+/* INIT */
+
 loadBookings();
+loadActivity();
 
+</script>
 
-  </script>
 </body>
 </html>
