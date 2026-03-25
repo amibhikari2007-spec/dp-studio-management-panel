@@ -628,6 +628,82 @@ res.status(500).send("Failed to create user");
 }
 
 });
+/* =========================
+   PUBLIC INVOICE PDF ROUTE
+========================= */
+
+app.get("/invoice/:invoiceNumber", async (req,res)=>{
+
+try{
+
+const booking =
+await Booking.findOne({
+invoiceNumber:req.params.invoiceNumber
+});
+
+if(!booking){
+return res.status(404).send("Invoice not found");
+}
+
+const pdf = require("pdfkit");
+
+const doc = new pdf();
+
+res.setHeader(
+"Content-Type",
+"application/pdf"
+);
+
+res.setHeader(
+"Content-Disposition",
+`inline; filename=${booking.invoiceNumber}.pdf`
+);
+
+doc.pipe(res);
+
+
+/* HEADER */
+
+doc.fontSize(20)
+.text("DP Studio & Light",{
+align:"center"
+});
+
+doc.moveDown();
+
+
+/* CUSTOMER INFO */
+
+doc.fontSize(12)
+.text(`Invoice Number: ${booking.invoiceNumber}`)
+.text(`Customer Name: ${booking.customerName}`)
+.text(`Phone: ${booking.customerPhone}`)
+.text(`Event Type: ${booking.eventType}`)
+.text(`Event Date: ${booking.eventDate}`);
+
+doc.moveDown();
+
+
+/* PAYMENT INFO */
+
+doc.text(`Total Amount: ₹${booking.totalAmount}`);
+doc.text(`Advance Paid: ₹${booking.advancePaid}`);
+doc.text(`Balance Due: ₹${booking.balanceDue}`);
+doc.text(`Status: ${booking.status}`);
+
+
+doc.end();
+
+}catch(err){
+
+console.log(err);
+
+res.status(500)
+.send("Failed to generate invoice");
+
+}
+
+});
 
 
 /* =========================
