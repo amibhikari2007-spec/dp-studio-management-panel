@@ -26,8 +26,6 @@ background:white;
 box-shadow:0 10px 40px rgba(0,0,0,.1);
 }
 
-/* HEADER */
-
 .invoice-header{
 background:#0f1f35;
 color:white;
@@ -53,8 +51,6 @@ font-size:20px;
 font-weight:700;
 }
 
-/* STATUS */
-
 .status-bar{
 background:#faf8f3;
 padding:15px 40px;
@@ -68,8 +64,6 @@ border-radius:20px;
 font-size:11px;
 font-weight:700;
 }
-
-/* CONTENT */
 
 .invoice-content{
 padding:40px;
@@ -108,16 +102,12 @@ text-align:right;
 font-weight:600;
 }
 
-/* FOOTER */
-
 .invoice-footer{
 background:#0f1f35;
 color:white;
 padding:30px;
 text-align:center;
 }
-
-/* BUTTON BAR */
 
 .action-bar{
 display:flex;
@@ -155,54 +145,38 @@ border:2px solid #ccc;
 <div class="invoice-header">
 
 <div>
-
 <div class="company-logo">DP</div>
-
 <h2>DP STUDIO</h2>
-
 <p>Photography & Cinematography</p>
-
 </div>
 
 <div>
-
 <p>Invoice</p>
-
 <div id="invoiceNum" class="invoice-number">
 Loading...
 </div>
-
 </div>
 
 </div>
 
 
 <div class="status-bar">
-
 <div>
-
 <span id="statusBadge" class="status-badge">
 Loading
 </span>
-
 <span id="eventDateSpan"></span>
-
 </div>
-
 </div>
 
 
 <div id="invoiceContent" class="invoice-content">
-
 Loading invoice...
-
 </div>
 
 
 <div class="invoice-footer">
-
 Thank you for choosing DP Studio 📸
-
 </div>
 
 </div>
@@ -210,33 +184,31 @@ Thank you for choosing DP Studio 📸
 
 <div class="action-bar">
 
-<button class="btn btn-primary" onclick="window.print()">
-Print
-</button>
+<button class="btn btn-primary" onclick="window.print()">Print</button>
 
-<button class="btn btn-primary" onclick="sendWhatsApp()">
-WhatsApp
-</button>
+<button class="btn btn-primary" onclick="sendWhatsApp()">WhatsApp</button>
 
-<button class="btn btn-secondary" onclick="downloadPDF()">
-Download PDF
-</button>
+<button class="btn btn-secondary" onclick="downloadPDF()">Download PDF</button>
 
-<button class="btn btn-secondary" onclick="history.back()">
-Back
-</button>
+<button class="btn btn-secondary" onclick="history.back()">Back</button>
 
 </div>
 
 
 <script>
 
-// Allow public access if opened from WhatsApp link
-const params = new URLSearchParams(window.location.search);
-const isPublic = params.get("public");
+/* PUBLIC ACCESS SUPPORT */
+
+const urlParams =
+new URLSearchParams(window.location.search);
+
+const isPublic =
+urlParams.get("public");
 
 if(!localStorage.getItem("token") && !isPublic){
+
 window.location="/admin.html";
+
 }
 
 let invoice=null;
@@ -250,28 +222,30 @@ async function loadInvoice(){
 
 try{
 
-const params=new URLSearchParams(window.location.search);
-
-const id=params.get("id");
+const id =
+urlParams.get("id");
 
 if(!id){
+
 alert("Invoice ID missing");
+
 return;
+
 }
 
-const params = new URLSearchParams(window.location.search);
-const isPublic = params.get("public");
-
-const response = await fetch("/booking/"+id);
+const response =
+await fetch("/booking/"+id);
 
 if(!response.ok){
 
 alert("Failed to load invoice");
+
 return;
 
 }
 
-invoice=await response.json();
+invoice =
+await response.json();
 
 displayInvoice();
 
@@ -286,11 +260,12 @@ alert("Failed to load invoice");
 }
 
 
-/* DISPLAY DATA */
+/* DISPLAY INVOICE */
 
 function displayInvoice(){
 
-const date=new Date(invoice.eventDate)
+const date =
+new Date(invoice.eventDate)
 .toLocaleDateString("en-IN",{
 
 day:"2-digit",
@@ -301,17 +276,21 @@ year:"numeric"
 
 
 document.getElementById("invoiceNum")
-.innerText=invoice.invoiceNumber;
+.innerText =
+invoice.invoiceNumber;
+
 
 document.getElementById("eventDateSpan")
-.innerText=date;
+.innerText =
+date;
 
 
-/* STATUS COLOR */
+const badge =
+document.getElementById("statusBadge");
 
-const badge=document.getElementById("statusBadge");
+badge.innerText =
+invoice.status;
 
-badge.innerText=invoice.status;
 
 if(invoice.status==="Paid"){
 
@@ -326,9 +305,8 @@ badge.style.color="#c41e3a";
 }
 
 
-/* CONTENT */
-
-document.getElementById("invoiceContent").innerHTML=`
+document.getElementById("invoiceContent")
+.innerHTML = `
 
 <div class="billing-grid">
 
@@ -342,98 +320,56 @@ document.getElementById("invoiceContent").innerHTML=`
 
 </div>
 
-
 <div>
 
 <div class="detail-row">
-
 <span>Package</span>
-
 <span>${invoice.packageName}</span>
-
 </div>
 
-
 <div class="detail-row">
-
 <span>Total Amount</span>
-
 <span>₹ ${invoice.totalAmount}</span>
-
 </div>
 
-
 <div class="detail-row">
-
 <span>Advance Paid</span>
-
 <span>₹ ${invoice.advancePaid}</span>
-
 </div>
-
 
 <div class="detail-row">
-
 <span>Balance Due</span>
-
 <span>₹ ${invoice.balanceDue}</span>
-
 </div>
 
 </div>
 
 </div>
-
 
 <table class="payment-table">
 
 <tr>
-
 <th>Description</th>
-
 <th>Status</th>
-
 <th>Amount</th>
-
 </tr>
 
-
 <tr>
-
 <td>${invoice.packageName}</td>
-
 <td>Total</td>
-
-<td class="amount-right">
-₹ ${invoice.totalAmount}
-</td>
-
+<td class="amount-right">₹ ${invoice.totalAmount}</td>
 </tr>
 
-
 <tr>
-
 <td>Advance Payment</td>
-
 <td>Paid</td>
-
-<td class="amount-right">
-- ₹ ${invoice.advancePaid}
-</td>
-
+<td class="amount-right">- ₹ ${invoice.advancePaid}</td>
 </tr>
 
-
 <tr>
-
 <td>Balance Due</td>
-
 <td>${invoice.status}</td>
-
-<td class="amount-right">
-₹ ${invoice.balanceDue}
-</td>
-
+<td class="amount-right">₹ ${invoice.balanceDue}</td>
 </tr>
 
 </table>
@@ -443,7 +379,8 @@ document.getElementById("invoiceContent").innerHTML=`
 }
 
 
-/* WHATSAPP */
+/* WHATSAPP SHARE */
+
 function sendWhatsApp(){
 
 if(!invoice.customerPhone){
@@ -455,9 +392,14 @@ return;
 }
 
 const publicLink =
-window.location.href + "&public=1";
+window.location.origin +
+"/invoice-view.html?id=" +
+invoice._id +
+"&public=1";
 
-const msg = encodeURIComponent(
+
+const msg =
+encodeURIComponent(
 
 `DP Studio & Light
 
@@ -480,29 +422,32 @@ Thank you 📸`
 
 );
 
+
 window.open(
 
-"https://wa.me/"+invoice.customerPhone+"?text="+msg,
+"https://wa.me/91"+
+invoice.customerPhone+
+"?text="+msg,
+
 "_blank"
 
 );
 
 }
 
-/* PDF DOWNLOAD */
+
+/* DOWNLOAD PDF */
 
 function downloadPDF(){
 
-const element=document.querySelector(".container");
+const element =
+document.querySelector(".container");
 
-html2pdf().from(element).save(
-
-invoice.invoiceNumber+".pdf"
-
-);
+html2pdf()
+.from(element)
+.save(invoice.invoiceNumber+".pdf");
 
 }
-
 
 </script>
 
