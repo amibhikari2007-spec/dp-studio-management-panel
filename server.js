@@ -217,6 +217,22 @@ res.json(data);
 
 
 /* =========================
+   CUSTOMER DROPDOWN
+========================= */
+
+app.get("/customers-dropdown",
+verifyToken,
+async(req,res)=>{
+
+const data=
+await Customer.find({}, {name:1});
+
+res.json(data);
+
+});
+
+
+/* =========================
    ADD BOOKING
 ========================= */
 
@@ -401,6 +417,57 @@ console.log(err);
 
 res.status(500)
 .send("Payment update failed");
+
+}
+
+});
+
+
+/* =========================
+   DASHBOARD STATS (FIXED)
+========================= */
+
+app.get("/dashboard-stats",
+verifyToken,
+async(req,res)=>{
+
+try{
+
+const totalBookings =
+await Booking.countDocuments();
+
+const bookings =
+await Booking.find();
+
+let totalIncome = 0;
+let pendingAmount = 0;
+
+bookings.forEach(b=>{
+
+totalIncome += b.advancePaid || 0;
+
+pendingAmount += b.balanceDue || 0;
+
+});
+
+const totalCustomers =
+await Customer.countDocuments();
+
+res.json({
+
+totalBookings,
+totalIncome,
+pendingAmount,
+totalCustomers
+
+});
+
+}catch(err){
+
+console.log(err);
+
+res.status(500)
+.send("Failed to load dashboard stats");
 
 }
 
