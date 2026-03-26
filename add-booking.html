@@ -12,6 +12,7 @@
             --surface2: #161c28;
             --border: rgba(255,255,255,0.07);
             --blue: #4f8ef7;
+            --blue-dim: rgba(79,142,247,0.18);
             --blue-glow: rgba(79,142,247,0.25);
             --green: #2dd4a0;
             --amber: #f5a623;
@@ -24,6 +25,7 @@
             --success: #2dd4a0;
             --danger: #f76f6f;
             --warning: #f5a623;
+            --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,25 +36,52 @@
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
+            transition: background var(--transition), color var(--transition);
         }
 
-        /* ── GRID BACKGROUND ── */
+        /* ── GRID BACKGROUND ANIMATION ── */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(167,139,250,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(167,139,250,0.04) 1px, transparent 1px);
-            background-size: 40px 40px;
-            animation: gridDrift 20s linear infinite;
+                linear-gradient(rgba(79,142,247,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(79,142,247,0.035) 1px, transparent 1px);
+            background-size: 44px 44px;
+            animation: gridDrift 25s linear infinite;
             pointer-events: none;
             z-index: 0;
         }
 
         @keyframes gridDrift {
-            from { transform: translateY(0); }
-            to   { transform: translateY(40px); }
+            0% { transform: translateY(0); }
+            100% { transform: translateY(44px); }
+        }
+
+        /* ── KEYFRAME ANIMATIONS ── */
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 22px rgba(79,142,247,0.35); }
+            50% { box-shadow: 0 0 38px rgba(79,142,247,0.6); }
+        }
+
+        @keyframes blip {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.3; transform: scale(0.6); }
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+            40% { transform: translateY(-6px); opacity: 1; }
         }
 
         /* ── HEADER ── */
@@ -66,13 +95,8 @@
             align-items: center;
             border-bottom: 1px solid var(--border);
             background: rgba(10,12,16,0.88);
-            backdrop-filter: blur(14px);
+            backdrop-filter: blur(18px);
             animation: slideDown 0.5s cubic-bezier(0.16,1,0.3,1) both;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-100%); opacity: 0; }
-            to   { transform: translateY(0); opacity: 1; }
         }
 
         .header-left { display: flex; align-items: center; gap: 14px; }
@@ -90,11 +114,6 @@
             box-shadow: 0 0 22px rgba(79,142,247,0.35);
             animation: pulse 3s ease-in-out infinite;
             flex-shrink: 0;
-        }
-
-        @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 22px rgba(79,142,247,0.35); }
-            50%       { box-shadow: 0 0 38px rgba(79,142,247,0.6); }
         }
 
         .header-title-text {
@@ -134,11 +153,6 @@
             animation: blip 2s ease-in-out infinite;
         }
 
-        @keyframes blip {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: 0.3; transform: scale(0.6); }
-        }
-
         .header-buttons { display: flex; gap: 10px; align-items: center; }
 
         .hdr-btn {
@@ -151,7 +165,7 @@
             font-family: var(--font-mono);
             letter-spacing: 0.5px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all var(--transition);
             text-decoration: none;
             display: inline-block;
         }
@@ -159,7 +173,7 @@
         .hdr-btn:hover {
             color: var(--blue);
             border-color: var(--blue);
-            background: var(--blue-glow);
+            background: var(--blue-dim);
         }
 
         /* ── CONTAINER ── */
@@ -172,16 +186,10 @@
             animation: fadeUp 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both;
         }
 
-        @keyframes fadeUp {
-            from { transform: translateY(24px); opacity: 0; }
-            to   { transform: translateY(0); opacity: 1; }
-        }
-
         /* ── PAGE TITLE ── */
         .page-title {
             margin-bottom: 32px;
-            opacity: 0;
-            animation: fadeUp 0.5s 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fadeUp 0.5s 0.3s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .page-title h2 {
@@ -204,13 +212,13 @@
             border: 1px solid var(--border);
             border-radius: 16px;
             overflow: hidden;
-            opacity: 0;
-            animation: fadeUp 0.5s 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
-            transition: border-color 0.3s ease;
+            animation: fadeUp 0.5s 0.4s cubic-bezier(0.16,1,0.3,1) both;
+            transition: border-color var(--transition), box-shadow var(--transition);
         }
 
         .form-card:hover {
             border-color: rgba(79,142,247,0.15);
+            box-shadow: 0 8px 32px rgba(79,142,247,0.1);
         }
 
         .card-header {
@@ -220,6 +228,7 @@
             align-items: center;
             gap: 10px;
             background: var(--surface2);
+            animation: fadeUp 0.5s 0.45s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .card-header-bar {
@@ -227,6 +236,7 @@
             height: 20px;
             background: linear-gradient(180deg, var(--blue), var(--purple));
             border-radius: 2px;
+            animation: slideDown 0.5s 0.5s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .card-header h3 {
@@ -249,16 +259,15 @@
         }
 
         .form-group {
-            opacity: 0;
-            animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .form-group:nth-child(1) { animation-delay: 0.5s; }
-        .form-group:nth-child(2) { animation-delay: 0.6s; }
-        .form-group:nth-child(3) { animation-delay: 0.7s; }
-        .form-group:nth-child(4) { animation-delay: 0.8s; }
-        .form-group:nth-child(5) { animation-delay: 0.9s; }
-        .form-group:nth-child(6) { animation-delay: 1.0s; }
+        .form-group:nth-child(2) { animation-delay: 0.58s; }
+        .form-group:nth-child(3) { animation-delay: 0.66s; }
+        .form-group:nth-child(4) { animation-delay: 0.74s; }
+        .form-group:nth-child(5) { animation-delay: 0.82s; }
+        .form-group:nth-child(6) { animation-delay: 0.9s; }
 
         label {
             display: block;
@@ -279,7 +288,7 @@
             font-size: 12px;
             color: var(--text);
             background: var(--surface2);
-            transition: all 0.25s ease;
+            transition: all var(--transition);
             appearance: none;
             -webkit-appearance: none;
         }
@@ -289,6 +298,7 @@
             border-color: var(--blue);
             box-shadow: 0 0 0 3px rgba(79,142,247,0.12);
             background: var(--bg);
+            transform: translateY(-2px);
         }
 
         input::placeholder {
@@ -325,8 +335,8 @@
             border: 1px solid var(--border);
             position: relative;
             overflow: hidden;
-            opacity: 0;
-            animation: fadeUp 0.5s 1.1s cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fadeUp 0.5s 0.98s cubic-bezier(0.16,1,0.3,1) both;
+            transition: border-color var(--transition), box-shadow var(--transition);
         }
 
         .amount-section::before {
@@ -341,6 +351,10 @@
         }
 
         .amount-section:hover::before { transform: scaleX(1); }
+        .amount-section:hover {
+            border-color: rgba(79,142,247,0.15);
+            box-shadow: 0 8px 24px rgba(79,142,247,0.08);
+        }
 
         .amount-section h4 {
             font-family: var(--font-head);
@@ -361,6 +375,11 @@
 
         .amount-input-group {
             position: relative;
+            animation: fadeUp 0.5s 1.06s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        .amount-input-group:nth-child(2) {
+            animation-delay: 1.14s;
         }
 
         .amount-input-group input {
@@ -386,11 +405,13 @@
             justify-content: space-between;
             align-items: center;
             border: 1px solid var(--border);
-            transition: all 0.3s ease;
+            transition: all var(--transition);
+            animation: fadeUp 0.5s 1.22s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .balance-display:hover {
             border-color: rgba(167,139,250,0.2);
+            box-shadow: 0 4px 16px rgba(79,142,247,0.08);
         }
 
         .balance-label {
@@ -406,11 +427,11 @@
             font-size: 22px;
             font-weight: 700;
             color: var(--blue);
-            transition: color 0.3s ease;
+            transition: color var(--transition);
         }
 
-        .balance-amount.due   { color: var(--danger); }
-        .balance-amount.paid  { color: var(--success); }
+        .balance-amount.due { color: var(--danger); }
+        .balance-amount.paid { color: var(--success); }
 
         /* ── BUTTON GROUP ── */
         .button-group {
@@ -418,8 +439,7 @@
             grid-template-columns: 1fr auto;
             gap: 12px;
             margin-top: 28px;
-            opacity: 0;
-            animation: fadeUp 0.5s 1.2s cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fadeUp 0.5s 1.3s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         .btn {
@@ -432,7 +452,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all var(--transition);
             position: relative;
             overflow: hidden;
         }
@@ -474,7 +494,8 @@
         .btn-secondary:hover {
             color: var(--blue);
             border-color: var(--blue);
-            background: var(--blue-glow);
+            background: var(--blue-dim);
+            transform: translateY(-2px);
         }
 
         /* ── MESSAGE ── */
@@ -532,11 +553,6 @@
         .loader span:nth-child(2) { animation-delay: 0.2s; }
         .loader span:nth-child(3) { animation-delay: 0.4s; }
 
-        @keyframes bounce {
-            0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-            40%            { transform: translateY(-6px); opacity: 1; }
-        }
-
         /* ── TOAST ── */
         #toast {
             position: fixed;
@@ -548,7 +564,7 @@
             font-size: 12px;
             display: flex; align-items: center; gap: 10px;
             z-index: 9999;
-            transform: translateY(80px);
+            transform: translateY(120px);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
             backdrop-filter: blur(12px);
@@ -556,8 +572,24 @@
             box-shadow: 0 8px 40px rgba(0,0,0,0.5);
         }
 
-        #toast.show { transform: translateY(0); opacity: 1; }
-        .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        #toast.show { 
+            transform: translateY(0); 
+            opacity: 1;
+            animation: slideUp 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(120px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .toast-dot { 
+            width: 8px; 
+            height: 8px; 
+            border-radius: 50%; 
+            flex-shrink: 0;
+            animation: blip 2s ease-in-out infinite;
+        }
 
         /* ── FOOTER ── */
         footer {
@@ -570,8 +602,7 @@
             letter-spacing: 0.5px;
             border-top: 1px solid var(--border);
             margin-top: 40px;
-            opacity: 0;
-            animation: fadeUp 0.5s 1.3s cubic-bezier(0.16,1,0.3,1) forwards;
+            animation: fadeUp 0.5s 1.38s cubic-bezier(0.16,1,0.3,1) both;
         }
 
         /* ── SCROLLBAR ── */
@@ -679,19 +710,18 @@
                                 required
                             >
                         </div>
-                       <label>Delivery Status</label>
 
-<select id="deliveryStatus">
+                        <!-- Delivery Status -->
+                        <div class="form-group">
+                            <label for="deliveryStatus">Delivery Status</label>
+                            <select id="deliveryStatus">
+                                <option value="Pending">Pending</option>
+                                <option value="Shoot Completed">Shoot Completed</option>
+                                <option value="Editing Completed">Editing Completed</option>
+                                <option value="Delivered">Delivered</option>
+                            </select>
+                        </div>
 
-<option value="Pending">Pending</option>
-
-<option value="Shoot Completed">Shoot Completed</option>
-
-<option value="Editing Completed">Editing Completed</option>
-
-<option value="Delivered">Delivered</option>
-
-</select>
                         <!-- Event Date -->
                         <div class="form-group">
                             <label for="eventDate">Event Date *</label>
@@ -754,7 +784,7 @@
 
     <!-- Footer -->
     <footer>
-        <p>© 2024 DP Studio & Light Management · Professional Booking Management System</p>
+        <p>© 2026 DP Studio & Light Management · Professional Booking Management System</p>
     </footer>
 
     <!-- Toast -->
@@ -843,44 +873,41 @@
             const totalAmount   = parseFloat(document.getElementById("totalAmount").value);
             const advancePaid   = parseFloat(document.getElementById("advancePaid").value);
             const eventDate     = document.getElementById("eventDate").value;
+            const deliveryStatus = document.getElementById("deliveryStatus").value;
             const balanceDue    = totalAmount - advancePaid;
 
-            if (!customerName && manualCustomer)                        { showMessage("Please select or enter a customer name", "warning"); return; }
-            if (!customerPhone)                       { showMessage("Please enter customer phone number", "warning"); return; }
+            if (!customerName && !manualCustomer) { showMessage("Please select or enter a customer name", "warning"); return; }
+            if (!customerPhone) { showMessage("Please enter customer phone number", "warning"); return; }
             if (!eventType || !packageName || !eventDate) { showMessage("Please fill in all required fields", "warning"); return; }
-            if (isNaN(totalAmount) || totalAmount<=0) { showMessage("Please enter a valid total amount", "error"); return; }
-            if (isNaN(advancePaid) || advancePaid<0)  { showMessage("Please enter a valid advance amount", "error"); return; }
-            if (advancePaid > totalAmount)            { showMessage("Advance paid cannot exceed total amount", "error"); return; }
+            if (isNaN(totalAmount) || totalAmount <= 0) { showMessage("Please enter a valid total amount", "error"); return; }
+            if (isNaN(advancePaid) || advancePaid < 0) { showMessage("Please enter a valid advance amount", "error"); return; }
+            if (advancePaid > totalAmount) { showMessage("Advance paid cannot exceed total amount", "error"); return; }
 
             const btn = document.getElementById("submitBtn");
             btn.innerHTML = '<span class="loader"><span></span><span></span><span></span></span> Saving…';
             btn.disabled = true;
 
-            const deliveryStatus =
-document.getElementById("deliveryStatus").value;
-
-const booking = {
-customerName,
-customerPhone,
-eventType,
-packageName,
-totalAmount,
-advancePaid,
-eventDate,
-balanceDue,
-deliveryStatus
-};
+            const booking = {
+                customerName,
+                customerPhone,
+                eventType,
+                packageName,
+                totalAmount,
+                advancePaid,
+                eventDate,
+                deliveryStatus,
+                balanceDue
+            };
 
             try {
-               const response = await fetch("/add-booking", {
-method: "POST",
-headers: {
-"Content-Type": "application/json",
-Authorization:
-"Bearer " + localStorage.getItem("token")
-},
-body: JSON.stringify(booking)
-});
+                const response = await fetch("/add-booking", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: "Bearer " + localStorage.getItem("token")
+                    },
+                    body: JSON.stringify(booking)
+                });
 
                 const data = await response.text();
 
