@@ -572,7 +572,37 @@ Logout
         <span class="stat-change pos">↑ Active</span>
       </div>
     </div>
+<div class="stats-grid">
 
+<div class="stat-card" style="--accent-color: var(--purple)">
+<div class="stat-card-bg" style="background: var(--purple)"></div>
+<span class="stat-icon">📊</span>
+<div class="stat-label">Today Revenue</div>
+<div class="stat-number" id="todayRevenue">₹0</div>
+</div>
+
+<div class="stat-card" style="--accent-color: var(--green)">
+<div class="stat-card-bg" style="background: var(--green)"></div>
+<span class="stat-icon">📈</span>
+<div class="stat-label">This Month Revenue</div>
+<div class="stat-number" id="monthRevenue">₹0</div>
+</div>
+
+<div class="stat-card" style="--accent-color: var(--blue)">
+<div class="stat-card-bg"></div>
+<span class="stat-icon">👤</span>
+<div class="stat-label">Top Customer</div>
+<div class="stat-number" id="topCustomer">-</div>
+</div>
+
+<div class="stat-card" style="--accent-color: var(--amber)">
+<div class="stat-card-bg" style="background: var(--amber)"></div>
+<span class="stat-icon">🎯</span>
+<div class="stat-label">Most Booked Service</div>
+<div class="stat-number" id="topService">-</div>
+</div>
+
+</div>
     <!-- Charts -->
     <div class="section-label">Analytics</div>
     <div class="charts-grid">
@@ -744,27 +774,78 @@ Logout
     }
 
     /* ── LOAD STATS ── */
-    async function loadStats() {
-      try {
-       const res = await fetch("/dashboard-stats",{
-headers:{
-Authorization:
-"Bearer " + localStorage.getItem("token")
-}
-});
-        if (!res.ok) throw new Error("fail");
-        const data = await res.json();
+  async function loadStats() {
+  try {
 
-        animateCounter(document.getElementById("bookings"), data.totalBookings || 0, "", true);
-        animateCounter(document.getElementById("income"),   data.totalIncome   || 0, "");
-        animateCounter(document.getElementById("pending"),  data.pendingAmount || 0, "");
-        animateCounter(document.getElementById("customers"),data.totalCustomers|| 0, "", true);
-
-        initCharts(data);
-      } catch {
-        initCharts({ totalBookings: 0, totalIncome: 0, pendingAmount: 0, totalCustomers: 0 });
+    const res = await fetch("/dashboard-stats", {
+      headers: {
+        Authorization:
+        "Bearer " + localStorage.getItem("token")
       }
-    }
+    });
+
+    if (!res.ok) throw new Error("fail");
+
+    const data = await res.json();
+
+
+    /* EXISTING STATS */
+
+    animateCounter(
+      document.getElementById("bookings"),
+      data.totalBookings || 0,
+      "",
+      true
+    );
+
+    animateCounter(
+      document.getElementById("income"),
+      data.totalIncome || 0,
+      ""
+    );
+
+    animateCounter(
+      document.getElementById("pending"),
+      data.pendingAmount || 0,
+      ""
+    );
+
+    animateCounter(
+      document.getElementById("customers"),
+      data.totalCustomers || 0,
+      "",
+      true
+    );
+
+
+    /* NEW ANALYTICS STATS */
+
+    document.getElementById("todayRevenue").innerText =
+      "₹" + (data.todayRevenue || 0);
+
+    document.getElementById("monthRevenue").innerText =
+      "₹" + (data.monthRevenue || 0);
+
+    document.getElementById("topCustomer").innerText =
+      data.topCustomer || "-";
+
+    document.getElementById("topService").innerText =
+      data.topService || "-";
+
+
+    initCharts(data);
+
+  } catch {
+
+    initCharts({
+      totalBookings: 0,
+      totalIncome: 0,
+      pendingAmount: 0,
+      totalCustomers: 0
+    });
+
+  }
+}
 
     /* ── THEME TOGGLE ── */
     function toggleTheme() {
