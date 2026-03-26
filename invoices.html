@@ -526,6 +526,7 @@
             <th>Paid</th>
             <th>Pending</th>
             <th>Status</th>
+            <th>Delivery</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -619,7 +620,6 @@ function animateCounter(id, target, formatter, isInt = false) {
   }
   requestAnimationFrame(step);
 }
-
 /* ── RENDER TABLE ── */
 function renderInvoices(invoices) {
   updateStats(invoices);
@@ -627,7 +627,7 @@ function renderInvoices(invoices) {
   if (!invoices.length) {
     document.getElementById("tableBody").innerHTML = `
       <tr class="state-row">
-        <td colspan="8">No invoices found</td>
+        <td colspan="9">No invoices found</td>
       </tr>`;
     return;
   }
@@ -640,14 +640,44 @@ function renderInvoices(invoices) {
       <td><span class="amount-cell amount-total">₹ ${fmt(inv.totalAmount)}</span></td>
       <td><span class="amount-cell amount-paid">₹ ${fmt(inv.advancePaid)}</span></td>
       <td><span class="amount-cell amount-due">₹ ${fmt(inv.balanceDue)}</span></td>
+
       <td>${badge(inv.status)}</td>
+
+      <td>
+        <select onchange="updateDeliveryStatus('${inv._id}', this.value)">
+
+          <option ${inv.deliveryStatus==="Pending"?"selected":""}>
+            Pending
+          </option>
+
+          <option ${inv.deliveryStatus==="Shoot Completed"?"selected":""}>
+            Shoot Completed
+          </option>
+
+          <option ${inv.deliveryStatus==="Editing Completed"?"selected":""}>
+            Editing Completed
+          </option>
+
+          <option ${inv.deliveryStatus==="Delivered"?"selected":""}>
+            Delivered
+          </option>
+
+        </select>
+      </td>
+
       <td>
         <div class="actions">
-          <button class="btn btn-view"     onclick="viewInvoice('${inv._id}')">View</button>
-          <button class="btn btn-edit"     onclick="editPayment('${inv._id}')">Edit</button>
-          <button class="btn btn-download" onclick="downloadInvoice('${inv._id}')">↓ PDF</button>
+          <button class="btn btn-view"
+            onclick="viewInvoice('${inv._id}')">View</button>
+
+          <button class="btn btn-edit"
+            onclick="editPayment('${inv._id}')">Edit</button>
+
+          <button class="btn btn-download"
+            onclick="downloadInvoice('${inv._id}')">↓ PDF</button>
         </div>
       </td>
+
     </tr>
   `).join("");
 }
@@ -665,7 +695,7 @@ async function loadInvoices() {
     console.error(err);
     document.getElementById("tableBody").innerHTML = `
       <tr class="state-row">
-        <td colspan="8">⚠ Failed to load invoices</td>
+        <td colspan="9">⚠ Failed to load invoices</td>
       </tr>`;
     document.getElementById("tableCount").textContent = "Error";
     showToast("Failed to load invoices", "error");
