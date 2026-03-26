@@ -556,7 +556,9 @@ Logout
         <span class="stat-change pos">↑ Collected</span>
       </div>
 
-      <div class="stat-card" style="--accent-color: var(--amber)">
+    <div class="stat-card"
+style="--accent-color: var(--amber); cursor:pointer"
+onclick="openPendingDeliveries()">
         <div class="stat-card-bg" style="background: var(--amber)"></div>
         <span class="stat-icon">⏳</span>
         <div class="stat-label">Pending Balance</div>
@@ -619,11 +621,18 @@ Logout
         </div>
       </div>
     </div>
-    <div class="stat-card" style="--accent-color: var(--amber)">
+<div class="stat-card"
+style="--accent-color: var(--amber); cursor:pointer"
+onclick="openPendingDeliveries()">
+
 <div class="stat-card-bg" style="background: var(--amber)"></div>
+
 <span class="stat-icon">📦</span>
+
 <div class="stat-label">Pending Deliveries</div>
+
 <div class="stat-number" id="pendingDeliveries">0</div>
+
 </div>
 
     <!-- Quick Actions -->
@@ -698,6 +707,14 @@ Logout
       }
       requestAnimationFrame(step);
     }
+
+
+    function openPendingDeliveries(){
+
+window.location =
+"/invoices.html?delivery=pending";
+
+}
 
     /* ── CHARTS ── */
     let bookingsChart, revenueChart;
@@ -916,6 +933,7 @@ data.pendingDeliveries || 0;
       }
     }
 
+    
     /* ── AUTH ACTIONS ── */
     function confirmLogout() {
       if (confirm("Are you sure you want to logout?")) {
