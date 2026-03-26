@@ -12,11 +12,13 @@ balanceDue: Number,
 eventDate: String,
 invoiceNumber: String,
 status: String,
-deliveryStatus:{
-type:String,
-default:"Pending"
-}
-createdAt:{
+
+deliveryStatus: {
+type: String,
+default: "Pending"
+},
+
+createdAt: {
 type: Date,
 default: Date.now
 }
