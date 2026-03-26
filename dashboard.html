@@ -619,6 +619,12 @@ Logout
         </div>
       </div>
     </div>
+    <div class="stat-card" style="--accent-color: var(--amber)">
+<div class="stat-card-bg" style="background: var(--amber)"></div>
+<span class="stat-icon">📦</span>
+<div class="stat-label">Pending Deliveries</div>
+<div class="stat-number" id="pendingDeliveries">0</div>
+</div>
 
     <!-- Quick Actions -->
     <div class="section-label">Quick Actions</div>
@@ -832,6 +838,8 @@ Logout
     document.getElementById("topService").innerText =
       data.topService || "-";
 
+    document.getElementById("pendingDeliveries").innerText =
+data.pendingDeliveries || 0;
 
     initCharts(data);
 
