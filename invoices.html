@@ -708,25 +708,27 @@ showToast("Delivery status updated ✓","success");
 }
 
 /* ── LOAD ── */
-async function loadInvoices() {
-  try {
-    const res = await fetch("/bookings-list", {
-      headers: { Authorization: "Bearer " + localStorage.getItem("token") }
-    });
-    if (!res.ok) throw new Error("Access denied");
-    const invoices = await res.json();
-    renderInvoices(invoices);
-  } catch (err) {
-    console.error(err);
-    document.getElementById("tableBody").innerHTML = `
-      <tr class="state-row">
-        <td colspan="9">⚠ Failed to load invoices</td>
-      </tr>`;
-    document.getElementById("tableCount").textContent = "Error";
-    showToast("Failed to load invoices", "error");
-  }
-}
 
+  const params =
+new URLSearchParams(window.location.search);
+
+const deliveryFilter =
+params.get("delivery");
+
+if(deliveryFilter === "pending"){
+
+const filtered =
+invoices.filter(
+i => i.deliveryStatus !== "Delivered"
+);
+
+renderInvoices(filtered);
+
+}else{
+
+renderInvoices(invoices);
+
+}
 /* ── ACTIONS ── */
 function viewInvoice(id)     { window.location = "/invoice-view.html?id=" + id; }
 function downloadInvoice(id) { window.location = "/invoice-download.html?id=" + id; }
