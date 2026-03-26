@@ -510,10 +510,11 @@ totalCustomers,
 todayRevenue,
 monthRevenue,
 topCustomer,
-topService
+topService,
+
+pendingDeliveries
 
 });
-
 }catch(err){
 
 console.log(err);
