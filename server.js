@@ -434,6 +434,15 @@ async(req,res)=>{
 try{
 
 const bookings = await Booking.find();
+   let pendingDeliveries = 0;
+
+bookings.forEach(b => {
+
+if(b.deliveryStatus !== "Delivered"){
+pendingDeliveries++;
+}
+
+});
 
 let totalIncome = 0;
 let pendingAmount = 0;
