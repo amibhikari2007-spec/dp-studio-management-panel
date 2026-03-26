@@ -679,7 +679,19 @@
                                 required
                             >
                         </div>
+                       <label>Delivery Status</label>
 
+<select id="deliveryStatus">
+
+<option value="Pending">Pending</option>
+
+<option value="Shoot Completed">Shoot Completed</option>
+
+<option value="Editing Completed">Editing Completed</option>
+
+<option value="Delivered">Delivered</option>
+
+</select>
                         <!-- Event Date -->
                         <div class="form-group">
                             <label for="eventDate">Event Date *</label>
@@ -844,7 +856,20 @@
             btn.innerHTML = '<span class="loader"><span></span><span></span><span></span></span> Saving…';
             btn.disabled = true;
 
-            const booking = { customerName, customerPhone, eventType, packageName, totalAmount, advancePaid, eventDate, balanceDue };
+            const deliveryStatus =
+document.getElementById("deliveryStatus").value;
+
+const booking = {
+customerName,
+customerPhone,
+eventType,
+packageName,
+totalAmount,
+advancePaid,
+eventDate,
+balanceDue,
+deliveryStatus
+};
 
             try {
                const response = await fetch("/add-booking", {
