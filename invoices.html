@@ -565,124 +565,113 @@ if (!localStorage.getItem("token")) {
 function showToast(msg, type = "info") {
   const toast = document.getElementById("toast");
   const dot = toast.querySelector(".toast-dot");
-  const colors = { success: "#2dd4a0", error: "#f76f6f", info: "#4f8ef7", warn: "#f5a623" };
+
+  const colors = {
+    success:"#2dd4a0",
+    error:"#f76f6f",
+    info:"#4f8ef7",
+    warn:"#f5a623"
+  };
+
   dot.style.background = colors[type] || colors.info;
   document.getElementById("toastMsg").textContent = msg;
+
   toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 3000);
+
+  setTimeout(() => toast.classList.remove("show"),3000);
 }
 
+
 /* ── FORMAT NUMBER ── */
-function fmt(n) {
+function fmt(n){
   return Number(n).toLocaleString("en-IN");
 }
 
+
 /* ── STATUS BADGE ── */
-function badge(status) {
-  const s = (status || "").toLowerCase();
-  const map = {
-    paid:    ["paid",    "badge-paid"],
-    pending: ["pending", "badge-pending"],
-    overdue: ["overdue", "badge-overdue"],
-    partial: ["partial", "badge-partial"],
+function badge(status){
+
+  const s=(status||"").toLowerCase();
+
+  const map={
+    paid:["paid","badge-paid"],
+    pending:["pending","badge-pending"],
+    overdue:["overdue","badge-overdue"],
+    partial:["partial","badge-partial"]
   };
-  const [label, cls] = map[s] || [status, "badge-pending"];
+
+  const [label,cls]=map[s]||[status,"badge-pending"];
+
   return `<span class="badge ${cls}">${label}</span>`;
 }
 
+
 /* ── UPDATE STATS ── */
-function updateStats(invoices) {
-  const total   = invoices.length;
-  const revenue = invoices.reduce((s, i) => s + Number(i.totalAmount   || 0), 0);
-  const paid    = invoices.reduce((s, i) => s + Number(i.advancePaid   || 0), 0);
-  const due     = invoices.reduce((s, i) => s + Number(i.balanceDue    || 0), 0);
+function updateStats(invoices){
 
-  animateCounter("statTotal",   total,   v => `${v} <span>invoices</span>`, true);
-  animateCounter("statRevenue", revenue, v => `₹ ${fmt(v)}`);
-  animateCounter("statPaid",    paid,    v => `₹ ${fmt(v)}`);
-  animateCounter("statDue",     due,     v => `₹ ${fmt(v)}`);
+  const total=invoices.length;
 
-  document.getElementById("tableCount").textContent =
-    `${total} record${total !== 1 ? "s" : ""}`;
+  const revenue=invoices.reduce(
+    (s,i)=>s+Number(i.totalAmount||0),0
+  );
+
+  const paid=invoices.reduce(
+    (s,i)=>s+Number(i.advancePaid||0),0
+  );
+
+  const due=invoices.reduce(
+    (s,i)=>s+Number(i.balanceDue||0),0
+  );
+
+  animateCounter("statTotal",total,
+    v=>`${v} <span>invoices</span>`,true);
+
+  animateCounter("statRevenue",revenue,
+    v=>`₹ ${fmt(v)}`);
+
+  animateCounter("statPaid",paid,
+    v=>`₹ ${fmt(v)}`);
+
+  animateCounter("statDue",due,
+    v=>`₹ ${fmt(v)}`);
+
+  document.getElementById("tableCount").textContent=
+    `${total} record${total!==1?"s":""}`;
 }
+
 
 /* ── COUNTER ANIMATION ── */
-function animateCounter(id, target, formatter, isInt = false) {
-  const el = document.getElementById(id);
-  const duration = 900;
-  const start = performance.now();
-  function step(now) {
-    const p = Math.min((now - start) / duration, 1);
-    const ease = 1 - Math.pow(1 - p, 3);
-    const val = isInt ? Math.round(ease * target) : Math.round(ease * target * 100) / 100;
-    el.innerHTML = formatter(isInt ? val : Math.round(val));
-    if (p < 1) requestAnimationFrame(step);
+function animateCounter(id,target,formatter,isInt=false){
+
+  const el=document.getElementById(id);
+
+  const duration=900;
+
+  const start=performance.now();
+
+  function step(now){
+
+    const p=Math.min((now-start)/duration,1);
+
+    const ease=1-Math.pow(1-p,3);
+
+    const val=isInt
+      ?Math.round(ease*target)
+      :Math.round(ease*target*100)/100;
+
+    el.innerHTML=formatter(val);
+
+    if(p<1)requestAnimationFrame(step);
+
   }
+
   requestAnimationFrame(step);
-}
-/* ── RENDER TABLE ── */
-function renderInvoices(invoices) {
-  updateStats(invoices);
 
-  if (!invoices.length) {
-    document.getElementById("tableBody").innerHTML = `
-      <tr class="state-row">
-        <td colspan="9">No invoices found</td>
-      </tr>`;
-    return;
-  }
-
-  document.getElementById("tableBody").innerHTML = invoices.map((inv, i) => `
-    <tr style="animation-delay:${0.05 * i}s">
-      <td><span class="inv-num">${inv.invoiceNumber}</span></td>
-      <td>${inv.customerName}</td>
-      <td>${inv.eventType}</td>
-      <td><span class="amount-cell amount-total">₹ ${fmt(inv.totalAmount)}</span></td>
-      <td><span class="amount-cell amount-paid">₹ ${fmt(inv.advancePaid)}</span></td>
-      <td><span class="amount-cell amount-due">₹ ${fmt(inv.balanceDue)}</span></td>
-
-      <td>${badge(inv.status)}</td>
-
-      <td>
-        <select onchange="updateDeliveryStatus('${inv._id}', this.value)">
-
-          <option ${inv.deliveryStatus==="Pending"?"selected":""}>
-            Pending
-          </option>
-
-          <option ${inv.deliveryStatus==="Shoot Completed"?"selected":""}>
-            Shoot Completed
-          </option>
-
-          <option ${inv.deliveryStatus==="Editing Completed"?"selected":""}>
-            Editing Completed
-          </option>
-
-          <option ${inv.deliveryStatus==="Delivered"?"selected":""}>
-            Delivered
-          </option>
-
-        </select>
-      </td>
-
-      <td>
-        <div class="actions">
-          <button class="btn btn-view"
-            onclick="viewInvoice('${inv._id}')">View</button>
-
-          <button class="btn btn-edit"
-            onclick="editPayment('${inv._id}')">Edit</button>
-
-          <button class="btn btn-download"
-            onclick="downloadInvoice('${inv._id}')">↓ PDF</button>
-        </div>
-      </td>
-
-    </tr>
-  `).join("");
 }
 
-  function updateDeliveryStatus(id,status){
+
+/* ── DELIVERY STATUS UPDATE ── */
+function updateDeliveryStatus(id,status){
 
 fetch("/update-delivery-status/"+id,{
 
@@ -699,6 +688,7 @@ deliveryStatus:status
 })
 
 })
+
 .then(()=>{
 
 showToast("Delivery status updated ✓","success");
@@ -707,19 +697,147 @@ showToast("Delivery status updated ✓","success");
 
 }
 
-/* ── LOAD ── */
 
-  const params =
+/* ── RENDER TABLE ── */
+function renderInvoices(invoices){
+
+updateStats(invoices);
+
+if(!invoices.length){
+
+document.getElementById("tableBody").innerHTML=
+`
+<tr class="state-row">
+<td colspan="9">No invoices found</td>
+</tr>
+`;
+
+return;
+
+}
+
+document.getElementById("tableBody").innerHTML=
+invoices.map((inv,i)=>`
+
+<tr style="animation-delay:${0.05*i}s">
+
+<td>
+<span class="inv-num">${inv.invoiceNumber}</span>
+</td>
+
+<td>${inv.customerName}</td>
+
+<td>${inv.eventType}</td>
+
+<td>
+<span class="amount-cell amount-total">
+₹ ${fmt(inv.totalAmount)}
+</span>
+</td>
+
+<td>
+<span class="amount-cell amount-paid">
+₹ ${fmt(inv.advancePaid)}
+</span>
+</td>
+
+<td>
+<span class="amount-cell amount-due">
+₹ ${fmt(inv.balanceDue)}
+</span>
+</td>
+
+<td>${badge(inv.status)}</td>
+
+<td>
+
+<select onchange="updateDeliveryStatus('${inv._id}',this.value)">
+
+<option ${inv.deliveryStatus==="Pending"?"selected":""}>
+Pending
+</option>
+
+<option ${inv.deliveryStatus==="Shoot Completed"?"selected":""}>
+Shoot Completed
+</option>
+
+<option ${inv.deliveryStatus==="Editing Completed"?"selected":""}>
+Editing Completed
+</option>
+
+<option ${inv.deliveryStatus==="Delivered"?"selected":""}>
+Delivered
+</option>
+
+</select>
+
+</td>
+
+<td>
+
+<div class="actions">
+
+<button class="btn btn-view"
+onclick="viewInvoice('${inv._id}')">
+View
+</button>
+
+<button class="btn btn-edit"
+onclick="editPayment('${inv._id}')">
+Edit
+</button>
+
+<button class="btn btn-download"
+onclick="downloadInvoice('${inv._id}')">
+↓ PDF
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`).join("");
+
+}
+
+
+/* ── LOAD INVOICES (FILTER ENABLED) ── */
+async function loadInvoices(){
+
+const res=await fetch("/bookings-list",{
+
+headers:{
+Authorization:
+"Bearer "+localStorage.getItem("token")
+}
+
+});
+
+if(!res.ok){
+
+showToast("Failed to load invoices","error");
+
+return;
+
+}
+
+const invoices=await res.json();
+
+
+const params=
 new URLSearchParams(window.location.search);
 
-const deliveryFilter =
+const deliveryFilter=
 params.get("delivery");
 
-if(deliveryFilter === "pending"){
 
-const filtered =
+if(deliveryFilter==="pending"){
+
+const filtered=
 invoices.filter(
-i => i.deliveryStatus !== "Delivered"
+i=>i.deliveryStatus!=="Delivered"
 );
 
 renderInvoices(filtered);
@@ -729,34 +847,75 @@ renderInvoices(filtered);
 renderInvoices(invoices);
 
 }
-/* ── ACTIONS ── */
-function viewInvoice(id)     { window.location = "/invoice-view.html?id=" + id; }
-function downloadInvoice(id) { window.location = "/invoice-download.html?id=" + id; }
 
-async function editPayment(id) {
-  const amount = prompt("Enter new advance amount (₹)");
-  if (amount === null) return;
-  if (isNaN(amount) || Number(amount) < 0) {
-    showToast("Invalid amount entered", "error");
-    return;
-  }
-
-  const res = await fetch("/update-booking/" + id, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + localStorage.getItem("token")
-    },
-    body: JSON.stringify({ advancePaid: Number(amount) })
-  });
-
-  if (res.status === 403) { showToast("Only Super Admin allowed", "error"); return; }
-  if (!res.ok)            { showToast("Payment update failed", "error");   return; }
-
-  showToast("Payment updated successfully ✓", "success");
-  loadInvoices();
 }
 
+
+/* ── ACTIONS ── */
+function viewInvoice(id){
+window.location="/invoice-view.html?id="+id;
+}
+
+function downloadInvoice(id){
+window.location="/invoice-download.html?id="+id;
+}
+
+
+/* ── EDIT PAYMENT ── */
+async function editPayment(id){
+
+const amount=prompt("Enter new advance amount (₹)");
+
+if(amount===null)return;
+
+if(isNaN(amount)||Number(amount)<0){
+
+showToast("Invalid amount entered","error");
+
+return;
+
+}
+
+const res=await fetch("/update-booking/"+id,{
+
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json",
+Authorization:
+"Bearer "+localStorage.getItem("token")
+},
+
+body:JSON.stringify({
+advancePaid:Number(amount)
+})
+
+});
+
+if(res.status===403){
+
+showToast("Only Super Admin allowed","error");
+
+return;
+
+}
+
+if(!res.ok){
+
+showToast("Payment update failed","error");
+
+return;
+
+}
+
+showToast("Payment updated successfully ✓","success");
+
+loadInvoices();
+
+}
+
+
+/* ── START PAGE ── */
 loadInvoices();
 
 </script>
