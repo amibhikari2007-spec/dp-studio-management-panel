@@ -682,6 +682,31 @@ function renderInvoices(invoices) {
   `).join("");
 }
 
+  function updateDeliveryStatus(id,status){
+
+fetch("/update-delivery-status/"+id,{
+
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json",
+Authorization:
+"Bearer "+localStorage.getItem("token")
+},
+
+body:JSON.stringify({
+deliveryStatus:status
+})
+
+})
+.then(()=>{
+
+showToast("Delivery status updated ✓","success");
+
+});
+
+}
+
 /* ── LOAD ── */
 async function loadInvoices() {
   try {
