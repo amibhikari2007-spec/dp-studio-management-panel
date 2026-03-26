@@ -775,32 +775,10 @@ try{
 
 await Booking.findByIdAndUpdate(
 req.params.id,
-{deliveryStatus:req.body.deliveryStatus}
+{ deliveryStatus:req.body.deliveryStatus }
 );
 
 res.json({success:true});
-
-}catch(err){
-
-console.log(err);
-
-res.status(500).send("Update failed");
-
-}
-
-});
-app.put("/update-delivery-status/:id",
-verifyToken,
-async(req,res)=>{
-
-try{
-
-await Booking.findByIdAndUpdate(
-req.params.id,
-{ deliveryStatus: req.body.deliveryStatus }
-);
-
-res.json({ success:true });
 
 }catch(err){
 
