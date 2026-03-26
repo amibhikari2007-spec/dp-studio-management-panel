@@ -497,7 +497,7 @@ footer a:hover{color:var(--gold-light,#e8c97a);}
   <div class="container">
 
     <div class="page-hero">
-      <h2>Good day! 👋</h2>
+      <h2 id="greetingText">Good day! 👋</h2>
       <p>Here's your business overview for today</p>
     </div>
 
@@ -788,6 +788,16 @@ function loadTheme(){
   }
 }
 
+  const username = localStorage.getItem("username");
+
+if(username){
+
+document.getElementById("greetingText").innerText =
+"Good day, " + username + " 👋";
+
+}
+
+  
 function confirmLogout(){
   if(confirm("Logout karna chahte ho?")){
     localStorage.removeItem("token");
