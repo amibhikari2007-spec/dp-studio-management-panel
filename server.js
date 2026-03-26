@@ -431,14 +431,17 @@ async(req,res)=>{
 
 try{
 
-const totalBookings =
-await Booking.countDocuments();
-
-const bookings =
-await Booking.find();
+const bookings = await Booking.find();
 
 let totalIncome = 0;
 let pendingAmount = 0;
+let todayRevenue = 0;
+let monthRevenue = 0;
+
+const today = new Date();
+
+let customerMap = {};
+let serviceMap = {};
 
 bookings.forEach(b=>{
 
@@ -446,7 +449,42 @@ totalIncome += b.advancePaid || 0;
 
 pendingAmount += b.balanceDue || 0;
 
+const bookingDate = new Date(b.createdAt);
+
+if(
+bookingDate.toDateString() ===
+today.toDateString()
+){
+todayRevenue += b.advancePaid || 0;
+}
+
+if(
+bookingDate.getMonth() ===
+today.getMonth()
+){
+monthRevenue += b.advancePaid || 0;
+}
+
+customerMap[b.customerName] =
+(customerMap[b.customerName] || 0) + 1;
+
+serviceMap[b.eventType] =
+(serviceMap[b.eventType] || 0) + 1;
+
 });
+
+const topCustomer =
+Object.keys(customerMap).sort(
+(a,b)=>customerMap[b]-customerMap[a]
+)[0] || "-";
+
+const topService =
+Object.keys(serviceMap).sort(
+(a,b)=>serviceMap[b]-serviceMap[a]
+)[0] || "-";
+
+const totalBookings =
+await Booking.countDocuments();
 
 const totalCustomers =
 await Customer.countDocuments();
@@ -456,7 +494,12 @@ res.json({
 totalBookings,
 totalIncome,
 pendingAmount,
-totalCustomers
+totalCustomers,
+
+todayRevenue,
+monthRevenue,
+topCustomer,
+topService
 
 });
 
