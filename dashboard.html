@@ -623,6 +623,66 @@ footer a:hover{color:var(--gold-light,#e8c97a);}
     <p>Designed & developed by <a href="https://instagram.com/imt.dey" target="_blank">@imt.dey</a></p>
   </footer>
 
+  <!-- AI Assistant Button -->
+<button onclick="toggleChat()" id="chatBtn"
+style="position:fixed;bottom:25px;right:25px;
+background:#4f8ef7;color:white;
+border:none;padding:14px 18px;
+border-radius:12px;cursor:pointer;
+z-index:9999;">
+💬 Ask DP Studio
+</button>
+
+<!-- Chat Box -->
+<div id="chatBox"
+style="display:none;
+position:fixed;
+bottom:90px;
+right:25px;
+width:300px;
+background:#161924;
+padding:15px;
+border-radius:14px;
+box-shadow:0 0 20px rgba(0,0,0,0.5);
+z-index:9999;">
+
+<input id="userInput"
+placeholder="Ask something..."
+style="width:100%;padding:8px;border-radius:8px;border:none;margin-bottom:8px;" />
+
+<button onclick="sendMessage()"
+style="width:100%;padding:8px;background:#4f8ef7;color:white;border:none;border-radius:8px;">
+Send
+</button>
+
+<div id="chatResponse"
+style="margin-top:10px;font-size:13px;"></div>
+
+</div>
+
+<script>
+function toggleChat(){
+const box=document.getElementById("chatBox");
+box.style.display =
+box.style.display==="none"?"block":"none";
+}
+
+async function sendMessage(){
+
+const input=document.getElementById("userInput").value;
+
+const response=await fetch("/chat",{
+method:"POST",
+headers:{ "Content-Type":"application/json"},
+body:JSON.stringify({message:input})
+});
+
+const data=await response.json();
+
+document.getElementById("chatResponse").innerText=data.reply;
+
+}
+</script>
 </div><!-- /main -->
 
 <!-- ═══ MOBILE BOTTOM NAV ═══ -->
