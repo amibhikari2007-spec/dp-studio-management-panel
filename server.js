@@ -1,3 +1,7 @@
+const fetch = (...args) =>
+import("node-fetch").then(({default: fetch}) => fetch(...args));
+
+
 require("dotenv").config();
 
 const express = require("express");
@@ -806,22 +810,22 @@ try {
 const userMessage = req.body.message;
 
 const response = await fetch(
-"https://api.openai.com/v1/chat/completions",
+"https://openrouter.ai/api/v1/chat/completions",
 {
 method: "POST",
 headers: {
+"Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
 "Content-Type": "application/json",
-Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+"HTTP-Referer": "https://dp-studio-management-panel-1.onrender.com",
+"X-Title": "DP Studio Assistant"
 },
 body: JSON.stringify({
-model: "gpt-4o-mini",
+model: "meta-llama/llama-3.1-8b-instruct:free",
 messages: [
 {
 role: "system",
 content: `
 You are DP Studio & Light assistant.
-
-Business details:
 
 Location: Monoharpur, Dantan, Paschim Medinipur
 Phone: 9083521201 / 7908045697
@@ -834,9 +838,9 @@ Event lighting
 Birthday shoot
 
 Rules:
-Always reply short and helpful.
-If user asks booking → tell them to contact WhatsApp.
-If user asks delivery status → ask invoice number.
+Reply short and helpful.
+If booking asked → suggest WhatsApp contact.
+If delivery asked → ask invoice number.
 `
 },
 {
@@ -850,6 +854,13 @@ content: userMessage
 
 const data = await response.json();
 
+if (!data.choices) {
+console.log(data);
+return res.json({
+reply: "Assistant temporarily unavailable"
+});
+}
+
 res.json({
 reply: data.choices[0].message.content
 });
@@ -857,7 +868,10 @@ reply: data.choices[0].message.content
 } catch (err) {
 
 console.log(err);
-res.status(500).send("AI assistant error");
+
+res.json({
+reply: "Assistant error. Try again later."
+});
 
 }
 
