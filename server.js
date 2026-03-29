@@ -798,6 +798,51 @@ res.status(500).send("Update failed");
 }
 
 });
+
+app.post("/chat", async (req, res) => {
+
+try {
+
+const userMessage = req.body.message;
+
+const response = await fetch(
+"https://api.openai.com/v1/chat/completions",
+{
+method: "POST",
+headers: {
+"Content-Type": "application/json",
+Authorization: "Bearer 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"
+},
+body: JSON.stringify({
+model: "gpt-4o-mini",
+messages: [
+{
+role: "system",
+content: "You are DP Studio assistant. Help customers with booking, pricing, services and contact info."
+},
+{
+role: "user",
+content: userMessage
+}
+]
+})
+}
+);
+
+const data = await response.json();
+
+res.json({
+reply: data.choices[0].message.content
+});
+
+} catch (err) {
+
+console.log(err);
+res.status(500).send("AI assistant error");
+
+}
+
+});
 /* =========================
    START SERVER
 ========================= */
