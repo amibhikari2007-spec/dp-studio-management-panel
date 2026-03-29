@@ -811,7 +811,7 @@ const response = await fetch(
 method: "POST",
 headers: {
 "Content-Type": "application/json",
-Authorization: "Bearer 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"
+Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
 },
 body: JSON.stringify({
 model: "gpt-4o-mini",
