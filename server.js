@@ -10,10 +10,10 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const Activity = require("./Activity");
-const Customer = require("./Customer");
-const Booking = require("./Booking");
-const Admin = require("./Admin");
+const Activity = require("./routes/Activity");
+const Customer = require("./routes/Customer");
+const Booking = require("./routes/Booking");
+const Admin = require("./routes/Admin");
 const User = require("./routes/user");
 const studioRoutes = require('./routes/studio');
 
@@ -535,10 +535,10 @@ res.status(500)
 
 });
 
-app.get('/catalogue',       (req, res) => res.sendFile(path.join(__dirname, 'public/catalogue.html')));
-app.get('/portfolio',       (req, res) => res.sendFile(path.join(__dirname, 'public/portfolio.html')));
-app.get('/catalogue-admin', (req, res) => res.sendFile(path.join(__dirname, 'public/catalogue-admin.html')));
-app.get('/tv-mode',         (req, res) => res.sendFile(path.join(__dirname, 'public/tv-mode.html')));
+app.get('/catalogue', verifyToken,      (req, res) => res.sendFile(path.join(__dirname, 'public/catalogue.html')));
+app.get('/portfolio', verifyToken,      (req, res) => res.sendFile(path.join(__dirname, 'public/portfolio.html')));
+app.get('/catalogue-admin',verifyToken, (req, res) => res.sendFile(path.join(__dirname, 'public/catalogue-admin.html')));
+app.get('/tv-mode', verifyToken,         (req, res) => res.sendFile(path.join(__dirname, 'public/tv-mode.html')));
 
 
 /* =========================
