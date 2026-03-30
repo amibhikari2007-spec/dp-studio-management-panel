@@ -820,7 +820,7 @@ headers: {
 "X-Title": "DP Studio Assistant"
 },
 body: JSON.stringify({
-model: "meta-llama/llama-3.1-8b-instruct:free",
+model: "openrouter/auto",
 messages: [
 {
 role: "system",
