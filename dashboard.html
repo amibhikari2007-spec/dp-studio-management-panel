@@ -783,344 +783,268 @@ footer a{color:var(--gold);text-decoration:none;}
 <div class="toast-stack" id="toastStack"></div>
 
 <script>
-/* ════ AUTH ════ */
-if(!localStorage.getItem("token")) window.location="/admin.html";
 
-/* ════ CHARTS ════ */
-let bookingsChart,revenueChart;
+let bookingsChart=null;
+let revenueChart=null;
 
-/* ════ GREETING ════ */
-function setGreeting(){
-  const h=new Date().getHours();
-  const g=h<12?"Good morning":"h<17?"Good afternoon":"Good evening";
-  const name=localStorage.getItem("username")||"Admin";
-  document.getElementById("heroGreeting").textContent=
-    (h<12?"Good morning ☀️":h<17?"Good afternoon 👋":"Good evening 🌙")+" "+name+"!";
-  document.getElementById("heroSub").textContent=
-    "Here's your business overview for today · "+new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"});
-  const initials=name.slice(0,2).toUpperCase();
-  document.getElementById("userAvatar").textContent=initials;
-  document.getElementById("usernameDisplay").textContent=name;
-}
+document.addEventListener("DOMContentLoaded", async () => {
 
-/* ════ THEME ════ */
-function toggleTheme(){
-  const isLight=document.body.classList.toggle("light");
-  localStorage.setItem("theme",isLight?"light":"dark");
-  document.getElementById("themeBtn").textContent=isLight?"🌙 Dark":"☀️ Light";
-  updateChartTheme(isLight);
-}
-function loadTheme(){
-  const saved=localStorage.getItem("theme");
-  if(saved==="light"){
-    document.body.classList.add("light");
-    const b=document.getElementById("themeBtn");
-    if(b) b.textContent="🌙 Dark";
-  }
-}
-function updateChartTheme(isLight){
-  const tc=isLight?"#8896a8":"#4a5568";
-  const gc=isLight?"rgba(0,0,0,0.06)":"rgba(255,255,255,0.05)";
-  if(bookingsChart){
-    bookingsChart.options.scales.y.grid.color=gc;
-    bookingsChart.options.scales.y.ticks.color=tc;
-    bookingsChart.options.scales.x.ticks.color=tc;
-    bookingsChart.update();
-  }
-  if(revenueChart){
-    revenueChart.options.plugins.legend.labels.color=tc;
-    revenueChart.update();
-  }
-}
-
-/* ════ TOAST SYSTEM ════ */
-function showToast(title,msg,type="info"){
-  const colors={success:"#2dd4a0",error:"#f76f6f",info:"#4f8ef7",warn:"#f5a623"};
-  const icons={success:"✅",error:"❌",info:"ℹ️",warn:"⚠️"};
-  const stack=document.getElementById("toastStack");
-  const t=document.createElement("div");
-  t.className="toast";
-  t.style.setProperty("--ac-c",colors[type]||colors.info);
-  t.innerHTML=`
-    <span class="toast-icon">${icons[type]||icons.info}</span>
-    <div class="toast-body">
-      <div class="toast-title">${title}</div>
-      <div class="toast-msg">${msg}</div>
-    </div>
-    <button class="toast-close" onclick="removeToast(this.parentElement)">✕</button>
-    <div class="toast-progress" id="tp_${Date.now()}" style="width:100%"></div>
-  `;
-  stack.appendChild(t);
-  requestAnimationFrame(()=>t.classList.add("show"));
-  const dur=3500;
-  const prog=t.querySelector(".toast-progress");
-  prog.style.transition=`width ${dur}ms linear`;
-  requestAnimationFrame(()=>prog.style.width="0%");
-  setTimeout(()=>removeToast(t),dur+200);
-}
-function removeToast(el){
-  if(!el||!el.parentElement) return;
-  el.classList.remove("show");el.classList.add("removing");
-  setTimeout(()=>el.remove(),400);
-}
-
-/* ════ NOTIFICATION ════ */
-function toggleNotif(e){
-  e.stopPropagation();
-  document.getElementById("notifPanel").classList.toggle("open");
-}
-function clearNotifs(){
-  document.getElementById("notifList").innerHTML=
-    '<div style="padding:20px;text-align:center;font-size:12px;color:var(--muted)">No notifications</div>';
-  document.getElementById("notifBadge").style.display="none";
-  document.getElementById("notifPanel").classList.remove("open");
-}
-document.addEventListener("click",e=>{
-  if(!e.target.closest("#notifBtn")&&!e.target.closest("#notifPanel"))
-    document.getElementById("notifPanel").classList.remove("open");
-  if(!e.target.closest("#tbSearch"))
-    document.getElementById("searchDrop").classList.remove("open");
-  if(!e.target.closest("#fabBtn")&&!e.target.closest("#fabMenu"))
-    document.getElementById("fabMenu").classList.remove("open");
-});
-
-/* ════ SEARCH ════ */
-const quickLinks=[
-  {icon:"📅",label:"Add Booking",href:"/add-booking.html",meta:"Page"},
-  {icon:"👥",label:"Customers",href:"/customers.html",meta:"Page"},
-  {icon:"📄",label:"Invoices",href:"/invoices.html",meta:"Page"},
-  {icon:"📊",label:"Dashboard",href:"/index.html",meta:"Page"},
-];
-function handleSearch(q){
-  const drop=document.getElementById("searchDrop");
-  if(!q){drop.classList.remove("open");return;}
-  const results=quickLinks.filter(l=>l.label.toLowerCase().includes(q.toLowerCase()));
-  if(!results.length){drop.classList.remove("open");return;}
-  drop.innerHTML=results.map(r=>`
-    <a href="${r.href}" class="search-result-item">
-      <span class="sr-icon">${r.icon}</span>
-      <span class="sr-label">${r.label}</span>
-      <span class="sr-meta">${r.meta}</span>
-    </a>`).join("");
-  drop.classList.add("open");
-}
-function closeSearchDrop(){setTimeout(()=>document.getElementById("searchDrop").classList.remove("open"),200);}
-
-/* ════ FAB ════ */
-let fabOpen=false;
-function toggleFab(){
-  fabOpen=!fabOpen;
-  const menu=document.getElementById("fabMenu");
-  menu.classList.toggle("open",fabOpen);
-  document.getElementById("fabBtn").textContent=fabOpen?"✕":"＋";
-}
-
-/* ════ COUNTER ANIMATION ════ */
-function animateCounter(el,target,isInt=false){
-  if(!el) return;
-  const dur=1000,start=performance.now();
-  function step(now){
-    const p=Math.min((now-start)/dur,1);
-    const val=Math.round((1-Math.pow(1-p,3))*target);
-    el.innerHTML=val.toLocaleString("en-IN");
-    if(p<1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
-/* ════ PENDING ════ */
-function openPendingDeliveries(){window.location="/invoices.html?delivery=pending";}
-
-/* ════ CHARTS ════ */
-function initCharts(data){
-  const isLight=document.body.classList.contains("light");
-  const tc=isLight?"#8896a8":"#4a5568";
-  const gc=isLight?"rgba(0,0,0,0.06)":"rgba(255,255,255,0.05)";
-
-  // Bar
-  const bCtx=document.getElementById("bookingsChart").getContext("2d");
-  const grad=bCtx.createLinearGradient(0,0,0,260);
-  grad.addColorStop(0,"rgba(79,142,247,0.85)");
-  grad.addColorStop(1,"rgba(79,142,247,0.08)");
-  bookingsChart=new Chart(bCtx,{
-    type:"bar",
-    data:{
-      labels:["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
-      datasets:[{
-        label:"Bookings",
-        data:[5,8,6,9,7,10,8,11,9,12,10,data.totalBookings||0],
-        backgroundColor:grad,borderColor:"rgba(79,142,247,0.9)",
-        borderWidth:1.5,borderRadius:7,borderSkipped:false,
-      }]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      animation:{duration:1000,easing:"easeOutQuart"},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:"rgba(15,17,25,0.92)",
-          titleColor:"#dde3ef",bodyColor:"#8896a8",
-          titleFont:{family:"Syne",weight:"700",size:12},
-          bodyFont:{family:"JetBrains Mono",size:11},
-          padding:12,cornerRadius:10,
-          borderColor:"rgba(255,255,255,0.08)",borderWidth:1,
-          callbacks:{label:ctx=>" "+ctx.parsed.y+" bookings"}
-        }
-      },
-      scales:{
-        y:{beginAtZero:true,grid:{color:gc},ticks:{color:tc,font:{family:"JetBrains Mono",size:10}}},
-        x:{grid:{display:false},ticks:{color:tc,font:{family:"JetBrains Mono",size:10}}}
-      }
-    }
-  });
-
-  // Doughnut
-  const rCtx=document.getElementById("revenueChart").getContext("2d");
-  revenueChart=new Chart(rCtx,{
-    type:"doughnut",
-    data:{
-      labels:["Advance Received","Pending Balance"],
-      datasets:[{
-        data:[data.totalIncome||1,data.pendingAmount||0],
-        backgroundColor:["rgba(45,212,160,0.85)","rgba(245,166,35,0.85)"],
-        borderColor:["rgba(45,212,160,1)","rgba(245,166,35,1)"],
-        borderWidth:2,hoverOffset:10,
-      }]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      animation:{duration:1000,animateRotate:true,easing:"easeOutQuart"},
-      cutout:"68%",
-      plugins:{
-        legend:{
-          position:"bottom",
-          labels:{padding:22,color:tc,font:{family:"JetBrains Mono",size:11},usePointStyle:true,pointStyleWidth:8}
-        },
-        tooltip:{
-          backgroundColor:"rgba(15,17,25,0.92)",
-          titleColor:"#dde3ef",bodyColor:"#8896a8",
-          titleFont:{family:"Syne",weight:"700",size:12},
-          bodyFont:{family:"JetBrains Mono",size:11},
-          padding:12,cornerRadius:10,
-          borderColor:"rgba(255,255,255,0.08)",borderWidth:1,
-          callbacks:{
-            label:ctx=>` ₹${ctx.parsed.toLocaleString("en-IN")}`
-          }
-        }
-      }
-    }
-  });
-  document.getElementById("chartYear").textContent=new Date().getFullYear();
-}
-
-/* ════ RENDER STATS ════ */
-function renderStats(d){
-  document.getElementById("statsGrid1").innerHTML=`
-    <div class="stat-card" style="--ac:var(--blue)">
-      <div class="stat-orb"></div>
-      <span class="stat-icon">📅</span>
-      <div class="stat-label">Total Bookings</div>
-      <div class="stat-number" id="s-bookings">0</div>
-      <span class="stat-chip pos">↑ This month</span>
-    </div>
-    <div class="stat-card" style="--ac:var(--green)">
-      <div class="stat-orb" style="background:var(--green)"></div>
-      <span class="stat-icon">💰</span>
-      <div class="stat-label">Advance Received</div>
-      <div class="stat-number">₹ <span id="s-income">0</span></div>
-      <span class="stat-chip pos">↑ Collected</span>
-    </div>
-    <div class="stat-card clickable" style="--ac:var(--amber)" onclick="openPendingDeliveries()">
-      <div class="stat-orb" style="background:var(--amber)"></div>
-      <span class="stat-icon">⏳</span>
-      <div class="stat-label">Pending Balance</div>
-      <div class="stat-number">₹ <span id="s-pending">0</span></div>
-      <span class="stat-chip neg">↓ To be received</span>
-    </div>
-    <div class="stat-card" style="--ac:var(--purple)">
-      <div class="stat-orb" style="background:var(--purple)"></div>
-      <span class="stat-icon">👥</span>
-      <div class="stat-label">Total Customers</div>
-      <div class="stat-number" id="s-customers">0</div>
-      <span class="stat-chip pos">↑ Active</span>
-    </div>`;
-
-  document.getElementById("statsGrid2").innerHTML=`
-    <div class="stat-card" style="--ac:var(--purple)">
-      <div class="stat-orb" style="background:var(--purple)"></div>
-      <span class="stat-icon">📊</span>
-      <div class="stat-label">Today Revenue</div>
-      <div class="stat-number" id="s-today">₹ 0</div>
-    </div>
-    <div class="stat-card" style="--ac:var(--green)">
-      <div class="stat-orb" style="background:var(--green)"></div>
-      <span class="stat-icon">📈</span>
-      <div class="stat-label">Month Revenue</div>
-      <div class="stat-number" id="s-month">₹ 0</div>
-    </div>
-    <div class="stat-card" style="--ac:var(--blue)">
-      <div class="stat-orb"></div>
-      <span class="stat-icon">🏆</span>
-      <div class="stat-label">Top Customer</div>
-      <div class="stat-number" id="s-topcust" style="font-size:clamp(13px,1.5vw,16px);padding-top:4px">—</div>
-    </div>
-    <div class="stat-card" style="--ac:var(--amber)">
-      <div class="stat-orb" style="background:var(--amber)"></div>
-      <span class="stat-icon">🎯</span>
-      <div class="stat-label">Top Service</div>
-      <div class="stat-number" id="s-topserv" style="font-size:clamp(13px,1.5vw,16px);padding-top:4px">—</div>
-    </div>`;
-
-  // animate counters
-  animateCounter(document.getElementById("s-bookings"),  d.totalBookings||0, true);
-  animateCounter(document.getElementById("s-income"),    d.totalIncome||0);
-  animateCounter(document.getElementById("s-pending"),   d.pendingAmount||0);
-  animateCounter(document.getElementById("s-customers"), d.totalCustomers||0, true);
-
-  document.getElementById("s-today").textContent  = "₹ "+(d.todayRevenue||0).toLocaleString("en-IN");
-  document.getElementById("s-month").textContent  = "₹ "+(d.monthRevenue||0).toLocaleString("en-IN");
-  document.getElementById("s-topcust").textContent = d.topCustomer||"—";
-  document.getElementById("s-topserv").textContent = d.topService||"—";
-  document.getElementById("pendingDeliveries").textContent = (d.pendingDeliveries||0).toLocaleString("en-IN");
-
-  // show pending card
-  const pc=document.getElementById("pendingCard");
-  pc.style.opacity="1";pc.style.animation="fadeUp .5s ease both";
-}
-
-/* ════ LOAD STATS ════ */
-async function loadStats(){
-  try{
-    const res=await fetch("/dashboard-stats",{
-      headers:{Authorization:"Bearer "+localStorage.getItem("token")}
-    });
-    if(!res.ok) throw new Error();
-    const d=await res.json();
-    renderStats(d);
-    initCharts(d);
-    showToast("Dashboard loaded","Stats updated successfully","success");
-  }catch{
-    // fallback with zeros
-    renderStats({totalBookings:0,totalIncome:0,pendingAmount:0,totalCustomers:0});
-    initCharts({totalBookings:0,totalIncome:0,pendingAmount:0});
-  }
-}
-
-/* ════ LOGOUT ════ */
-function confirmLogout(){
-  if(confirm("Logout karna chahte ho?")){
-    localStorage.removeItem("token");
-    window.location="/admin.html";
-  }
-}
-
-/* ════ INIT ════ */
-document.addEventListener("DOMContentLoaded",()=>{
   loadTheme();
-  setGreeting();
-  loadStats();
+  initGreeting();
+  initThemeToggle();
+  initNotifications();
+  await loadStats();
+
 });
+
+
+/* =========================
+   LOAD DASHBOARD DATA
+========================= */
+
+async function loadStats(){
+
+  try{
+
+    const token=localStorage.getItem("token");
+
+    if(!token){
+      console.warn("No token found");
+      return;
+    }
+
+    const res=await fetch("/dashboard-stats",{
+      headers:{Authorization:"Bearer "+token}
+    });
+
+    if(!res.ok){
+      console.warn("Stats API failed");
+      return;
+    }
+
+    const d=await res.json();
+
+    setText("bookings",d.totalBookings);
+    setText("customers",d.totalCustomers);
+    setText("income",formatMoney(d.totalIncome));
+    setText("pending",formatMoney(d.pendingAmount));
+
+    setText("todayRevenue",formatMoney(d.todayRevenue));
+    setText("monthRevenue",formatMoney(d.monthRevenue));
+    setText("topCustomer",d.topCustomer);
+    setText("topService",d.topService);
+
+    setText("pendingDeliveries",d.pendingDeliveries);
+
+    initCharts(d);
+
+  }
+  catch(e){
+
+    console.error("Dashboard load error:",e);
+
+  }
+
+}
+
+
+/* =========================
+   HELPER FUNCTIONS
+========================= */
+
+function setText(id,value){
+
+  const el=document.getElementById(id);
+
+  if(el){
+    el.innerText=value ?? "-";
+  }
+
+}
+
+
+function formatMoney(num){
+
+  return (num||0).toLocaleString("en-IN");
+
+}
+
+
+/* =========================
+   USER GREETING
+========================= */
+
+function initGreeting(){
+
+  const username=localStorage.getItem("username");
+
+  if(!username) return;
+
+  const hour=new Date().getHours();
+
+  let greeting="Good day";
+
+  if(hour<12) greeting="Good morning";
+  else if(hour<17) greeting="Good afternoon";
+  else greeting="Good evening";
+
+  const el=document.getElementById("greetingText");
+
+  if(el){
+
+    el.innerText=`${greeting}, ${username} 👋`;
+
+  }
+
+}
+
+
+/* =========================
+   THEME SYSTEM
+========================= */
+
+function toggleTheme(){
+
+  const isLight=document.body.classList.toggle("light");
+
+  localStorage.setItem("theme",isLight?"light":"dark");
+
+  const btn=document.getElementById("themeToggle");
+
+  if(btn){
+
+    btn.textContent=isLight?"🌙 Dark":"☀ Light";
+
+  }
+
+}
+
+
+function loadTheme(){
+
+  if(localStorage.getItem("theme")==="light"){
+
+    document.body.classList.add("light");
+
+  }
+
+}
+
+
+function initThemeToggle(){
+
+  const btn=document.getElementById("themeToggle");
+
+  if(!btn) return;
+
+  btn.onclick=toggleTheme;
+
+}
+
+
+/* =========================
+   NOTIFICATION PANEL
+========================= */
+
+function initNotifications(){
+
+  const bell=document.getElementById("notifBtn");
+
+  const panel=document.getElementById("notifPanel");
+
+  if(!bell||!panel) return;
+
+  bell.onclick=()=>{
+
+    panel.classList.toggle("open");
+
+  };
+
+}
+
+
+/* =========================
+   CHARTS INIT
+========================= */
+
+function initCharts(d){
+
+  if(typeof Chart==="undefined") return;
+
+  if(bookingsChart) bookingsChart.destroy();
+
+  if(revenueChart) revenueChart.destroy();
+
+
+  const bookingsCtx=document.getElementById("bookingsChart");
+
+  const revenueCtx=document.getElementById("revenueChart");
+
+
+  if(bookingsCtx){
+
+    bookingsChart=new Chart(bookingsCtx,{
+
+      type:"line",
+
+      data:{
+        labels:d.bookingLabels||[],
+        datasets:[{
+
+          label:"Bookings",
+
+          data:d.bookingSeries||[]
+
+        }]
+
+      }
+
+    });
+
+  }
+
+
+  if(revenueCtx){
+
+    revenueChart=new Chart(revenueCtx,{
+
+      type:"bar",
+
+      data:{
+        labels:d.revenueLabels||[],
+        datasets:[{
+
+          label:"Revenue",
+
+          data:d.revenueSeries||[]
+
+        }]
+
+      }
+
+    });
+
+  }
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+function confirmLogout(){
+
+  if(confirm("Logout karna chahte ho?")){
+
+    localStorage.removeItem("token");
+
+    window.location="/admin.html";
+
+  }
+
+}
+
 </script>
 </body>
 </html>
