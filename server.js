@@ -821,7 +821,7 @@ headers: {
 "X-Title": "DP Studio Assistant"
 },
 body: JSON.stringify({
-model: "mistralai/mistral-7b-instruct:free",
+model: "google/gemma-7b-it:free",
 messages: [
 {
 role: "system",
