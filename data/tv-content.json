@@ -1,0 +1,14 @@
+{
+  "studioName": "DP Studio",
+  "tagline": "Every moment, beautifully preserved.",
+  "logo": "/assets/logo.png",
+  "slideshow": {
+    "imageDuration": 8000,
+    "videoDuration": 15000,
+    "autoRefreshInterval": 60000
+  },
+  "sections": ["portfolio", "packages", "offers"],
+  "footerText": "Book your date — Contact us today",
+  "contactPhone": "+91 98765 43210",
+  "contactWhatsApp": "+919876543210"
+}

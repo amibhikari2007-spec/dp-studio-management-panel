@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoices - DP Studio & Light</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #10141c;
+    --surface2: #161c28;
+    --border: rgba(255,255,255,0.07);
+    --blue: #4f8ef7;
+    --blue-glow: rgba(79,142,247,0.25);
+    --green: #2dd4a0;
+    --amber: #f5a623;
+    --red: #f76f6f;
+    --text: #e8edf5;
+    --muted: #5a6478;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-mono);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── ANIMATED GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(79,142,247,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,142,247,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridDrift 20s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes gridDrift {
+    0%   { transform: translateY(0); }
+    100% { transform: translateY(40px); }
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 22px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,12,16,0.85);
+    backdrop-filter: blur(12px);
+    animation: slideDown 0.5s cubic-bezier(0.16,1,0.3,1) both;
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .header-icon {
+    width: 38px; height: 38px;
+    background: var(--blue);
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    box-shadow: 0 0 20px var(--blue-glow);
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 20px var(--blue-glow); }
+    50%       { box-shadow: 0 0 35px rgba(79,142,247,0.5); }
+  }
+
+  .header-title {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .back-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.25s ease;
+  }
+
+  .back-btn:hover {
+    color: var(--blue);
+    border-color: var(--blue);
+    background: var(--blue-glow);
+  }
+
+  /* ── CONTAINER ── */
+  .container {
+    position: relative;
+    z-index: 5;
+    padding: 40px;
+    animation: fadeUp 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both;
+  }
+
+  @keyframes fadeUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s both;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .stat-card:nth-child(1) { animation-delay: 0.3s; }
+  .stat-card:nth-child(2) { animation-delay: 0.4s; }
+  .stat-card:nth-child(3) { animation-delay: 0.5s; }
+  .stat-card:nth-child(4) { animation-delay: 0.6s; }
+
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(79,142,247,0.3);
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent, var(--blue));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover::before { transform: scaleX(1); }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: var(--font-head);
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .stat-value span {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-weight: 400;
+  }
+
+  /* ── TABLE CARD ── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .table-header {
+    padding: 24px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table-title {
+    font-family: var(--font-head);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .table-count {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    letter-spacing: 0.5px;
+  }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    background: var(--surface2);
+  }
+
+  th {
+    padding: 14px 20px;
+    text-align: left;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.2s ease;
+    opacity: 0;
+    transform: translateX(-12px);
+    animation: rowIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody tr:hover {
+    background: rgba(79,142,247,0.04);
+  }
+
+  @keyframes rowIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  td {
+    padding: 16px 20px;
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  /* ── INVOICE # ── */
+  .inv-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--blue);
+    letter-spacing: 0.5px;
+  }
+
+  /* ── AMOUNT CELLS ── */
+  .amount-cell {
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  .amount-total { color: var(--text); }
+  .amount-paid  { color: var(--green); }
+  .amount-due   { color: var(--amber); }
+
+  /* ── STATUS BADGE ── */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: blip 2s ease-in-out infinite;
+  }
+
+  @keyframes blip {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .badge-paid    { background: rgba(45,212,160,0.12); color: var(--green); }
+  .badge-pending { background: rgba(245,166,35,0.12); color: var(--amber); }
+  .badge-overdue { background: rgba(247,111,111,0.12); color: var(--red); }
+  .badge-partial { background: rgba(79,142,247,0.12); color: var(--blue); }
+
+  /* ── ACTION BUTTONS ── */
+  .actions { display: flex; gap: 6px; align-items: center; }
+
+  .btn {
+    padding: 6px 14px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.3px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: white;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .btn:active::after { opacity: 0.08; }
+
+  .btn-view {
+    background: rgba(79,142,247,0.15);
+    color: var(--blue);
+    border-color: rgba(79,142,247,0.3);
+  }
+  .btn-view:hover {
+    background: var(--blue);
+    color: white;
+    box-shadow: 0 0 16px var(--blue-glow);
+  }
+
+  .btn-edit {
+    background: rgba(245,166,35,0.1);
+    color: var(--amber);
+    border-color: rgba(245,166,35,0.25);
+  }
+  .btn-edit:hover {
+    background: var(--amber);
+    color: #0a0c10;
+    box-shadow: 0 0 16px rgba(245,166,35,0.3);
+  }
+
+  .btn-download {
+    background: rgba(45,212,160,0.1);
+    color: var(--green);
+    border-color: rgba(45,212,160,0.25);
+  }
+  .btn-download:hover {
+    background: var(--green);
+    color: #0a0c10;
+    box-shadow: 0 0 16px rgba(45,212,160,0.3);
+  }
+
+  /* ── EMPTY / LOADING STATES ── */
+  .state-row td {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 13px;
+    letter-spacing: 0.3px;
+  }
+
+  .loader {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .loader span {
+    width: 6px; height: 6px;
+    background: var(--blue);
+    border-radius: 50%;
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+  .loader span:nth-child(2) { animation-delay: 0.2s; }
+  .loader span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40%            { transform: translateY(-8px); opacity: 1; }
+  }
+
+  /* ── RIPPLE on TR click ── */
+  .ripple-container { position: relative; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 13px;
+    display: flex; align-items: center; gap: 10px;
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+    backdrop-filter: blur(12px);
+    max-width: 320px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+
+  #toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  #toast .toast-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="header-icon">📄</div>
+    <div>
+      <div class="header-title">Invoice Management</div>
+      <div class="header-sub">DP Studio & Light</div>
+    </div>
+  </div>
+  <a href="/dashboard.html" class="back-btn">
+    ← Dashboard
+  </a>
+</header>
+
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card" style="--accent: var(--blue)">
+      <div class="stat-label">Total Invoices</div>
+      <div class="stat-value" id="statTotal">— <span>invoices</span></div>
+    </div>
+    <div class="stat-card" style="--accent: var(--green)">
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value" id="statRevenue">₹ —</div>
+    </div>
+    <div class="stat-card" style="--accent: var(--green)">
+      <div class="stat-label">Collected</div>
+      <div class="stat-value" id="statPaid">₹ —</div>
+    </div>
+    <div class="stat-card" style="--accent: var(--amber)">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value" id="statDue">₹ —</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+
+    <div class="table-header">
+      <div class="table-title">All Invoices</div>
+      <div class="table-count" id="tableCount">Loading…</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Invoice #</th>
+            <th>Customer</th>
+            <th>Event</th>
+            <th>Total</th>
+            <th>Paid</th>
+            <th>Pending</th>
+            <th>Status</th>
+            <th>Delivery</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr class="state-row">
+            <td colspan="9">
+              <div class="loader">
+                <span></span><span></span><span></span>
+              </div>
+              <div>Loading invoices…</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast">
+  <span class="toast-dot"></span>
+  <span id="toastMsg"></span>
+</div>
+
+
+<script>
+
+/* ── AUTH CHECK ── */
+if (!localStorage.getItem("token")) {
+  window.location = "/admin.html";
+}
+
+/* ── TOAST ── */
+function showToast(msg, type = "info") {
+  const toast = document.getElementById("toast");
+  const dot = toast.querySelector(".toast-dot");
+
+  const colors = {
+    success:"#2dd4a0",
+    error:"#f76f6f",
+    info:"#4f8ef7",
+    warn:"#f5a623"
+  };
+
+  dot.style.background = colors[type] || colors.info;
+  document.getElementById("toastMsg").textContent = msg;
+
+  toast.classList.add("show");
+
+  setTimeout(() => toast.classList.remove("show"),3000);
+}
+
+
+/* ── FORMAT NUMBER ── */
+function fmt(n){
+  return Number(n).toLocaleString("en-IN");
+}
+
+
+/* ── STATUS BADGE ── */
+function badge(status){
+
+  const s=(status||"").toLowerCase();
+
+  const map={
+    paid:["paid","badge-paid"],
+    pending:["pending","badge-pending"],
+    overdue:["overdue","badge-overdue"],
+    partial:["partial","badge-partial"]
+  };
+
+  const [label,cls]=map[s]||[status,"badge-pending"];
+
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+
+/* ── UPDATE STATS ── */
+function updateStats(invoices){
+
+  const total=invoices.length;
+
+  const revenue=invoices.reduce(
+    (s,i)=>s+Number(i.totalAmount||0),0
+  );
+
+  const paid=invoices.reduce(
+    (s,i)=>s+Number(i.advancePaid||0),0
+  );
+
+  const due=invoices.reduce(
+    (s,i)=>s+Number(i.balanceDue||0),0
+  );
+
+  animateCounter("statTotal",total,
+    v=>`${v} <span>invoices</span>`,true);
+
+  animateCounter("statRevenue",revenue,
+    v=>`₹ ${fmt(v)}`);
+
+  animateCounter("statPaid",paid,
+    v=>`₹ ${fmt(v)}`);
+
+  animateCounter("statDue",due,
+    v=>`₹ ${fmt(v)}`);
+
+  document.getElementById("tableCount").textContent=
+    `${total} record${total!==1?"s":""}`;
+}
+
+
+/* ── COUNTER ANIMATION ── */
+function animateCounter(id,target,formatter,isInt=false){
+
+  const el=document.getElementById(id);
+
+  const duration=900;
+
+  const start=performance.now();
+
+  function step(now){
+
+    const p=Math.min((now-start)/duration,1);
+
+    const ease=1-Math.pow(1-p,3);
+
+    const val=isInt
+      ?Math.round(ease*target)
+      :Math.round(ease*target*100)/100;
+
+    el.innerHTML=formatter(val);
+
+    if(p<1)requestAnimationFrame(step);
+
+  }
+
+  requestAnimationFrame(step);
+
+}
+
+
+/* ── DELIVERY STATUS UPDATE ── */
+function updateDeliveryStatus(id,status){
+
+fetch("/update-delivery-status/"+id,{
+
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json",
+Authorization:
+"Bearer "+localStorage.getItem("token")
+},
+
+body:JSON.stringify({
+deliveryStatus:status
+})
+
+})
+
+.then(()=>{
+
+showToast("Delivery status updated ✓","success");
+
+});
+
+}
+
+
+/* ── RENDER TABLE ── */
+function renderInvoices(invoices){
+
+updateStats(invoices);
+
+if(!invoices.length){
+
+document.getElementById("tableBody").innerHTML=
+`
+<tr class="state-row">
+<td colspan="9">No invoices found</td>
+</tr>
+`;
+
+return;
+
+}
+
+document.getElementById("tableBody").innerHTML=
+invoices.map((inv,i)=>`
+
+<tr style="animation-delay:${0.05*i}s">
+
+<td>
+<span class="inv-num">${inv.invoiceNumber}</span>
+</td>
+
+<td>${inv.customerName}</td>
+
+<td>${inv.eventType}</td>
+
+<td>
+<span class="amount-cell amount-total">
+₹ ${fmt(inv.totalAmount)}
+</span>
+</td>
+
+<td>
+<span class="amount-cell amount-paid">
+₹ ${fmt(inv.advancePaid)}
+</span>
+</td>
+
+<td>
+<span class="amount-cell amount-due">
+₹ ${fmt(inv.balanceDue)}
+</span>
+</td>
+
+<td>${badge(inv.status)}</td>
+
+<td>
+
+<select onchange="updateDeliveryStatus('${inv._id}',this.value)">
+
+<option ${inv.deliveryStatus==="Pending"?"selected":""}>
+Pending
+</option>
+
+<option ${inv.deliveryStatus==="Shoot Completed"?"selected":""}>
+Shoot Completed
+</option>
+
+<option ${inv.deliveryStatus==="Editing Completed"?"selected":""}>
+Editing Completed
+</option>
+
+<option ${inv.deliveryStatus==="Delivered"?"selected":""}>
+Delivered
+</option>
+
+</select>
+
+</td>
+
+<td>
+
+<div class="actions">
+
+<button class="btn btn-view"
+onclick="viewInvoice('${inv._id}')">
+View
+</button>
+
+<button class="btn btn-edit"
+onclick="editPayment('${inv._id}')">
+Edit
+</button>
+
+<button class="btn btn-download"
+onclick="downloadInvoice('${inv._id}')">
+↓ PDF
+</button>
+
+</div>
+
+</td>
+
+</tr>
+
+`).join("");
+
+}
+
+
+/* ── LOAD INVOICES (FILTER ENABLED) ── */
+async function loadInvoices(){
+
+const res=await fetch("/bookings-list",{
+
+headers:{
+Authorization:
+"Bearer "+localStorage.getItem("token")
+}
+
+});
+
+if(!res.ok){
+
+showToast("Failed to load invoices","error");
+
+return;
+
+}
+
+const invoices=await res.json();
+
+
+const params=
+new URLSearchParams(window.location.search);
+
+const deliveryFilter=
+params.get("delivery");
+
+
+if(deliveryFilter==="pending"){
+
+const filtered=
+invoices.filter(
+i=>i.deliveryStatus!=="Delivered"
+);
+
+renderInvoices(filtered);
+
+}else{
+
+renderInvoices(invoices);
+
+}
+
+}
+
+
+/* ── ACTIONS ── */
+function viewInvoice(id){
+window.location="/invoice-view.html?id="+id;
+}
+
+function downloadInvoice(id){
+window.location="/invoice-download.html?id="+id;
+}
+
+
+/* ── EDIT PAYMENT ── */
+async function editPayment(id){
+
+const amount=prompt("Enter new advance amount (₹)");
+
+if(amount===null)return;
+
+if(isNaN(amount)||Number(amount)<0){
+
+showToast("Invalid amount entered","error");
+
+return;
+
+}
+
+const res=await fetch("/update-booking/"+id,{
+
+method:"PUT",
+
+headers:{
+"Content-Type":"application/json",
+Authorization:
+"Bearer "+localStorage.getItem("token")
+},
+
+body:JSON.stringify({
+advancePaid:Number(amount)
+})
+
+});
+
+if(res.status===403){
+
+showToast("Only Super Admin allowed","error");
+
+return;
+
+}
+
+if(!res.ok){
+
+showToast("Payment update failed","error");
+
+return;
+
+}
+
+showToast("Payment updated successfully ✓","success");
+
+loadInvoices();
+
+}
+
+
+/* ── START PAGE ── */
+loadInvoices();
+
+</script>
+</body>
+</html>

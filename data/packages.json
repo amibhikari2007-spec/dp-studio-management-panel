@@ -1,0 +1,82 @@
+[
+  {
+    "id": "PKG001",
+    "name": "Silver Moments",
+    "tier": "basic",
+    "price": 25000,
+    "description": "Perfect for intimate gatherings and small celebrations",
+    "includes": {
+      "photography": true,
+      "videography": false,
+      "album": true,
+      "albumPages": 20,
+      "drone": false,
+      "highlightFilm": false,
+      "extraHours": 0,
+      "baseHours": 4
+    },
+    "recommended": false,
+    "color": "#6B7280",
+    "eventTypes": ["birthday", "engagement", "small_wedding"]
+  },
+  {
+    "id": "PKG002",
+    "name": "Gold Elegance",
+    "tier": "standard",
+    "price": 45000,
+    "description": "Our most popular package — ideal for medium weddings and events",
+    "includes": {
+      "photography": true,
+      "videography": true,
+      "album": true,
+      "albumPages": 40,
+      "drone": false,
+      "highlightFilm": true,
+      "extraHours": 0,
+      "baseHours": 8
+    },
+    "recommended": true,
+    "color": "#D97706",
+    "eventTypes": ["wedding", "reception", "anniversary"]
+  },
+  {
+    "id": "PKG003",
+    "name": "Diamond Premium",
+    "tier": "premium",
+    "price": 75000,
+    "description": "The ultimate coverage — drone, cinematic film, luxury album",
+    "includes": {
+      "photography": true,
+      "videography": true,
+      "album": true,
+      "albumPages": 60,
+      "drone": true,
+      "highlightFilm": true,
+      "extraHours": 2,
+      "baseHours": 12
+    },
+    "recommended": false,
+    "color": "#7C3AED",
+    "eventTypes": ["wedding", "grand_reception", "destination"]
+  },
+  {
+    "id": "PKG004",
+    "name": "Platinum Legacy",
+    "tier": "elite",
+    "price": 120000,
+    "description": "Bespoke, all-inclusive — crafted for grand weddings 300+ guests",
+    "includes": {
+      "photography": true,
+      "videography": true,
+      "album": true,
+      "albumPages": 100,
+      "drone": true,
+      "highlightFilm": true,
+      "extraHours": 6,
+      "baseHours": 16
+    },
+    "recommended": false,
+    "color": "#0EA5E9",
+    "eventTypes": ["grand_wedding", "destination", "celebrity"]
+  }
+]

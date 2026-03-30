@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin Panel - DP Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #10141c;
+      --surface2: #161c28;
+      --border: rgba(255,255,255,0.07);
+      --blue: #4f8ef7;
+      --blue-dim: rgba(79,142,247,0.18);
+      --blue-glow: rgba(79,142,247,0.25);
+      --green: #2dd4a0;
+      --amber: #f5a623;
+      --red: #f76f6f;
+      --purple: #a78bfa;
+      --text: #e8edf5;
+      --muted: #5a6478;
+      --font-head: 'Syne', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+      --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font-mono);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    /* ── GRID BACKGROUND ANIMATION ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,142,247,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,142,247,0.035) 1px, transparent 1px);
+      background-size: 44px 44px;
+      animation: gridDrift 25s linear infinite;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── KEYFRAME ANIMATIONS ── */
+    @keyframes gridDrift {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(44px); }
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes slideUpModal {
+      from { transform: translateY(120px) scale(0.97); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 22px rgba(167,139,250,0.35); }
+      50% { box-shadow: 0 0 38px rgba(167,139,250,0.6); }
+    }
+
+    @keyframes blip {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.6); }
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-8px); opacity: 1; }
+    }
+
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,12,16,0.88);
+      backdrop-filter: blur(18px);
+      animation: slideDown 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 14px; }
+
+    .header-icon {
+      width: 42px; height: 42px;
+      background: var(--purple);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      box-shadow: 0 0 22px rgba(167,139,250,0.35);
+      animation: pulse 3s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    .header-title {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .header-sub {
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .sa-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--purple);
+      background: rgba(167,139,250,0.1);
+      border: 1px solid rgba(167,139,250,0.25);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    .sa-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--purple);
+      animation: blip 2s ease-in-out infinite;
+    }
+
+    .header-buttons { 
+      display: flex; 
+      gap: 10px; 
+      align-items: center;
+      animation: fadeUp 0.5s 0.2s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .hdr-btn {
+      padding: 8px 18px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .hdr-btn:hover {
+      color: var(--blue);
+      border-color: var(--blue);
+      background: var(--blue-dim);
+    }
+
+    .hdr-btn.danger:hover {
+      color: var(--red);
+      border-color: var(--red);
+      background: rgba(247,111,111,0.1);
+    }
+
+    .hdr-btn.create {
+      color: var(--purple);
+      border-color: rgba(167,139,250,0.35);
+      background: rgba(167,139,250,0.08);
+    }
+
+    .hdr-btn.create:hover {
+      background: rgba(167,139,250,0.18);
+      border-color: var(--purple);
+      color: #fff;
+    }
+
+    /* ── CONTAINER ── */
+    .container {
+      position: relative;
+      z-index: 5;
+      padding: 44px 40px;
+      animation: fadeUp 0.6s 0.2s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .stat-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-chip:nth-child(1) { animation-delay: 0.3s; }
+    .stat-chip:nth-child(2) { animation-delay: 0.4s; }
+    .stat-chip:nth-child(3) { animation-delay: 0.5s; }
+
+    .stat-chip:hover { 
+      transform: translateY(-3px); 
+      border-color: rgba(167,139,250,0.25);
+      box-shadow: 0 8px 24px rgba(167,139,250,0.12);
+    }
+
+    .stat-chip::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--chip-color, var(--purple));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+
+    .stat-chip:hover::before { transform: scaleX(1); }
+
+    .chip-icon { font-size: 22px; flex-shrink: 0; }
+
+    .chip-label {
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .chip-value {
+      font-family: var(--font-head);
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    /* ── TABLE CARD ── */
+    .table-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 30px;
+      animation: fadeUp 0.5s 0.6s cubic-bezier(0.16,1,0.3,1) both;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .table-card:nth-of-type(2) { animation-delay: 0.65s; }
+
+    .table-card:hover {
+      border-color: rgba(79,142,247,0.15);
+      box-shadow: 0 8px 32px rgba(79,142,247,0.1);
+    }
+
+    .table-header {
+      padding: 22px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-header-left { display: flex; align-items: center; gap: 12px; }
+
+    .table-title {
+      font-family: var(--font-head);
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .live-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--green);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .live-dot::before {
+      content: '';
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: blip 1.5s ease-in-out infinite;
+    }
+
+    .table-count {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      background: var(--surface2);
+    }
+
+    .filter-btn {
+      padding: 5px 14px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: all var(--transition);
+      letter-spacing: 0.3px;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      background: rgba(167,139,250,0.12);
+      color: var(--purple);
+      border-color: rgba(167,139,250,0.3);
+    }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    thead tr { background: var(--surface2); }
+
+    th {
+      padding: 13px 20px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      animation: rowIn 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+      transition: background var(--transition);
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(167,139,250,0.04); }
+
+    td {
+      padding: 14px 20px;
+      font-size: 12px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    /* ── CELL STYLES ── */
+    .cell-user { display: flex; align-items: center; gap: 9px; }
+
+    .user-avatar {
+      width: 28px; height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-head);
+      flex-shrink: 0;
+      color: white;
+    }
+
+    .action-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      letter-spacing: 0.3px;
+    }
+
+    .action-login    { background: rgba(45,212,160,0.1);  color: var(--green); }
+    .action-update   { background: rgba(79,142,247,0.1);  color: var(--blue); }
+    .action-delete   { background: rgba(247,111,111,0.1); color: var(--red); }
+    .action-create   { background: rgba(167,139,250,0.1); color: var(--purple); }
+    .action-download { background: rgba(245,166,35,0.1);  color: var(--amber); }
+    .action-default  { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+    .ip-cell { font-size: 11px; color: var(--muted); letter-spacing: 0.3px; }
+    .muted-cell { font-size: 11px; color: var(--muted); }
+
+    /* ── DELETE BUTTON ── */
+    .delete-btn {
+      background: rgba(247,111,111,0.1);
+      color: var(--red);
+      border: 1px solid rgba(247,111,111,0.25);
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      transition: all var(--transition);
+      letter-spacing: 0.3px;
+    }
+
+    .delete-btn:hover {
+      background: rgba(247,111,111,0.2);
+      border-color: var(--red);
+    }
+
+    /* ── AMOUNT CELL ── */
+    .amount-cell {
+      font-family: var(--font-head);
+      font-size: 13px;
+      color: var(--green);
+    }
+
+    /* ── EMPTY / LOADING ── */
+    .state-row td {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .loader {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .loader span {
+      width: 6px; height: 6px;
+      background: var(--purple);
+      border-radius: 50%;
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+
+    .loader span:nth-child(2) { animation-delay: 0.2s; }
+    .loader span:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 30px; right: 30px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 13px;
+      display: flex; align-items: center; gap: 10px;
+      z-index: 9999;
+      transform: translateY(120px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+      backdrop-filter: blur(12px);
+      max-width: 320px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    #toast.show { 
+      transform: translateY(0); 
+      opacity: 1;
+      animation: slideUpModal 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .toast-dot { 
+      width: 8px; 
+      height: 8px; 
+      border-radius: 50%; 
+      flex-shrink: 0;
+      animation: blip 2s ease-in-out infinite;
+    }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 480px;
+      padding: 36px;
+      position: relative;
+      transform: translateY(30px) scale(0.97);
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(167,139,250,0.1);
+      animation: slideUpModal 0.4s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .modal-overlay.open .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 30px; height: 30px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 16px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: all var(--transition);
+      line-height: 1;
+    }
+
+    .modal-close:hover { 
+      color: var(--red); 
+      border-color: var(--red); 
+      background: rgba(247,111,111,0.1); 
+    }
+
+    .modal-icon {
+      width: 48px; height: 48px;
+      background: rgba(167,139,250,0.12);
+      border: 1px solid rgba(167,139,250,0.25);
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+      animation: fadeUp 0.5s 0.2s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .modal-title {
+      font-family: var(--font-head);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      animation: fadeUp 0.5s 0.3s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .modal-sub {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.4px;
+      margin-bottom: 28px;
+      animation: fadeUp 0.5s 0.4s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    /* ── FORM ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) forwards;
+      opacity: 0;
+    }
+
+    .form-group:nth-child(1) { animation-delay: 0.5s; }
+    .form-group:nth-child(2) { animation-delay: 0.58s; }
+    .form-group:nth-child(3) { animation-delay: 0.66s; }
+    .form-group:nth-child(4) { animation-delay: 0.74s; }
+    .form-group:nth-child(5) { animation-delay: 0.82s; }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-label {
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .form-input, .form-select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      width: 100%;
+    }
+
+    .form-input:focus, .form-select:focus {
+      border-color: rgba(167,139,250,0.5);
+      box-shadow: 0 0 0 3px rgba(167,139,250,0.08);
+    }
+
+    .form-input::placeholder { color: var(--muted); }
+
+    .form-select option { background: var(--surface2); color: var(--text); }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+      animation: fadeUp 0.5s 0.9s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      padding: 11px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .btn-cancel:hover { 
+      color: var(--text); 
+      border-color: rgba(255,255,255,0.15); 
+    }
+
+    .btn-create {
+      flex: 2;
+      padding: 11px;
+      background: var(--purple);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-create:hover { 
+      background: #b89efb; 
+      box-shadow: 0 4px 20px rgba(167,139,250,0.35);
+      transform: translateY(-2px);
+    }
+
+    .btn-create:disabled { 
+      opacity: 0.5; 
+      cursor: not-allowed; 
+    }
+
+    .btn-create .btn-spinner {
+      display: none;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+
+    .btn-create.loading .btn-label { display: none; }
+    .btn-create.loading .btn-spinner { display: block; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── TABLET (900px and below) ── */
+    @media (max-width: 900px) {
+      header { padding: 16px 20px; }
+      .container { padding: 24px 16px; }
+      .stats-row { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      
+      .modal { max-width: calc(100% - 32px); }
+      .header-buttons { gap: 6px; }
+      .hdr-btn { padding: 8px 12px; font-size: 10px; }
+      .hdr-btn.create { display: none; }
+      
+      table { font-size: 11px; }
+      th { padding: 10px 12px; }
+      td { padding: 10px 12px; }
+      .chip-value { font-size: 18px; }
+      .table-header { padding: 16px 20px; }
+    }
+
+    /* ── MOBILE (640px and below) ── */
+    @media (max-width: 640px) {
+      :root {
+        --font-head: 'Syne', sans-serif;
+        --font-mono: 'DM Mono', monospace;
+      }
+
+      header {
+        padding: 14px 16px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .header-left { width: 100%; }
+
+      .header-icon { width: 38px; height: 38px; font-size: 16px; }
+
+      .header-title { font-size: 16px; }
+
+      .header-sub { font-size: 9px; }
+
+      .header-buttons {
+        width: 100%;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .sa-badge { padding: 4px 10px; font-size: 9px; }
+
+      .hdr-btn {
+        padding: 7px 10px;
+        font-size: 9px;
+        flex: 1;
+        min-width: 70px;
+        text-align: center;
+      }
+
+      .hdr-btn.create {
+        display: none;
+      }
+
+      .container {
+        padding: 16px 12px;
+      }
+
+      .stats-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .stat-chip {
+        padding: 14px 16px;
+        gap: 10px;
+      }
+
+      .chip-icon { font-size: 18px; }
+
+      .chip-label { font-size: 9px; }
+
+      .chip-value { font-size: 16px; }
+
+      .table-card {
+        border-radius: 12px;
+        margin-bottom: 20px;
+      }
+
+      .table-header {
+        padding: 14px 16px;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .table-header-left {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .table-title { font-size: 13px; }
+
+      .table-count {
+        font-size: 10px;
+        padding: 3px 10px;
+        align-self: flex-start;
+      }
+
+      .filter-bar {
+        padding: 10px 12px;
+        gap: 6px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .filter-btn {
+        padding: 4px 10px;
+        font-size: 10px;
+        white-space: nowrap;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table { width: 100%; font-size: 11px; }
+
+      th {
+        padding: 10px 8px;
+        font-size: 9px;
+      }
+
+      td {
+        padding: 10px 8px;
+        font-size: 11px;
+      }
+
+      .cell-user {
+        gap: 6px;
+      }
+
+      .user-avatar {
+        width: 24px;
+        height: 24px;
+        font-size: 9px;
+      }
+
+      .action-tag {
+        padding: 2px 8px;
+        font-size: 9px;
+      }
+
+      .ip-cell {
+        font-size: 10px;
+        word-break: break-all;
+      }
+
+      .muted-cell { font-size: 10px; }
+
+      .delete-btn {
+        padding: 4px 10px;
+        font-size: 9px;
+      }
+
+      .amount-cell { font-size: 12px; }
+
+      .state-row td {
+        padding: 40px 12px;
+        font-size: 12px;
+      }
+
+      .modal {
+        max-width: calc(100% - 24px);
+        padding: 28px 20px;
+        border-radius: 16px;
+      }
+
+      .modal-icon { width: 42px; height: 42px; font-size: 20px; }
+
+      .modal-title { font-size: 16px; }
+
+      .modal-sub { font-size: 10px; margin-bottom: 20px; }
+
+      .modal-close {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .form-group { gap: 5px; }
+
+      .form-label { font-size: 9px; }
+
+      .form-input, .form-select {
+        padding: 9px 12px;
+        font-size: 11px;
+        border-radius: 6px;
+      }
+
+      .modal-actions {
+        gap: 8px;
+        margin-top: 20px;
+        flex-direction: column-reverse;
+      }
+
+      .btn-cancel, .btn-create {
+        padding: 10px;
+        font-size: 11px;
+      }
+
+      .btn-create { flex: 1; }
+
+      #toast {
+        bottom: 20px;
+        right: 16px;
+        left: 16px;
+        max-width: none;
+        font-size: 12px;
+        padding: 12px 16px;
+      }
+
+      .live-dot { font-size: 9px; }
+
+      .live-dot::before { width: 6px; height: 6px; }
+
+      /* Improve touch targets */
+      button { min-height: 44px; }
+
+      .filter-btn {
+        min-height: 36px;
+        display: flex;
+        align-items: center;
+      }
+
+      .delete-btn { min-height: 36px; }
+
+      .hdr-btn { min-height: 36px; }
+    }
+
+    /* ── SMALL MOBILE (480px and below) ── */
+    @media (max-width: 480px) {
+      header { padding: 12px 12px; }
+
+      .header-icon { width: 36px; height: 36px; }
+
+      .header-title { font-size: 14px; }
+
+      .container { padding: 12px 10px; }
+
+      .stats-row { gap: 10px; }
+
+      .stat-chip { padding: 12px 14px; }
+
+      .table-header { padding: 12px 14px; }
+
+      .table-header-left {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .filter-bar { padding: 8px 10px; }
+
+      .modal { padding: 24px 18px; }
+
+      .modal-actions { margin-top: 16px; }
+
+      th, td { font-size: 10px; }
+
+      .chip-value { font-size: 14px; }
+
+      .table-title { font-size: 12px; }
+
+      .amount-cell { font-size: 11px; }
+
+      #toast {
+        bottom: 16px;
+        right: 12px;
+        left: 12px;
+        padding: 10px 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <div class="header-icon">🛡</div>
+      <div>
+        <div class="header-title">Super Admin Panel</div>
+        <div class="header-sub">DP Studio & Light</div>
+      </div>
+    </div>
+    <div class="header-buttons">
+      <span class="sa-badge">Super Admin</span>
+      <button class="hdr-btn create" onclick="openCreateUser()">+ Create User</button>
+      <button class="hdr-btn" onclick="goDashboard()">← Dashboard</button>
+      <button class="hdr-btn danger" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- Container -->
+  <div class="container">
+
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-chip" style="--chip-color: var(--blue)">
+        <span class="chip-icon">📅</span>
+        <div>
+          <div class="chip-label">Total Bookings</div>
+          <div class="chip-value" id="statBookings">—</div>
+        </div>
+      </div>
+      <div class="stat-chip" style="--chip-color: var(--green)">
+        <span class="chip-icon">💰</span>
+        <div>
+          <div class="chip-label">Total Revenue</div>
+          <div class="chip-value" id="statRevenue" style="font-size:16px; margin-top:2px">—</div>
+        </div>
+      </div>
+      <div class="stat-chip" style="--chip-color: var(--purple)">
+        <span class="chip-icon">📋</span>
+        <div>
+          <div class="chip-label">Activity Logs</div>
+          <div class="chip-value" id="statLogs">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOKINGS TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="table-title">Bookings Management</div>
+          <span class="live-dot">Live</span>
+        </div>
+        <span class="table-count" id="bookingCount">Loading…</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Event</th>
+              <th>Date</th>
+              <th>Total Amount</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="bookingTable">
+            <tr class="state-row">
+              <td colspan="5">
+                <div class="loader"><span></span><span></span><span></span></div>
+                <div>Loading bookings…</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ACTIVITY LOGS TABLE -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="table-title">Activity Logs</div>
+          <span class="live-dot">Live</span>
+        </div>
+        <span class="table-count" id="tableCount">Loading…</span>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterAction('all', this)">All</button>
+        <button class="filter-btn" onclick="filterAction('login', this)">Login</button>
+        <button class="filter-btn" onclick="filterAction('create', this)">Create</button>
+        <button class="filter-btn" onclick="filterAction('update', this)">Update</button>
+        <button class="filter-btn" onclick="filterAction('delete', this)">Delete</button>
+        <button class="filter-btn" onclick="filterAction('download', this)">Download</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Action</th>
+              <th>Details</th>
+              <th>IP Address</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="activityTable">
+            <tr class="state-row">
+              <td colspan="5">
+                <div class="loader"><span></span><span></span><span></span></div>
+                <div>Loading activity logs…</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Create User Modal -->
+  <div class="modal-overlay" id="createUserModal" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <button class="modal-close" onclick="closeCreateUser()">✕</button>
+      <div class="modal-icon">👤</div>
+      <div class="modal-title">Create New User</div>
+      <div class="modal-sub">Fill in the details to add a new user to the system.</div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input class="form-input" id="cu_name" type="text" placeholder="e.g. Rahul Das" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input class="form-input" id="cu_phone" type="tel" placeholder="+91 98765 43210" />
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="cu_email" type="email" placeholder="user@example.com" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input class="form-input" id="cu_password" type="password" placeholder="Min. 6 characters" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role</label>
+          <select class="form-select" id="cu_role">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeCreateUser()">Cancel</button>
+        <button class="btn-create" id="createBtn" onclick="createUser()">
+          <span class="btn-label">Create User</span>
+          <span class="btn-spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast">
+    <span class="toast-dot"></span>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script>
+    /* ── AUTH ── */
+    const token = localStorage.getItem("token");
+    if (!token) window.location = "/admin.html";
+
+    let allLogs = [];
+
+    /* ── TOAST ── */
+    function showToast(msg, type = "info") {
+      const toast = document.getElementById("toast");
+      const colors = { success: "#2dd4a0", error: "#f76f6f", info: "#a78bfa", warn: "#f5a623" };
+      toast.querySelector(".toast-dot").style.background = colors[type] || colors.info;
+      document.getElementById("toastMsg").textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3000);
+    }
+
+    /* ── HELPERS ── */
+    function formatDate(date) {
+      if (!date) return "--";
+      return new Date(date).toLocaleString("en-IN", {
+        day: "2-digit", month: "short", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+    }
+
+    function avatar(name) {
+      const initials = (name || "?").split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+      return `<div class="user-avatar">${initials}</div>`;
+    }
+
+    function actionTag(action) {
+      const a = (action || "").toLowerCase();
+      const map = {
+        login: "action-login", update: "action-update", edit: "action-update",
+        delete: "action-delete", remove: "action-delete",
+        create: "action-create", add: "action-create",
+        download: "action-download", export: "action-download",
+      };
+      let cls = "action-default";
+      for (const [key, val] of Object.entries(map)) {
+        if (a.includes(key)) { cls = val; break; }
+      }
+      return `<span class="action-tag ${cls}">${action || "--"}</span>`;
+    }
+
+    /* ── LOAD BOOKINGS ── */
+    async function loadBookings() {
+      try {
+        const res = await fetch("/superadmin/bookings", {
+          headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        renderBookings(data);
+      } catch (err) {
+        document.getElementById("bookingTable").innerHTML =
+          `<tr class="state-row"><td colspan="5">⚠ Failed to load bookings</td></tr>`;
+        showToast("Failed to load bookings", "error");
+      }
+    }
+
+    function renderBookings(bookings) {
+      document.getElementById("bookingCount").textContent =
+        bookings.length + " record" + (bookings.length !== 1 ? "s" : "");
+
+      // Update stat
+      document.getElementById("statBookings").textContent = bookings.length;
+      const total = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
+      document.getElementById("statRevenue").textContent =
+        "₹ " + total.toLocaleString("en-IN");
+
+      if (!bookings.length) {
+        document.getElementById("bookingTable").innerHTML =
+          `<tr class="state-row"><td colspan="5">No bookings found</td></tr>`;
+        return;
+      }
+
+      document.getElementById("bookingTable").innerHTML = bookings.map((b, i) => `
+        <tr style="animation-delay:${i * 0.04}s">
+          <td>
+            <div class="cell-user">
+              ${avatar(b.customerName)}
+              <span>${b.customerName || "--"}</span>
+            </div>
+          </td>
+          <td><span class="muted-cell">${b.eventType || "--"}</span></td>
+          <td><span class="muted-cell">${new Date(b.eventDate).toLocaleDateString("en-IN", { day:"2-digit", month:"short", year:"numeric" })}</span></td>
+          <td><span class="amount-cell">₹ ${(b.totalAmount || 0).toLocaleString("en-IN")}</span></td>
+          <td>
+            <button class="delete-btn" onclick="deleteBooking('${b._id}')">Delete</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    /* ── DELETE BOOKING ── */
+    async function deleteBooking(id) {
+      if (!confirm("Delete booking permanently?")) return;
+      try {
+        const res = await fetch("/superadmin/delete-booking/" + id, {
+          method: "DELETE",
+          headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast("Booking deleted", "success");
+          loadBookings();
+          loadActivity();
+        } else {
+          showToast("Delete failed", "error");
+        }
+      } catch {
+        showToast("Delete failed", "error");
+      }
+    }
+
+    /* ── LOAD ACTIVITY ── */
+    async function loadActivity() {
+      try {
+        const res = await fetch("/activity-list", {
+          headers: { Authorization: "Bearer " + localStorage.getItem("token") }
+        });
+        if (res.status === 403) {
+          showToast("Only Super Admin allowed", "error");
+          setTimeout(() => window.location = "/dashboard.html", 1500);
+          return;
+        }
+        if (!res.ok) throw new Error();
+        allLogs = await res.json();
+        document.getElementById("statLogs").textContent = allLogs.length;
+        renderLogs(allLogs);
+      } catch (err) {
+        document.getElementById("activityTable").innerHTML =
+          `<tr class="state-row"><td colspan="5">⚠ Failed to load activity logs</td></tr>`;
+        showToast("Failed to load activity logs", "error");
+      }
+    }
+
+    function renderLogs(logs) {
+      document.getElementById("tableCount").textContent =
+        logs.length + " record" + (logs.length !== 1 ? "s" : "");
+
+      if (!logs.length) {
+        document.getElementById("activityTable").innerHTML =
+          `<tr class="state-row"><td colspan="5">No logs found</td></tr>`;
+        return;
+      }
+
+      document.getElementById("activityTable").innerHTML = logs.map((l, i) => `
+        <tr style="animation-delay:${i * 0.04}s">
+          <td>
+            <div class="cell-user">
+              ${avatar(l.username)}
+              <span>${l.username || "--"}</span>
+            </div>
+          </td>
+          <td>${actionTag(l.action)}</td>
+          <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; color:var(--muted)">${l.details || "--"}</td>
+          <td><span class="ip-cell">${l.ipAddress || "--"}</span></td>
+          <td><span class="muted-cell">${formatDate(l.createdAt)}</span></td>
+        </tr>
+      `).join("");
+    }
+
+    /* ── FILTER ── */
+    function filterAction(type, btn) {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const filtered = type === "all"
+        ? allLogs
+        : allLogs.filter(l => (l.action || "").toLowerCase().includes(type));
+      renderLogs(filtered);
+    }
+
+    /* ── CREATE USER MODAL ── */
+    function openCreateUser() {
+      document.getElementById("createUserModal").classList.add("open");
+      document.getElementById("cu_name").focus();
+    }
+
+    function closeCreateUser() {
+      document.getElementById("createUserModal").classList.remove("open");
+      // Reset form
+      ["cu_name","cu_phone","cu_email","cu_password"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      document.getElementById("cu_role").value = "user";
+      const btn = document.getElementById("createBtn");
+      btn.classList.remove("loading");
+      btn.disabled = false;
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById("createUserModal")) closeCreateUser();
+    }
+
+    async function createUser() {
+      const name     = document.getElementById("cu_name").value.trim();
+      const phone    = document.getElementById("cu_phone").value.trim();
+      const email    = document.getElementById("cu_email").value.trim();
+      const password = document.getElementById("cu_password").value;
+      const role     = document.getElementById("cu_role").value;
+
+      if (!name)     { showToast("Name is required", "warn"); return; }
+      if (!email)    { showToast("Email is required", "warn"); return; }
+      if (!password || password.length < 6) { showToast("Password must be at least 6 characters", "warn"); return; }
+
+      const btn = document.getElementById("createBtn");
+      btn.classList.add("loading");
+      btn.disabled = true;
+
+      try {
+        const res = await fetch("/superadmin/create-user", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("token")
+          },
+          body: JSON.stringify({ name, phone, email, password, role })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && (data.success || data._id || data.user)) {
+          showToast("User created successfully!", "success");
+          closeCreateUser();
+          loadActivity();
+        } else {
+          showToast(data.message || "Failed to create user", "error");
+          btn.classList.remove("loading");
+          btn.disabled = false;
+        }
+      } catch (err) {
+        showToast("Network error. Please try again.", "error");
+        btn.classList.remove("loading");
+        btn.disabled = false;
+      }
+    }
+
+    /* ── NAV ── */
+    function goDashboard() { window.location = "/dashboard.html"; }
+    function logout() {
+      localStorage.removeItem("token");
+      window.location = "/admin.html";
+    }
+
+    /* ── INIT ── */
+    loadBookings();
+    loadActivity();
+  </script>
+</body>
+</html>

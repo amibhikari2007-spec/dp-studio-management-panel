@@ -1,0 +1,65 @@
+[
+  {
+    "id": "PF001",
+    "title": "Priya & Arjun Wedding",
+    "eventType": "wedding",
+    "packageId": "PKG003",
+    "date": "2024-12-15",
+    "deliveredDate": "2025-01-10",
+    "isDemo": false,
+    "showInPortfolio": true,
+    "status": "Delivered",
+    "images": [
+      "/uploads/portfolio/pf001_1.jpg",
+      "/uploads/portfolio/pf001_2.jpg",
+      "/uploads/portfolio/pf001_3.jpg"
+    ],
+    "coverImage": "/uploads/portfolio/pf001_cover.jpg",
+    "videoUrl": "",
+    "tags": ["recommended", "premium"],
+    "description": "A grand celebration of love at The Grand Ballroom, Kolkata",
+    "guestCount": 450
+  },
+  {
+    "id": "PF002",
+    "title": "Studio Demo — Anniversary",
+    "eventType": "anniversary",
+    "packageId": "PKG002",
+    "date": "2024-11-20",
+    "deliveredDate": "2024-11-25",
+    "isDemo": true,
+    "showInPortfolio": true,
+    "status": "Delivered",
+    "images": [
+      "/uploads/portfolio/pf002_1.jpg",
+      "/uploads/portfolio/pf002_2.jpg"
+    ],
+    "coverImage": "/uploads/portfolio/pf002_cover.jpg",
+    "videoUrl": "",
+    "tags": [],
+    "description": "Intimate anniversary session showcasing our lighting and editing style",
+    "guestCount": 50
+  },
+  {
+    "id": "PF003",
+    "title": "Rahul & Sneha Reception",
+    "eventType": "reception",
+    "packageId": "PKG004",
+    "date": "2025-01-05",
+    "deliveredDate": "2025-01-20",
+    "isDemo": false,
+    "showInPortfolio": true,
+    "status": "Delivered",
+    "images": [
+      "/uploads/portfolio/pf003_1.jpg",
+      "/uploads/portfolio/pf003_2.jpg",
+      "/uploads/portfolio/pf003_3.jpg",
+      "/uploads/portfolio/pf003_4.jpg"
+    ],
+    "coverImage": "/uploads/portfolio/pf003_cover.jpg",
+    "videoUrl": "",
+    "tags": ["premium", "recommended"],
+    "description": "Platinum legacy coverage — drone aerials and cinematic highlight film",
+    "guestCount": 600
+  }
+]

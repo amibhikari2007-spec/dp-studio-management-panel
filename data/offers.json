@@ -1,0 +1,30 @@
+[
+  {
+    "id": "OFF001",
+    "title": "🎉 Wedding Season Special",
+    "subtitle": "Book before March 31 and save 15% on Gold & Diamond packages",
+    "discount": 15,
+    "discountType": "percentage",
+    "appliesTo": ["PKG002", "PKG003"],
+    "validFrom": "2025-01-01",
+    "validUntil": "2025-03-31",
+    "active": true,
+    "bgColor": "#7C3AED",
+    "textColor": "#FFFFFF",
+    "badgeText": "LIMITED TIME"
+  },
+  {
+    "id": "OFF002",
+    "title": "🌸 Summer Glow Package",
+    "subtitle": "Complimentary drone session with any booking above ₹50,000",
+    "discount": 0,
+    "discountType": "addon",
+    "appliesTo": ["PKG002", "PKG003", "PKG004"],
+    "validFrom": "2025-04-01",
+    "validUntil": "2025-06-30",
+    "active": false,
+    "bgColor": "#D97706",
+    "textColor": "#FFFFFF",
+    "badgeText": "SEASONAL"
+  }
+]

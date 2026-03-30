@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DP Studio — TV Mode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#000; }
+  body { font-family:'DM Sans',sans-serif; }
+
+  /* ── Main Slideshow ── */
+  #slideshow {
+    position:fixed; inset:0; background:#0A0A0F;
+  }
+
+  /* Slide backgrounds */
+  .slide {
+    position:absolute; inset:0; opacity:0;
+    transition:opacity 1.2s ease; pointer-events:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .slide.active { opacity:1; pointer-events:all; }
+
+  /* Image slide */
+  .slide-image .bg {
+    position:absolute; inset:0; background-size:cover; background-position:center;
+    transition:transform 10s ease; transform:scale(1.05);
+  }
+  .slide.active .bg { transform:scale(1); }
+  .slide-image .overlay {
+    position:absolute; inset:0;
+    background:linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.6) 100%);
+  }
+
+  /* Package slide */
+  .slide-package {
+    background:linear-gradient(135deg, #0F0A1E 0%, #1E1B4B 50%, #0F0A1E 100%);
+  }
+  .slide-package .pkg-content {
+    position:relative; z-index:2; text-align:center; padding:60px;
+    max-width:800px;
+  }
+  .slide-package .pkg-label {
+    font-size:11px; letter-spacing:4px; text-transform:uppercase;
+    color:#A78BFA; margin-bottom:20px;
+  }
+  .slide-package .pkg-name {
+    font-family:'Cormorant Garamond',serif; font-size:72px; font-weight:300;
+    color:#fff; line-height:1.1; margin-bottom:16px;
+  }
+  .slide-package .pkg-price {
+    font-family:'Cormorant Garamond',serif; font-size:36px; color:#D97706;
+    margin-bottom:24px;
+  }
+  .slide-package .pkg-desc {
+    font-size:16px; color:rgba(255,255,255,0.6); max-width:500px;
+    margin:0 auto 32px; line-height:1.7;
+  }
+  .slide-package .pkg-features {
+    display:flex; gap:24px; justify-content:center; flex-wrap:wrap;
+  }
+  .slide-package .pkg-feature {
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1);
+    border-radius:30px; padding:8px 20px; font-size:13px; color:#C4B5FD;
+  }
+  .slide-package .popular-ring {
+    position:absolute; top:20px; right:20px;
+    background:linear-gradient(135deg,#D97706,#F59E0B);
+    color:#fff; font-size:11px; font-weight:700; letter-spacing:1px;
+    padding:6px 14px; border-radius:20px;
+  }
+
+  /* Offer slide */
+  .slide-offer {
+    align-items:stretch; justify-content:stretch;
+  }
+  .slide-offer .offer-full {
+    width:100%; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding:80px;
+  }
+  .slide-offer .off-badge {
+    font-size:11px; letter-spacing:4px; font-weight:700;
+    padding:6px 20px; border-radius:20px; background:rgba(255,255,255,0.2);
+    margin-bottom:28px;
+  }
+  .slide-offer .off-title {
+    font-family:'Cormorant Garamond',serif; font-size:64px; font-weight:300;
+    text-align:center; line-height:1.2; margin-bottom:20px;
+  }
+  .slide-offer .off-sub {
+    font-size:20px; opacity:0.8; text-align:center; max-width:600px; line-height:1.6;
+  }
+
+  /* Content overlay (image slides) */
+  .slide-caption {
+    position:absolute; bottom:0; left:0; right:0; padding:48px 64px;
+    z-index:5;
+  }
+  .slide-caption .cap-type {
+    font-size:11px; letter-spacing:3px; text-transform:uppercase;
+    color:#A78BFA; margin-bottom:10px;
+  }
+  .slide-caption .cap-title {
+    font-family:'Cormorant Garamond',serif; font-size:48px; font-weight:300;
+    color:#fff; line-height:1.2; margin-bottom:12px;
+  }
+  .slide-caption .cap-meta {
+    font-size:14px; color:rgba(255,255,255,0.55); display:flex; gap:20px;
+  }
+  .slide-caption .cap-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(16,185,129,0.8); color:#fff; font-size:11px; font-weight:700;
+    padding:4px 12px; border-radius:20px; margin-bottom:12px;
+  }
+  .slide-caption .cap-badge.demo {
+    background:rgba(217,119,6,0.8);
+  }
+
+  /* ── HUD ── */
+  #hud {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:24px 40px;
+    background:linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 100%);
+    transition:opacity 0.5s;
+  }
+  .hud-logo {
+    font-family:'Cormorant Garamond',serif; font-size:24px; color:#fff;
+    letter-spacing:2px;
+  }
+  .hud-logo span { font-size:11px; color:#A78BFA; letter-spacing:4px; text-transform:uppercase; display:block; }
+  .hud-right { display:flex; align-items:center; gap:20px; }
+  .hud-slide-info { color:rgba(255,255,255,0.5); font-size:12px; letter-spacing:1px; }
+  .hud-clock { color:rgba(255,255,255,0.7); font-size:14px; font-weight:500; }
+  .hud-pause { color:rgba(255,255,255,0.5); font-size:11px; letter-spacing:1px; }
+
+  /* ── Progress Bar ── */
+  #progressBar {
+    position:fixed; bottom:0; left:0; height:2px; background:rgba(167,139,250,0.8);
+    z-index:100; transition:width 0.1s linear;
+  }
+
+  /* ── Slide Counter Dots ── */
+  #dots {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    display:flex; gap:8px; z-index:100;
+  }
+  .dot {
+    width:6px; height:6px; border-radius:50%;
+    background:rgba(255,255,255,0.25); transition:all 0.3s;
+  }
+  .dot.active { background:#A78BFA; width:24px; border-radius:3px; }
+
+  /* ── Footer Contact ── */
+  #footer-contact {
+    position:fixed; bottom:48px; right:40px; z-index:100; text-align:right;
+  }
+  #footer-contact .cta { font-size:12px; color:rgba(255,255,255,0.4); letter-spacing:1px; }
+  #footer-contact .phone { font-family:'Cormorant Garamond',serif; font-size:20px; color:rgba(255,255,255,0.7); }
+
+  /* ── Paused Overlay ── */
+  #pausedOverlay {
+    display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    z-index:200; background:rgba(0,0,0,0.7); border-radius:50%;
+    width:80px; height:80px; align-items:center; justify-content:center;
+    font-size:32px; color:#fff; backdrop-filter:blur(8px);
+  }
+  #pausedOverlay.show { display:flex; }
+
+  /* ── Keyboard Hints ── */
+  #keyHints {
+    position:fixed; bottom:24px; left:40px; z-index:100;
+    color:rgba(255,255,255,0.3); font-size:11px; letter-spacing:0.5px;
+  }
+
+  /* ── Background decor ── */
+  .grain {
+    position:fixed; inset:0; pointer-events:none; z-index:1; opacity:0.03;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  }
+
+  /* Stars bg for package slides */
+  .stars {
+    position:absolute; inset:0; pointer-events:none;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 80%, rgba(255,255,255,0.25) 0%, transparent 100%),
+      radial-gradient(2px 2px at 70% 20%, rgba(167,139,250,0.3) 0%, transparent 100%);
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-logo">
+    DP Studio
+    <span>Photography &amp; Videography</span>
+  </div>
+  <div class="hud-right">
+    <div class="hud-pause" id="hudPause"></div>
+    <div class="hud-slide-info" id="hudSlideInfo">1 / 1</div>
+    <div class="hud-clock" id="hudClock"></div>
+  </div>
+</div>
+
+<!-- Slideshow Container -->
+<div id="slideshow"></div>
+
+<!-- Progress Bar -->
+<div id="progressBar" style="width:0%"></div>
+
+<!-- Dots -->
+<div id="dots"></div>
+
+<!-- Footer Contact -->
+<div id="footer-contact">
+  <div class="cta">BOOK YOUR DATE</div>
+  <div class="phone" id="footerPhone">+91 98765 43210</div>
+</div>
+
+<!-- Paused Overlay -->
+<div id="pausedOverlay">⏸</div>
+
+<!-- Key Hints -->
+<div id="keyHints">ESC: Exit &nbsp;|&nbsp; SPACE: Pause &nbsp;|&nbsp; ← →: Navigate</div>
+
+<script>
+let slides = [];
+let currentIdx = 0;
+let isPaused = false;
+let timer = null;
+let progressTimer = null;
+let currentDuration = 8000;
+let progressStart = null;
+let refreshInterval = null;
+
+// ── Load Data ──────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const res = await fetch('/api/tv-content');
+    const data = await res.json();
+    if (!data.success) return;
+
+    const { config, slides: s } = data;
+
+    // Update config
+    currentDuration = config.slideshow?.imageDuration || 8000;
+    document.getElementById('footerPhone').textContent = config.contactPhone || '+91 98765 43210';
+
+    // Build slide array
+    const allSlides = [];
+
+    // Portfolio images
+    (s.portfolio || []).forEach(item => {
+      const imgs = item.images?.length ? item.images : item.coverImage ? [item.coverImage] : [];
+      imgs.slice(0, 3).forEach(img => {
+        allSlides.push({ type: 'image', item, imageUrl: img });
+      });
+    });
+
+    // Packages
+    (s.packages || []).forEach(pkg => {
+      allSlides.push({ type: 'package', pkg });
+    });
+
+    // Offers
+    (s.offers || []).forEach(offer => {
+      allSlides.push({ type: 'offer', offer });
+    });
+
+    // Shuffle (keep some order: image, image, package, image, image, offer…)
+    slides = interleave(
+      allSlides.filter(s => s.type === 'image'),
+      allSlides.filter(s => s.type === 'package'),
+      allSlides.filter(s => s.type === 'offer')
+    );
+
+    if (!slides.length) {
+      slides = [{ type: 'placeholder' }];
+    }
+
+    buildDots();
+    renderAllSlides();
+    goTo(0);
+    startClock();
+
+    // Auto refresh
+    const refreshMs = config.slideshow?.autoRefreshInterval || 60000;
+    refreshInterval = setInterval(init, refreshMs);
+
+  } catch(e) {
+    console.error('TV Mode load error:', e);
+    // Show offline slide
+    slides = [{ type: 'placeholder' }];
+    renderAllSlides();
+    goTo(0);
+  }
+}
+
+function interleave(images, packages, offers) {
+  const result = [];
+  let ii = 0, pi = 0, oi = 0;
+  while (ii < images.length || pi < packages.length || oi < offers.length) {
+    if (ii < images.length) result.push(images[ii++]);
+    if (ii < images.length) result.push(images[ii++]);
+    if (pi < packages.length) result.push(packages[pi++]);
+    if (ii < images.length) result.push(images[ii++]);
+    if (oi < offers.length) result.push(offers[oi++]);
+  }
+  return result;
+}
+
+// ── Build Slides ──────────────────────────────────────────────────────────
+function renderAllSlides() {
+  const container = document.getElementById('slideshow');
+  container.innerHTML = '';
+
+  slides.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'slide';
+    el.id = `slide-${i}`;
+
+    if (s.type === 'image') {
+      el.classList.add('slide-image');
+      const item = s.item;
+      const isPremium = (item.tags||[]).includes('premium');
+      el.innerHTML = `
+        <div class="bg" style="background-image:url('${s.imageUrl}')"></div>
+        <div class="overlay"></div>
+        <div class="slide-caption">
+          <div class="cap-badge ${item.isDemo ? 'demo' : ''}">
+            ${item.isDemo ? '🎨 Studio Demo ✔' : '✅ Real Client Project ✔'}
+          </div>
+          ${isPremium ? '<div style="display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,0.8);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:12px;margin-left:8px">⭐ PREMIUM</div>' : ''}
+          <div class="cap-type">${item.eventType || 'Event'}</div>
+          <div class="cap-title">${item.title}</div>
+          <div class="cap-meta">
+            ${item.deliveredDate ? `<span>📅 ${new Date(item.deliveredDate).toLocaleDateString('en-IN',{month:'long',year:'numeric'})}</span>` : ''}
+            ${item.guestCount ? `<span>👥 ${item.guestCount} guests</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    else if (s.type === 'package') {
+      el.classList.add('slide-package');
+      const pkg = s.pkg;
+      const features = [];
+      if (pkg.includes?.photography) features.push('📸 Photography');
+      if (pkg.includes?.videography) features.push('🎥 Videography');
+      if (pkg.includes?.album) features.push(`📔 ${pkg.includes.albumPages}pg Album`);
+      if (pkg.includes?.drone) features.push('🚁 Drone Aerial');
+      if (pkg.includes?.highlightFilm) features.push('🎬 Highlight Film');
+      el.innerHTML = `
+        <div class="stars"></div>
+        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center,${pkg.color||'#7C3AED'}22 0%,transparent 70%)"></div>
+        <div class="pkg-content">
+          ${pkg.isMostPopular ? `<div style="display:inline-block;background:linear-gradient(135deg,#D97706,#F59E0B);color:#fff;font-size:11px;font-weight:700;letter-spacing:2px;padding:6px 20px;border-radius:20px;margin-bottom:20px">🔥 MOST POPULAR</div>` : ''}
+          <div class="pkg-label">Studio Package</div>
+          <div class="pkg-name" style="color:${pkg.color||'#fff'}">${pkg.name}</div>
+          <div class="pkg-price">₹${(pkg.price||0).toLocaleString('en-IN')}<span style="font-size:18px;opacity:0.6"> / event</span></div>
+          <div class="pkg-desc">${pkg.description||''}</div>
+          <div class="pkg-features">${features.map(f => `<div class="pkg-feature">${f}</div>`).join('')}</div>
+        </div>
+      `;
+    }
+
+    else if (s.type === 'offer') {
+      el.classList.add('slide-offer');
+      const offer = s.offer;
+      el.innerHTML = `
+        <div class="offer-full" style="background:${offer.bgColor||'#7C3AED'};color:${offer.textColor||'#fff'}">
+          <div class="off-badge">${offer.badgeText||'SPECIAL OFFER'}</div>
+          <div class="off-title">${offer.title}</div>
+          <div class="off-sub">${offer.subtitle||''}</div>
+          ${offer.discount ? `<div style="margin-top:32px;font-family:'Cormorant Garamond',serif;font-size:80px;font-weight:300;opacity:0.9">${offer.discount}%<span style="font-size:32px"> OFF</span></div>` : ''}
+        </div>
+      `;
+    }
+
+    else {
+      // placeholder
+      el.classList.add('slide-package');
+      el.innerHTML = `
+        <div class="stars"></div>
+        <div class="pkg-content">
+          <div class="pkg-label">Welcome to</div>
+          <div class="pkg-name">DP Studio</div>
+          <div class="pkg-desc">Professional Photography & Videography</div>
+        </div>
+      `;
+    }
+
+    container.appendChild(el);
+  });
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────
+function goTo(idx, dir = 1) {
+  if (!slides.length) return;
+  const prev = document.getElementById(`slide-${currentIdx}`);
+  if (prev) prev.classList.remove('active');
+
+  currentIdx = ((idx % slides.length) + slides.length) % slides.length;
+  const next = document.getElementById(`slide-${currentIdx}`);
+  if (next) next.classList.add('active');
+
+  // Duration
+  const slide = slides[currentIdx];
+  currentDuration = (slide?.type === 'image' ? 8000 : slide?.type === 'offer' ? 10000 : 12000);
+
+  updateHUD();
+  updateDots();
+  startProgress();
+  scheduleNext();
+}
+
+function goNext() { goTo(currentIdx + 1); }
+function goPrev() { goTo(currentIdx - 1, -1); }
+
+function scheduleNext() {
+  clearTimeout(timer);
+  if (!isPaused) {
+    timer = setTimeout(goNext, currentDuration);
+  }
+}
+
+// ── Progress Bar ──────────────────────────────────────────────────────────
+function startProgress() {
+  clearInterval(progressTimer);
+  progressStart = Date.now();
+  const bar = document.getElementById('progressBar');
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+
+  progressTimer = setInterval(() => {
+    if (isPaused) return;
+    const elapsed = Date.now() - progressStart;
+    const pct = Math.min((elapsed / currentDuration) * 100, 100);
+    bar.style.width = pct + '%';
+    if (pct >= 100) clearInterval(progressTimer);
+  }, 100);
+}
+
+// ── HUD ───────────────────────────────────────────────────────────────────
+function updateHUD() {
+  document.getElementById('hudSlideInfo').textContent = `${currentIdx + 1} / ${slides.length}`;
+  document.getElementById('hudPause').textContent = isPaused ? '⏸ PAUSED' : '';
+}
+
+function buildDots() {
+  const dotsEl = document.getElementById('dots');
+  dotsEl.innerHTML = '';
+  // Only show dots if ≤ 20 slides
+  if (slides.length <= 20) {
+    slides.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      d.onclick = () => goTo(i);
+      dotsEl.appendChild(d);
+    });
+  }
+}
+
+function updateDots() {
+  document.querySelectorAll('#dots .dot').forEach((d, i) => {
+    d.classList.toggle('active', i === currentIdx);
+  });
+}
+
+// ── Clock ─────────────────────────────────────────────────────────────────
+function startClock() {
+  function tick() {
+    const now = new Date();
+    document.getElementById('hudClock').textContent =
+      now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ── Keyboard Controls ─────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  switch(e.key) {
+    case 'Escape':
+    case 'Esc':
+      window.close();
+      history.back();
+      break;
+    case ' ':
+    case 'Space':
+      e.preventDefault();
+      isPaused = !isPaused;
+      document.getElementById('pausedOverlay').classList.toggle('show', isPaused);
+      updateHUD();
+      if (!isPaused) { progressStart = Date.now(); scheduleNext(); }
+      else clearTimeout(timer);
+      break;
+    case 'ArrowLeft':
+      goPrev();
+      break;
+    case 'ArrowRight':
+      goNext();
+      break;
+  }
+});
+
+// Hide cursor after 3s of inactivity
+let cursorTimer;
+document.addEventListener('mousemove', () => {
+  document.body.style.cursor = 'default';
+  clearTimeout(cursorTimer);
+  cursorTimer = setTimeout(() => { document.body.style.cursor = 'none'; }, 3000);
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

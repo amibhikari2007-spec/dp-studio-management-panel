@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DP Studio — Catalogue Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dp-purple:#7C3AED; --dp-purple-dark:#5B21B6; --dp-purple-light:#EDE9FE;
+    --dp-gold:#D97706; --dp-dark:#1E1B4B; --dp-gray:#6B7280;
+    --dp-light:#F9FAFB; --dp-white:#FFFFFF; --dp-border:#E5E7EB;
+    --dp-success:#10B981; --dp-danger:#EF4444; --sidebar-w:240px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--dp-light); color:var(--dp-dark); }
+
+  #sidebar {
+    position:fixed; left:0; top:0; width:var(--sidebar-w); height:100vh;
+    background:var(--dp-dark); display:flex; flex-direction:column; z-index:100;
+  }
+  #sidebar .logo { padding:28px 24px 20px; border-bottom:1px solid rgba(255,255,255,0.08); }
+  #sidebar .logo h2 { font-family:'Cormorant Garamond',serif; font-size:22px; color:#fff; letter-spacing:1px; }
+  #sidebar .logo span { font-size:11px; color:#A78BFA; letter-spacing:2px; text-transform:uppercase; }
+  #sidebar nav { flex:1; padding:16px 0; }
+  #sidebar nav a {
+    display:flex; align-items:center; gap:10px; padding:10px 24px;
+    color:rgba(255,255,255,0.65); text-decoration:none; font-size:13.5px;
+    transition:all 0.2s; border-left:3px solid transparent;
+  }
+  #sidebar nav a:hover, #sidebar nav a.active {
+    color:#fff; background:rgba(124,58,237,0.2); border-left-color:var(--dp-purple);
+  }
+  #sidebar nav a .ico { font-size:16px; width:20px; }
+  #sidebar .sidebar-footer { padding:16px 24px; border-top:1px solid rgba(255,255,255,0.08); }
+  #sidebar .sidebar-footer a { color:rgba(255,255,255,0.5); font-size:12px; text-decoration:none; }
+
+  #main { margin-left:var(--sidebar-w); min-height:100vh; }
+
+  .topbar {
+    background:var(--dp-white); border-bottom:1px solid var(--dp-border);
+    padding:0 32px; height:64px; display:flex; align-items:center;
+    justify-content:space-between; position:sticky; top:0; z-index:50;
+  }
+  .topbar h1 { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; }
+  .tab-bar {
+    display:flex; gap:4px; padding:0 32px; background:var(--dp-white);
+    border-bottom:1px solid var(--dp-border);
+  }
+  .tab-btn {
+    padding:12px 20px; font-size:13px; cursor:pointer; border:none;
+    background:transparent; color:var(--dp-gray); border-bottom:2px solid transparent;
+    font-family:'DM Sans',sans-serif; transition:all 0.18s;
+  }
+  .tab-btn.active { color:var(--dp-purple); border-bottom-color:var(--dp-purple); font-weight:500; }
+
+  .page-body { padding:28px 32px; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .btn {
+    display:inline-flex; align-items:center; gap:6px; padding:8px 16px;
+    border-radius:8px; font-size:13px; font-weight:500; cursor:pointer;
+    transition:all 0.18s; border:1px solid transparent; text-decoration:none;
+    font-family:'DM Sans',sans-serif;
+  }
+  .btn-primary { background:var(--dp-purple); color:#fff; }
+  .btn-primary:hover { background:var(--dp-purple-dark); }
+  .btn-danger { background:var(--dp-danger); color:#fff; }
+  .btn-danger:hover { background:#DC2626; }
+  .btn-outline { background:transparent; border-color:var(--dp-border); color:var(--dp-dark); }
+  .btn-outline:hover { background:var(--dp-light); }
+  .btn-success { background:var(--dp-success); color:#fff; }
+  .btn-sm { padding:5px 10px; font-size:12px; }
+
+  /* ── Section Header ── */
+  .sec-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .sec-hdr h2 { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:600; }
+
+  /* ── Table ── */
+  .data-table { width:100%; border-collapse:collapse; background:var(--dp-white); border-radius:12px; overflow:hidden; border:1px solid var(--dp-border); }
+  .data-table th { padding:12px 16px; text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:var(--dp-gray); background:var(--dp-light); border-bottom:1px solid var(--dp-border); }
+  .data-table td { padding:12px 16px; font-size:13.5px; border-bottom:1px solid var(--dp-border); vertical-align:middle; }
+  .data-table tr:last-child td { border-bottom:none; }
+  .data-table tr:hover td { background:#FAFAFA; }
+
+  /* ── Form Modal ── */
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; padding:24px; }
+  .modal.open { display:flex; }
+  .modal-inner {
+    background:var(--dp-white); border-radius:16px; width:100%; max-width:600px;
+    max-height:90vh; overflow-y:auto; padding:32px;
+  }
+  .modal-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; }
+  .modal-hdr h3 { font-family:'Cormorant Garamond',serif; font-size:20px; }
+  .close-btn { background:none; border:none; font-size:20px; cursor:pointer; color:var(--dp-gray); }
+
+  /* ── Form ── */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-row { display:flex; flex-direction:column; gap:6px; }
+  .form-row.full { grid-column:1/-1; }
+  .form-row label { font-size:12px; font-weight:500; color:var(--dp-gray); text-transform:uppercase; letter-spacing:0.5px; }
+  .form-row input, .form-row select, .form-row textarea {
+    padding:9px 12px; border:1px solid var(--dp-border); border-radius:8px;
+    font-size:13.5px; font-family:'DM Sans',sans-serif; outline:none;
+    transition:border-color 0.18s; background:var(--dp-white);
+  }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+    border-color:var(--dp-purple);
+  }
+  .form-row textarea { resize:vertical; min-height:80px; }
+  .check-group { display:flex; flex-wrap:wrap; gap:12px; }
+  .check-item { display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; }
+  .check-item input { accent-color:var(--dp-purple); }
+
+  .form-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; padding-top:20px; border-top:1px solid var(--dp-border); }
+
+  /* Badge */
+  .badge { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .badge-success { background:#D1FAE5; color:#065F46; }
+  .badge-demo { background:#FEF3C7; color:#92400E; }
+  .badge-popular { background:var(--dp-purple-light); color:var(--dp-purple-dark); }
+
+  /* Color dot */
+  .color-dot { width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px; }
+
+  /* Toggle */
+  .toggle-switch { position:relative; display:inline-block; width:40px; height:22px; }
+  .toggle-switch input { opacity:0; width:0; height:0; }
+  .toggle-slider {
+    position:absolute; inset:0; background:#D1D5DB; border-radius:22px; cursor:pointer;
+    transition:0.3s;
+  }
+  .toggle-slider:before {
+    content:''; position:absolute; width:16px; height:16px; border-radius:50%;
+    background:#fff; left:3px; bottom:3px; transition:0.3s;
+  }
+  input:checked + .toggle-slider { background:var(--dp-success); }
+  input:checked + .toggle-slider:before { transform:translateX(18px); }
+
+  /* Receipt Section */
+  .receipt-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border:1px solid var(--dp-border); border-radius:10px; margin-bottom:10px; background:var(--dp-white); }
+  .receipt-row .info { flex:1; }
+  .receipt-row .info .name { font-size:14px; font-weight:500; }
+  .receipt-row .info .meta { font-size:12px; color:var(--dp-gray); }
+
+  /* Upload zone */
+  .upload-zone {
+    border:2px dashed var(--dp-border); border-radius:10px; padding:24px;
+    text-align:center; cursor:pointer; transition:all 0.18s;
+  }
+  .upload-zone:hover { border-color:var(--dp-purple); background:var(--dp-purple-light); }
+  .upload-zone p { color:var(--dp-gray); font-size:13px; margin-top:8px; }
+
+  /* Toast */
+  .toast {
+    position:fixed; bottom:28px; right:28px; background:var(--dp-dark); color:#fff;
+    padding:12px 20px; border-radius:10px; font-size:13px; z-index:9999;
+    transform:translateY(80px); opacity:0; transition:all 0.3s;
+  }
+  .toast.show { transform:none; opacity:1; }
+  .loading { text-align:center; padding:40px; color:var(--dp-gray); }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="logo">
+    <h2>DP Studio</h2>
+    <span>Management Panel</span>
+  </div>
+  <nav>
+    <a href="/dashboard.html"><span class="ico">🏠</span> Dashboard</a>
+    <a href="/catalogue.html"><span class="ico">📦</span> Catalogue</a>
+    <a href="/portfolio.html"><span class="ico">🖼️</span> Portfolio</a>
+    <a href="/bookings.html"><span class="ico">📅</span> Bookings</a>
+    <a href="/invoices.html"><span class="ico">🧾</span> Invoices</a>
+    <a href="/catalogue-admin.html" class="active"><span class="ico">⚙️</span> Manage Packages</a>
+    <a href="/tv-mode.html" target="_blank"><span class="ico">📺</span> TV Mode</a>
+  </nav>
+  <div class="sidebar-footer"><a href="#">← Dashboard</a></div>
+</div>
+
+<div id="main">
+  <div class="topbar">
+    <h1>Catalogue Admin</h1>
+    <div style="display:flex;gap:10px">
+      <a href="/catalogue.html" class="btn btn-outline">← View Catalogue</a>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('packages')">📦 Packages</button>
+    <button class="tab-btn" onclick="switchTab('portfolio')">🖼️ Portfolio</button>
+    <button class="tab-btn" onclick="switchTab('offers')">🎉 Offers</button>
+    <button class="tab-btn" onclick="switchTab('receipts')">🧾 Receipts</button>
+    <button class="tab-btn" onclick="switchTab('upload')">📤 Upload Demo</button>
+  </div>
+
+  <div class="page-body">
+
+    <!-- ═══ PACKAGES TAB ═══ -->
+    <div class="tab-panel active" id="tab-packages">
+      <div class="sec-hdr">
+        <h2>Packages</h2>
+        <button class="btn btn-primary" onclick="openPkgModal()">+ New Package</button>
+      </div>
+      <table class="data-table">
+        <thead><tr>
+          <th>Package</th><th>Price</th><th>Includes</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="pkgTableBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- ═══ PORTFOLIO TAB ═══ -->
+    <div class="tab-panel" id="tab-portfolio">
+      <div class="sec-hdr">
+        <h2>Portfolio Items</h2>
+        <button class="btn btn-primary" onclick="openPfModal()">+ Add Portfolio Item</button>
+      </div>
+      <table class="data-table">
+        <thead><tr>
+          <th>Title</th><th>Event</th><th>Type</th><th>Show in Portfolio</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="pfTableBody"><tr><td colspan="5" class="loading">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- ═══ OFFERS TAB ═══ -->
+    <div class="tab-panel" id="tab-offers">
+      <div class="sec-hdr">
+        <h2>Seasonal Offers</h2>
+        <button class="btn btn-primary" onclick="openOfferModal()">+ New Offer</button>
+      </div>
+      <table class="data-table">
+        <thead><tr>
+          <th>Offer</th><th>Valid Until</th><th>Active</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="offTableBody"><tr><td colspan="4" class="loading">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- ═══ RECEIPTS TAB ═══ -->
+    <div class="tab-panel" id="tab-receipts">
+      <div class="sec-hdr"><h2>Generate Advance Receipt</h2></div>
+      <div style="max-width:600px">
+        <div class="form-row" style="margin-bottom:16px">
+          <label>Booking ID</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="receiptBookingId" placeholder="e.g. BK001">
+            <button class="btn btn-primary" onclick="generateReceipt()">Generate PDF</button>
+          </div>
+        </div>
+        <div id="receiptResult" style="display:none" class="receipt-row">
+          <div class="info">
+            <div class="name" id="receiptName">Receipt ready</div>
+            <div class="meta" id="receiptMeta"></div>
+          </div>
+          <a class="btn btn-outline btn-sm" id="receiptDownload" href="#" target="_blank">📥 Download</a>
+          <a class="btn btn-success btn-sm" id="receiptWhatsApp" href="#" target="_blank">📲 WhatsApp</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ UPLOAD TAB ═══ -->
+    <div class="tab-panel" id="tab-upload">
+      <div class="sec-hdr"><h2>Upload Demo / Portfolio Images</h2></div>
+      <div style="max-width:600px">
+        <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+          <div style="font-size:40px">📷</div>
+          <p>Click to select images (max 20MB each)</p>
+          <p style="margin-top:4px;font-size:12px">JPG, PNG, WEBP supported</p>
+        </div>
+        <input type="file" id="fileInput" multiple accept="image/*" style="display:none" onchange="uploadFiles(this.files)">
+        <div id="uploadProgress" style="margin-top:16px;display:none">
+          <div style="font-size:13px;color:var(--dp-gray);margin-bottom:8px">Uploading…</div>
+          <div style="background:var(--dp-light);border-radius:4px;height:6px;overflow:hidden">
+            <div id="progressBar" style="height:100%;background:var(--dp-purple);width:0%;transition:width 0.3s"></div>
+          </div>
+        </div>
+        <div id="uploadedUrls" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ PACKAGE MODAL ═══ -->
+<div class="modal" id="pkgModal">
+  <div class="modal-inner">
+    <div class="modal-hdr">
+      <h3 id="pkgModalTitle">New Package</h3>
+      <button class="close-btn" onclick="closePkgModal()">✕</button>
+    </div>
+    <input type="hidden" id="pkgId">
+    <div class="form-grid">
+      <div class="form-row"><label>Package Name</label><input type="text" id="pkgName" placeholder="Gold Elegance"></div>
+      <div class="form-row"><label>Tier</label>
+        <select id="pkgTier">
+          <option value="basic">Basic</option><option value="standard">Standard</option>
+          <option value="premium">Premium</option><option value="elite">Elite</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Price (₹)</label><input type="number" id="pkgPrice" placeholder="45000"></div>
+      <div class="form-row"><label>Color</label><input type="color" id="pkgColor" value="#7C3AED" style="height:42px;padding:4px"></div>
+      <div class="form-row full"><label>Description</label><textarea id="pkgDesc" placeholder="Short description…"></textarea></div>
+      <div class="form-row"><label>Base Hours</label><input type="number" id="pkgBaseHours" placeholder="8"></div>
+      <div class="form-row"><label>Bonus Hours</label><input type="number" id="pkgExtraHours" placeholder="0"></div>
+      <div class="form-row"><label>Album Pages</label><input type="number" id="pkgAlbumPages" placeholder="40"></div>
+      <div class="form-row full"><label>Includes</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" id="pkgPhoto"> Photography</label>
+          <label class="check-item"><input type="checkbox" id="pkgVideo"> Videography</label>
+          <label class="check-item"><input type="checkbox" id="pkgAlbum"> Album</label>
+          <label class="check-item"><input type="checkbox" id="pkgDrone"> Drone</label>
+          <label class="check-item"><input type="checkbox" id="pkgHighlight"> Highlight Film</label>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closePkgModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePkg()">Save Package</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PORTFOLIO MODAL ═══ -->
+<div class="modal" id="pfModal">
+  <div class="modal-inner">
+    <div class="modal-hdr">
+      <h3 id="pfModalTitle">Add Portfolio Item</h3>
+      <button class="close-btn" onclick="closePfModal()">✕</button>
+    </div>
+    <input type="hidden" id="pfId">
+    <div class="form-grid">
+      <div class="form-row full"><label>Title</label><input type="text" id="pfTitle" placeholder="Priya & Arjun Wedding"></div>
+      <div class="form-row"><label>Event Type</label>
+        <select id="pfEventType">
+          <option value="wedding">Wedding</option><option value="reception">Reception</option>
+          <option value="engagement">Engagement</option><option value="anniversary">Anniversary</option>
+          <option value="birthday">Birthday</option><option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Package</label>
+        <select id="pfPackageId"><option value="">None</option></select>
+      </div>
+      <div class="form-row"><label>Date</label><input type="date" id="pfDate"></div>
+      <div class="form-row"><label>Delivered Date</label><input type="date" id="pfDeliveredDate"></div>
+      <div class="form-row"><label>Guest Count</label><input type="number" id="pfGuestCount" placeholder="150"></div>
+      <div class="form-row full"><label>Description</label><textarea id="pfDesc" placeholder="Brief description…"></textarea></div>
+      <div class="form-row full"><label>Cover Image URL</label><input type="text" id="pfCover" placeholder="/uploads/portfolio/cover.jpg"></div>
+      <div class="form-row full"><label>Image URLs (comma-separated)</label><textarea id="pfImages" placeholder="/uploads/portfolio/img1.jpg, /uploads/portfolio/img2.jpg"></textarea></div>
+      <div class="form-row full"><label>Tags (comma-separated)</label><input type="text" id="pfTags" placeholder="recommended, premium"></div>
+      <div class="form-row full"><label>Options</label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" id="pfIsDemo"> Studio Demo Sample</label>
+          <label class="check-item"><input type="checkbox" id="pfShowInPortfolio" checked> Show in Portfolio</label>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closePfModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePf()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OFFER MODAL ═══ -->
+<div class="modal" id="offerModal">
+  <div class="modal-inner">
+    <div class="modal-hdr">
+      <h3 id="offerModalTitle">New Offer</h3>
+      <button class="close-btn" onclick="closeOfferModal()">✕</button>
+    </div>
+    <input type="hidden" id="offerId">
+    <div class="form-grid">
+      <div class="form-row full"><label>Title</label><input type="text" id="offerTitle" placeholder="🎉 Wedding Season Special"></div>
+      <div class="form-row full"><label>Subtitle</label><textarea id="offerSubtitle" placeholder="Book before March 31 and save 15%…"></textarea></div>
+      <div class="form-row"><label>Badge Text</label><input type="text" id="offerBadge" placeholder="LIMITED TIME"></div>
+      <div class="form-row"><label>Discount %</label><input type="number" id="offerDiscount" placeholder="15"></div>
+      <div class="form-row"><label>Valid From</label><input type="date" id="offerFrom"></div>
+      <div class="form-row"><label>Valid Until</label><input type="date" id="offerUntil"></div>
+      <div class="form-row"><label>BG Color</label><input type="color" id="offerBg" value="#7C3AED" style="height:42px;padding:4px"></div>
+      <div class="form-row"><label>Text Color</label><input type="color" id="offerText" value="#FFFFFF" style="height:42px;padding:4px"></div>
+      <div class="form-row full"><label>Options</label>
+        <label class="check-item"><input type="checkbox" id="offerActive" checked> Active</label>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeOfferModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveOffer()">Save Offer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allPackages = [], allPortfolio = [], allOffers = [];
+
+async function init() {
+  await Promise.all([loadPackages(), loadPortfolio(), loadOffers()]);
+}
+
+// ─ Tab switching ──────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ─ Packages ──────────────────────────────────────────────────────────────
+async function loadPackages() {
+  const res = await fetch('/api/packages');
+  const data = await res.json();
+  if (data.success) {
+    allPackages = data.data;
+    renderPkgTable();
+    populatePfPackageSelect();
+  }
+}
+
+function renderPkgTable() {
+  document.getElementById('pkgTableBody').innerHTML = allPackages.map(p => `
+    <tr>
+      <td>
+        <span class="color-dot" style="background:${p.color||'#7C3AED'}"></span>
+        <strong>${p.name}</strong>
+        ${p.isMostPopular ? `<span class="badge badge-popular" style="margin-left:6px">🔥 Popular</span>` : ''}
+      </td>
+      <td>₹${(p.price||0).toLocaleString('en-IN')}</td>
+      <td style="font-size:12px;color:var(--dp-gray)">
+        ${[p.includes?.photography&&'📸',p.includes?.videography&&'🎥',p.includes?.album&&'📔',p.includes?.drone&&'🚁',p.includes?.highlightFilm&&'🎬'].filter(Boolean).join(' ')}
+      </td>
+      <td><span class="badge badge-success">Active</span></td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="editPkg('${p.id}')">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePkg('${p.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openPkgModal(pkg = null) {
+  document.getElementById('pkgModalTitle').textContent = pkg ? 'Edit Package' : 'New Package';
+  document.getElementById('pkgId').value       = pkg?.id || '';
+  document.getElementById('pkgName').value     = pkg?.name || '';
+  document.getElementById('pkgTier').value     = pkg?.tier || 'standard';
+  document.getElementById('pkgPrice').value    = pkg?.price || '';
+  document.getElementById('pkgColor').value    = pkg?.color || '#7C3AED';
+  document.getElementById('pkgDesc').value     = pkg?.description || '';
+  document.getElementById('pkgBaseHours').value  = pkg?.includes?.baseHours || '';
+  document.getElementById('pkgExtraHours').value = pkg?.includes?.extraHours || '';
+  document.getElementById('pkgAlbumPages').value = pkg?.includes?.albumPages || '';
+  document.getElementById('pkgPhoto').checked     = pkg?.includes?.photography || false;
+  document.getElementById('pkgVideo').checked     = pkg?.includes?.videography || false;
+  document.getElementById('pkgAlbum').checked     = pkg?.includes?.album || false;
+  document.getElementById('pkgDrone').checked     = pkg?.includes?.drone || false;
+  document.getElementById('pkgHighlight').checked = pkg?.includes?.highlightFilm || false;
+  document.getElementById('pkgModal').classList.add('open');
+}
+function closePkgModal() { document.getElementById('pkgModal').classList.remove('open'); }
+function editPkg(id) { openPkgModal(allPackages.find(p => p.id === id)); }
+
+async function deletePkg(id) {
+  if (!confirm('Delete this package?')) return;
+  await fetch(`/api/packages/${id}`, { method: 'DELETE' });
+  showToast('Package deleted');
+  loadPackages();
+}
+
+async function savePkg() {
+  const id = document.getElementById('pkgId').value;
+  const body = {
+    name: document.getElementById('pkgName').value,
+    tier: document.getElementById('pkgTier').value,
+    price: parseInt(document.getElementById('pkgPrice').value) || 0,
+    color: document.getElementById('pkgColor').value,
+    description: document.getElementById('pkgDesc').value,
+    includes: {
+      photography:  document.getElementById('pkgPhoto').checked,
+      videography:  document.getElementById('pkgVideo').checked,
+      album:        document.getElementById('pkgAlbum').checked,
+      drone:        document.getElementById('pkgDrone').checked,
+      highlightFilm:document.getElementById('pkgHighlight').checked,
+      baseHours:    parseInt(document.getElementById('pkgBaseHours').value) || 0,
+      extraHours:   parseInt(document.getElementById('pkgExtraHours').value) || 0,
+      albumPages:   parseInt(document.getElementById('pkgAlbumPages').value) || 0,
+    }
+  };
+  const url    = id ? `/api/packages/${id}` : '/api/packages';
+  const method = id ? 'PUT' : 'POST';
+  const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.success) {
+    showToast(id ? 'Package updated!' : 'Package created!');
+    closePkgModal(); loadPackages();
+  } else { showToast('Error: ' + data.error); }
+}
+
+// ─ Portfolio ──────────────────────────────────────────────────────────────
+async function loadPortfolio() {
+  const res = await fetch('/api/portfolio');
+  const data = await res.json();
+  if (data.success) { allPortfolio = data.data; renderPfTable(); }
+}
+
+function renderPfTable() {
+  document.getElementById('pfTableBody').innerHTML = allPortfolio.map(p => `
+    <tr>
+      <td><strong>${p.title}</strong><div style="font-size:11px;color:var(--dp-gray)">${p.description||''}</div></td>
+      <td>${p.eventType || '—'}</td>
+      <td><span class="badge ${p.isDemo ? 'badge-demo' : 'badge-success'}">${p.isDemo ? '🎨 Demo' : '✅ Real'}</span></td>
+      <td>
+        <label class="toggle-switch">
+          <input type="checkbox" ${p.showInPortfolio ? 'checked' : ''} onchange="togglePortfolioVisibility('${p.id}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="editPf('${p.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePf('${p.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function populatePfPackageSelect() {
+  const sel = document.getElementById('pfPackageId');
+  sel.innerHTML = '<option value="">None</option>';
+  allPackages.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`);
+}
+
+function openPfModal(item = null) {
+  document.getElementById('pfModalTitle').textContent = item ? 'Edit Portfolio Item' : 'Add Portfolio Item';
+  document.getElementById('pfId').value           = item?.id || '';
+  document.getElementById('pfTitle').value        = item?.title || '';
+  document.getElementById('pfEventType').value    = item?.eventType || 'wedding';
+  document.getElementById('pfPackageId').value    = item?.packageId || '';
+  document.getElementById('pfDate').value         = item?.date || '';
+  document.getElementById('pfDeliveredDate').value = item?.deliveredDate || '';
+  document.getElementById('pfGuestCount').value   = item?.guestCount || '';
+  document.getElementById('pfDesc').value         = item?.description || '';
+  document.getElementById('pfCover').value        = item?.coverImage || '';
+  document.getElementById('pfImages').value       = (item?.images || []).join(', ');
+  document.getElementById('pfTags').value         = (item?.tags || []).join(', ');
+  document.getElementById('pfIsDemo').checked     = item?.isDemo || false;
+  document.getElementById('pfShowInPortfolio').checked = item?.showInPortfolio !== false;
+  document.getElementById('pfModal').classList.add('open');
+}
+function closePfModal() { document.getElementById('pfModal').classList.remove('open'); }
+function editPf(id) { openPfModal(allPortfolio.find(p => p.id === id)); }
+
+async function deletePf(id) {
+  if (!confirm('Remove this portfolio item?')) return;
+  await fetch(`/api/portfolio/${id}`, { method: 'DELETE' });
+  showToast('Removed'); loadPortfolio();
+}
+
+async function togglePortfolioVisibility(id, show) {
+  await fetch(`/api/portfolio/${id}`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ showInPortfolio: show })
+  });
+  showToast(show ? 'Shown in portfolio' : 'Hidden from portfolio');
+}
+
+async function savePf() {
+  const id = document.getElementById('pfId').value;
+  const body = {
+    title:         document.getElementById('pfTitle').value,
+    eventType:     document.getElementById('pfEventType').value,
+    packageId:     document.getElementById('pfPackageId').value,
+    date:          document.getElementById('pfDate').value,
+    deliveredDate: document.getElementById('pfDeliveredDate').value,
+    guestCount:    parseInt(document.getElementById('pfGuestCount').value) || 0,
+    description:   document.getElementById('pfDesc').value,
+    coverImage:    document.getElementById('pfCover').value,
+    images:        document.getElementById('pfImages').value.split(',').map(s => s.trim()).filter(Boolean),
+    tags:          document.getElementById('pfTags').value.split(',').map(s => s.trim()).filter(Boolean),
+    isDemo:        document.getElementById('pfIsDemo').checked,
+    showInPortfolio: document.getElementById('pfShowInPortfolio').checked,
+    status:        'Delivered',
+  };
+  const url = id ? `/api/portfolio/${id}` : '/api/portfolio';
+  const method = id ? 'PUT' : 'POST';
+  const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.success) { showToast('Saved!'); closePfModal(); loadPortfolio(); }
+  else showToast('Error: ' + data.error);
+}
+
+// ─ Offers ─────────────────────────────────────────────────────────────────
+async function loadOffers() {
+  const res = await fetch('/api/offers');
+  const data = await res.json();
+  if (data.success) { allOffers = data.all || []; renderOffTable(); }
+}
+
+function renderOffTable() {
+  document.getElementById('offTableBody').innerHTML = allOffers.map(o => `
+    <tr>
+      <td>
+        <strong>${o.title}</strong>
+        <div style="font-size:11px;color:var(--dp-gray)">${o.subtitle||''}</div>
+      </td>
+      <td>${o.validUntil || '—'}</td>
+      <td>
+        <label class="toggle-switch">
+          <input type="checkbox" ${o.active ? 'checked' : ''} onchange="toggleOffer('${o.id}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-outline btn-sm" onclick="editOffer('${o.id}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteOffer('${o.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openOfferModal(offer = null) {
+  document.getElementById('offerModalTitle').textContent = offer ? 'Edit Offer' : 'New Offer';
+  document.getElementById('offerId').value       = offer?.id || '';
+  document.getElementById('offerTitle').value    = offer?.title || '';
+  document.getElementById('offerSubtitle').value = offer?.subtitle || '';
+  document.getElementById('offerBadge').value    = offer?.badgeText || 'LIMITED TIME';
+  document.getElementById('offerDiscount').value = offer?.discount || '';
+  document.getElementById('offerFrom').value     = offer?.validFrom || '';
+  document.getElementById('offerUntil').value    = offer?.validUntil || '';
+  document.getElementById('offerBg').value       = offer?.bgColor || '#7C3AED';
+  document.getElementById('offerText').value     = offer?.textColor || '#FFFFFF';
+  document.getElementById('offerActive').checked = offer?.active !== false;
+  document.getElementById('offerModal').classList.add('open');
+}
+function closeOfferModal() { document.getElementById('offerModal').classList.remove('open'); }
+function editOffer(id) { openOfferModal(allOffers.find(o => o.id === id)); }
+
+async function deleteOffer(id) {
+  if (!confirm('Delete this offer?')) return;
+  await fetch(`/api/offers/${id}`, { method: 'DELETE' });
+  showToast('Deleted'); loadOffers();
+}
+
+async function toggleOffer(id, active) {
+  await fetch(`/api/offers/${id}`, {
+    method: 'PUT', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ active })
+  });
+  showToast(active ? 'Offer activated' : 'Offer deactivated');
+}
+
+async function saveOffer() {
+  const id = document.getElementById('offerId').value;
+  const body = {
+    title:      document.getElementById('offerTitle').value,
+    subtitle:   document.getElementById('offerSubtitle').value,
+    badgeText:  document.getElementById('offerBadge').value,
+    discount:   parseInt(document.getElementById('offerDiscount').value) || 0,
+    validFrom:  document.getElementById('offerFrom').value,
+    validUntil: document.getElementById('offerUntil').value,
+    bgColor:    document.getElementById('offerBg').value,
+    textColor:  document.getElementById('offerText').value,
+    active:     document.getElementById('offerActive').checked,
+  };
+  const url = id ? `/api/offers/${id}` : '/api/offers';
+  const method = id ? 'PUT' : 'POST';
+  const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.success) { showToast('Saved!'); closeOfferModal(); loadOffers(); }
+  else showToast('Error: ' + data.error);
+}
+
+// ─ Receipt Generator ──────────────────────────────────────────────────────
+async function generateReceipt() {
+  const bookingId = document.getElementById('receiptBookingId').value.trim();
+  if (!bookingId) { showToast('Enter a booking ID'); return; }
+  const res = await fetch('/api/generate-receipt', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ bookingId })
+  });
+  const data = await res.json();
+  if (data.success) {
+    document.getElementById('receiptResult').style.display = 'flex';
+    document.getElementById('receiptName').textContent = `Receipt for Booking: ${bookingId}`;
+    document.getElementById('receiptMeta').textContent = 'PDF generated successfully';
+    document.getElementById('receiptDownload').href = data.receiptUrl;
+    document.getElementById('receiptWhatsApp').href = data.whatsappLink;
+    showToast('Receipt generated!');
+  } else { showToast('Error: ' + (data.error || 'Unknown error')); }
+}
+
+// ─ File Upload ────────────────────────────────────────────────────────────
+async function uploadFiles(files) {
+  if (!files.length) return;
+  document.getElementById('uploadProgress').style.display = 'block';
+  document.getElementById('progressBar').style.width = '30%';
+  const formData = new FormData();
+  Array.from(files).forEach(f => formData.append('files', f));
+  const res = await fetch('/api/upload-demo', { method: 'POST', body: formData });
+  document.getElementById('progressBar').style.width = '100%';
+  const data = await res.json();
+  if (data.success) {
+    document.getElementById('uploadedUrls').innerHTML = `
+      <div style="margin-top:8px;font-size:13px;font-weight:500;margin-bottom:8px">Uploaded URLs (copy to use):</div>
+      ${data.urls.map(url => `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <code style="flex:1;background:var(--dp-light);padding:6px 10px;border-radius:6px;font-size:12px">${url}</code>
+          <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${url}');showToast('Copied!')">Copy</button>
+        </div>
+      `).join('')}
+    `;
+    showToast(`${data.urls.length} file(s) uploaded!`);
+  } else { showToast('Upload failed'); }
+  setTimeout(() => { document.getElementById('uploadProgress').style.display = 'none'; }, 1000);
+}
+
+// ─ Utilities ─────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Check URL for edit param
+const urlPkg = new URLSearchParams(window.location.search).get('edit');
+init().then(() => { if (urlPkg) { const p = allPackages.find(x => x.id === urlPkg); if (p) openPkgModal(p); } });
+</script>
+</body>
+</html>
