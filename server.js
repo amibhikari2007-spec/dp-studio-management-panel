@@ -804,7 +804,6 @@ res.status(500).send("Update failed");
 });
 
 app.post("/chat", async (req, res) => {
-   console.log("OPENROUTER_API_KEY =", process.env.OPENROUTER_API_KEY);
 
 try {
 
