@@ -18,6 +18,8 @@ const Admin = require("./routes/admin");
 const User = require("./routes/user");
 const studioRoutes = require('./routes/studio');
 
+app.use('/api', studioRoutes);
+
 
 const app = express();
 
@@ -106,7 +108,7 @@ app.get("/",(req,res)=>{
 res.redirect("/admin.html");
 });
 
-app.use('/api', studioRoutes);
+
 
 /* =========================
    CREATE DEFAULT ADMIN
