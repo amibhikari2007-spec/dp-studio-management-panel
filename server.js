@@ -536,8 +536,8 @@ res.status(500)
 
 });
 
-app.get('/catalogue', verifyToken,      (req, res) => res.sendFile(path.join(__dirname, 'public/catalogue.html')));
-app.get('/portfolio', verifyToken,      (req, res) => res.sendFile(path.join(__dirname, 'public/portfolio.html')));
+app.get('/catalogue',      (req, res) => res.sendFile(path.join(__dirname, 'public/catalogue.html')));
+app.get('/portfolio',    (req, res) => res.sendFile(path.join(__dirname, 'public/portfolio.html')));
 app.get('/catalogue-admin',verifyToken, (req, res) => res.sendFile(path.join(__dirname, 'public/catalogue-admin.html')));
 app.get('/tv-mode',  (req, res) => res.sendFile(path.join(__dirname, 'public/tv-mode.html')));
 
