@@ -1,41 +1,17 @@
 // routes/studio.js
-// Studio Catalogue + Portfolio + Booking API routes
+// Studio Catalogue + Portfolio + Booking API — MongoDB version
 
-const express = require('express');
-const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-const multer = require('multer');
-const { generateAdvanceReceipt, buildWhatsAppMessage } = require('../receipt-generator');
+const express  = require('express');
+const router   = express.Router();
+const path     = require('path');
+const fs       = require('fs');
+const multer   = require('multer');
+const { Package, Portfolio, Offer, TvContent } = require('./studioModels');
 
-// ─── Data file paths ───────────────────────────────────────────────────────
-const DATA_DIR = path.join(__dirname, '../data');
+// ─── Multer upload config ──────────────────────────────────────────────────
 const UPLOADS_DIR = path.join(__dirname, '../uploads/portfolio');
-
-const paths = {
-  packages:  path.join(DATA_DIR, 'packages.json'),
-  portfolio: path.join(DATA_DIR, 'portfolio.json'),
-  offers:    path.join(DATA_DIR, 'offers.json'),
-  tvContent: path.join(DATA_DIR, 'tv-content.json'),
-  bookings:  path.join(DATA_DIR, 'bookings.json'),
-};
-
-// ─── Helpers ───────────────────────────────────────────────────────────────
-const readJSON  = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
-const writeJSON = (p, d) => fs.writeFileSync(p, JSON.stringify(d, null, 2));
-const ensureFile = (p, def) => { if (!fs.existsSync(p)) writeJSON(p, def); };
-
-// Ensure all data files exist
-ensureFile(paths.packages,  []);
-ensureFile(paths.portfolio, []);
-ensureFile(paths.offers,    []);
-ensureFile(paths.bookings,  []);
-ensureFile(paths.tvContent, {});
-
-// Ensure uploads folder
 if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-// Multer config for demo uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, UPLOADS_DIR),
   filename:    (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
@@ -43,361 +19,275 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } });
 
 // ─── Smart portfolio sort ──────────────────────────────────────────────────
-function smartSortPortfolio(items) {
+function smartSort(items) {
   return [...items].sort((a, b) => {
-    // 1. latest delivered first
     const dateDiff = new Date(b.deliveredDate || 0) - new Date(a.deliveredDate || 0);
     if (dateDiff !== 0) return dateDiff;
-    // 2. premium package work
-    const tierOrder = { PKG004: 0, PKG003: 1, PKG002: 2, PKG001: 3 };
-    const tierDiff = (tierOrder[a.packageId] ?? 9) - (tierOrder[b.packageId] ?? 9);
+    const tierOrder = { PKG004:0, PKG003:1, PKG002:2, PKG001:3 };
+    const tierDiff  = (tierOrder[a.packageId] ?? 9) - (tierOrder[b.packageId] ?? 9);
     if (tierDiff !== 0) return tierDiff;
-    // 3. recommended tagged work
-    const aRec = (a.tags || []).includes('recommended') ? 0 : 1;
-    const bRec = (b.tags || []).includes('recommended') ? 0 : 1;
+    const aRec = (a.tags||[]).includes('recommended') ? 0 : 1;
+    const bRec = (b.tags||[]).includes('recommended') ? 0 : 1;
     return aRec - bRec;
   });
 }
 
-// ─── Most popular package detector ────────────────────────────────────────
-function getMostPopularPackageId() {
+// ─── Most popular package ──────────────────────────────────────────────────
+async function getMostPopularPackageId() {
   try {
-    const bookings = readJSON(paths.bookings);
+    const Booking = require('./booking');
+    const bookings = await Booking.find({}, { packageName: 1 }).lean();
     const counts = {};
-    bookings.forEach(b => { if (b.packageId) counts[b.packageId] = (counts[b.packageId] || 0) + 1; });
-    let max = 0, bestId = null;
-    Object.entries(counts).forEach(([id, cnt]) => { if (cnt > max) { max = cnt; bestId = id; } });
-    return bestId;
+    bookings.forEach(b => {
+      if (b.packageName) counts[b.packageName] = (counts[b.packageName]||0)+1;
+    });
+    let max = 0, bestName = null;
+    Object.entries(counts).forEach(([name, cnt]) => { if (cnt > max) { max=cnt; bestName=name; } });
+    if (!bestName) return null;
+    const pkg = await Package.findOne({ name: bestName }).lean();
+    return pkg ? pkg._id.toString() : null;
   } catch { return null; }
 }
 
-// ─── Package recommendation engine ────────────────────────────────────────
-function recommendPackage(eventType, guestCount) {
-  const packages = readJSON(paths.packages);
+// ─── Package Recommendation ────────────────────────────────────────────────
+async function recommendPackage(eventType, guestCount) {
+  const packages = await Package.find().lean();
+  if (!packages.length) return null;
   const gc = parseInt(guestCount) || 0;
   const et = (eventType || '').toLowerCase();
-
-  if ((et.includes('wedding') || et.includes('reception')) && gc > 300) {
-    return packages.find(p => p.id === 'PKG004') || packages[packages.length - 1];
-  }
-  if ((et.includes('wedding') || et.includes('reception')) && gc > 150) {
-    return packages.find(p => p.id === 'PKG003') || packages[packages.length - 2];
-  }
-  if (et.includes('wedding') || et.includes('anniversary') || gc > 50) {
-    return packages.find(p => p.id === 'PKG002') || packages[1];
-  }
-  return packages.find(p => p.id === 'PKG001') || packages[0];
+  if ((et.includes('wedding') || et.includes('reception')) && gc > 300)
+    return packages.find(p => p.tier === 'elite') || packages[packages.length-1];
+  if ((et.includes('wedding') || et.includes('reception')) && gc > 150)
+    return packages.find(p => p.tier === 'premium') || packages[packages.length-2];
+  if (et.includes('wedding') || et.includes('anniversary') || gc > 50)
+    return packages.find(p => p.tier === 'standard') || packages[1];
+  return packages.find(p => p.tier === 'basic') || packages[0];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  ROUTES
+//  PACKAGES
 // ═══════════════════════════════════════════════════════════════════════════
 
-// GET /api/packages — list all packages, with most-popular badge
-router.get('/packages', (req, res) => {
+router.get('/packages', async (req, res) => {
   try {
-    const packages = readJSON(paths.packages);
-    const popularId = getMostPopularPackageId();
-    const result = packages.map(p => ({
-      ...p,
-      isMostPopular: p.id === popularId,
-    }));
-    res.json({ success: true, data: result });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    const packages  = await Package.find().lean();
+    const popularId = await getMostPopularPackageId();
+    res.json({ success: true, data: packages.map(p => ({
+      ...p, id: p._id.toString(),
+      isMostPopular: p._id.toString() === popularId,
+    }))});
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// GET /api/packages/:id — single package
-router.get('/packages/:id', (req, res) => {
+router.get('/packages/:id', async (req, res) => {
   try {
-    const packages = readJSON(paths.packages);
-    const pkg = packages.find(p => p.id === req.params.id);
-    if (!pkg) return res.status(404).json({ success: false, error: 'Package not found' });
-    res.json({ success: true, data: pkg });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    const pkg = await Package.findById(req.params.id).lean();
+    if (!pkg) return res.status(404).json({ success: false, error: 'Not found' });
+    res.json({ success: true, data: { ...pkg, id: pkg._id.toString() } });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// POST /api/packages — create package (admin)
-router.post('/packages', (req, res) => {
+router.post('/packages', async (req, res) => {
   try {
-    const packages = readJSON(paths.packages);
-    const newPkg = { id: `PKG${Date.now()}`, ...req.body };
-    packages.push(newPkg);
-    writeJSON(paths.packages, packages);
-    res.json({ success: true, data: newPkg });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    const pkg = await Package.create(req.body);
+    res.json({ success: true, data: { ...pkg.toObject(), id: pkg._id.toString() } });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// PUT /api/packages/:id — update package (admin)
-router.put('/packages/:id', (req, res) => {
+router.put('/packages/:id', async (req, res) => {
   try {
-    const packages = readJSON(paths.packages);
-    const idx = packages.findIndex(p => p.id === req.params.id);
-    if (idx === -1) return res.status(404).json({ success: false, error: 'Package not found' });
-    packages[idx] = { ...packages[idx], ...req.body };
-    writeJSON(paths.packages, packages);
-    res.json({ success: true, data: packages[idx] });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    const pkg = await Package.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+    if (!pkg) return res.status(404).json({ success: false, error: 'Not found' });
+    res.json({ success: true, data: { ...pkg, id: pkg._id.toString() } });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// DELETE /api/packages/:id
-router.delete('/packages/:id', (req, res) => {
+router.delete('/packages/:id', async (req, res) => {
   try {
-    let packages = readJSON(paths.packages);
-    packages = packages.filter(p => p.id !== req.params.id);
-    writeJSON(paths.packages, packages);
+    await Package.findByIdAndDelete(req.params.id);
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ─── Portfolio ─────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+//  PORTFOLIO  ← KEY FIX: uses MongoDB findByIdAndUpdate with $set
+// ═══════════════════════════════════════════════════════════════════════════
 
-// GET /api/portfolio — smart sorted portfolio
-router.get('/portfolio', (req, res) => {
+router.get('/portfolio', async (req, res) => {
   try {
-    const portfolio = readJSON(paths.portfolio);
-
-    // Auto-include delivered bookings with showInPortfolio flag
-    let bookings = [];
-    try { bookings = readJSON(paths.bookings); } catch {}
-    const packages = readJSON(paths.packages);
-
-    const fromBookings = bookings
-      .filter(b => b.status === 'Delivered' && b.showInPortfolio === true)
-      .map(b => {
-        const pkg = packages.find(p => p.id === b.packageId) || {};
-        return {
-          id: `AUTO-${b.id}`,
-          title: `${b.customerName} — ${b.eventType}`,
-          eventType: b.eventType,
-          packageId: b.packageId,
-          date: b.eventDate,
-          deliveredDate: b.deliveredDate || b.eventDate,
-          isDemo: false,
-          showInPortfolio: true,
-          status: 'Delivered',
-          images: b.portfolioImages || [],
-          coverImage: (b.portfolioImages || [])[0] || '',
-          tags: pkg.tier === 'premium' || pkg.tier === 'elite' ? ['premium'] : [],
-          description: `${b.eventType} — ${b.guestCount || '?'} guests`,
-          guestCount: b.guestCount,
-        };
-      });
-
-    // Merge, de-dupe by id
-    const existingIds = new Set(portfolio.map(p => p.id));
-    const merged = [
-      ...portfolio.filter(p => p.showInPortfolio !== false),
-      ...fromBookings.filter(p => !existingIds.has(p.id)),
-    ];
-
-    const sorted = smartSortPortfolio(merged);
-    res.json({ success: true, data: sorted });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    const items = await Portfolio.find({ showInPortfolio: true }).lean();
+    res.json({ success: true, data: smartSort(items.map(p => ({ ...p, id: p._id.toString() }))) });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// POST /api/portfolio — add portfolio item (admin)
-router.post('/portfolio', (req, res) => {
+router.post('/portfolio', async (req, res) => {
   try {
-    const portfolio = readJSON(paths.portfolio);
-    const item = { id: `PF${Date.now()}`, ...req.body };
-    portfolio.push(item);
-    writeJSON(paths.portfolio, portfolio);
-    res.json({ success: true, data: item });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    const item = await Portfolio.create(req.body);
+    res.json({ success: true, data: { ...item.toObject(), id: item._id.toString() } });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// PUT /api/portfolio/:id
-router.put('/portfolio/:id', (req, res) => {
+// PUT — uses $set so every field including coverImage is always written
+router.put('/portfolio/:id', async (req, res) => {
   try {
-    const portfolio = readJSON(paths.portfolio);
-    const idx = portfolio.findIndex(p => p.id === req.params.id);
-    if (idx === -1) return res.status(404).json({ success: false, error: 'Not found' });
-    portfolio[idx] = { ...portfolio[idx], ...req.body };
-    writeJSON(paths.portfolio, portfolio);
-    res.json({ success: true, data: portfolio[idx] });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    const item = await Portfolio.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true, runValidators: false }
+    ).lean();
+    if (!item) return res.status(404).json({ success: false, error: 'Portfolio item not found — check ID' });
+    res.json({ success: true, data: { ...item, id: item._id.toString() } });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// DELETE /api/portfolio/:id
-router.delete('/portfolio/:id', (req, res) => {
+router.delete('/portfolio/:id', async (req, res) => {
   try {
-    let portfolio = readJSON(paths.portfolio);
-    portfolio = portfolio.filter(p => p.id !== req.params.id);
-    writeJSON(paths.portfolio, portfolio);
+    await Portfolio.findByIdAndDelete(req.params.id);
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ─── Offers ────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+//  OFFERS
+// ═══════════════════════════════════════════════════════════════════════════
 
-// GET /api/offers — active offers
-router.get('/offers', (req, res) => {
+router.get('/offers', async (req, res) => {
   try {
-    const offers = readJSON(paths.offers);
-    const active = offers.filter(o => {
+    const all  = await Offer.find().lean();
+    const now  = new Date();
+    const active = all.filter(o => {
       if (!o.active) return false;
-      const now = new Date();
       if (o.validUntil && new Date(o.validUntil) < now) return false;
-      if (o.validFrom && new Date(o.validFrom) > now) return false;
+      if (o.validFrom  && new Date(o.validFrom)  > now) return false;
       return true;
     });
-    res.json({ success: true, data: active, all: offers });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// POST /api/offers — create offer
-router.post('/offers', (req, res) => {
-  try {
-    const offers = readJSON(paths.offers);
-    const offer = { id: `OFF${Date.now()}`, ...req.body };
-    offers.push(offer);
-    writeJSON(paths.offers, offers);
-    res.json({ success: true, data: offer });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// PUT /api/offers/:id
-router.put('/offers/:id', (req, res) => {
-  try {
-    const offers = readJSON(paths.offers);
-    const idx = offers.findIndex(o => o.id === req.params.id);
-    if (idx === -1) return res.status(404).json({ success: false, error: 'Not found' });
-    offers[idx] = { ...offers[idx], ...req.body };
-    writeJSON(paths.offers, offers);
-    res.json({ success: true, data: offers[idx] });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// DELETE /api/offers/:id
-router.delete('/offers/:id', (req, res) => {
-  try {
-    let offers = readJSON(paths.offers);
-    offers = offers.filter(o => o.id !== req.params.id);
-    writeJSON(paths.offers, offers);
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-});
-
-// ─── TV Content ────────────────────────────────────────────────────────────
-
-// GET /api/tv-content — full TV slideshow data
-router.get('/tv-content', (req, res) => {
-  try {
-    const config   = readJSON(paths.tvContent);
-    const portfolio = readJSON(paths.portfolio).filter(p => p.showInPortfolio !== false);
-    const packages  = readJSON(paths.packages);
-    const offers    = readJSON(paths.offers).filter(o => o.active);
-    const popularId = getMostPopularPackageId();
-
     res.json({
       success: true,
-      config,
+      data: active.map(o => ({ ...o, id: o._id.toString() })),
+      all:  all.map(o => ({ ...o, id: o._id.toString() })),
+    });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+router.post('/offers', async (req, res) => {
+  try {
+    const offer = await Offer.create(req.body);
+    res.json({ success: true, data: { ...offer.toObject(), id: offer._id.toString() } });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+router.put('/offers/:id', async (req, res) => {
+  try {
+    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+    if (!offer) return res.status(404).json({ success: false, error: 'Not found' });
+    res.json({ success: true, data: { ...offer, id: offer._id.toString() } });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+router.delete('/offers/:id', async (req, res) => {
+  try {
+    await Offer.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  TV CONTENT
+// ═══════════════════════════════════════════════════════════════════════════
+
+const DEFAULT_TV = {
+  studioName: 'DP Studio & Light',
+  tagline: 'Every moment, beautifully preserved.',
+  contactPhone: '+91 90835 21201',
+  slideshow: { imageDuration: 8000, videoDuration: 15000, autoRefreshInterval: 60000 },
+  sections: ['portfolio', 'packages', 'offers'],
+};
+
+router.get('/tv-content', async (req, res) => {
+  try {
+    const configDoc = await TvContent.findOne({ key: 'config' }).lean();
+    const config    = configDoc?.value || DEFAULT_TV;
+    const portfolio = await Portfolio.find({ showInPortfolio: true }).lean();
+    const packages  = await Package.find().lean();
+    const offers    = await Offer.find({ active: true }).lean();
+    const popularId = await getMostPopularPackageId();
+    res.json({
+      success: true, config,
       slides: {
-        portfolio: smartSortPortfolio(portfolio),
-        packages:  packages.map(p => ({ ...p, isMostPopular: p.id === popularId })),
-        offers,
+        portfolio: smartSort(portfolio.map(p => ({ ...p, id: p._id.toString() }))),
+        packages:  packages.map(p => ({ ...p, id: p._id.toString(), isMostPopular: p._id.toString() === popularId })),
+        offers:    offers.map(o => ({ ...o, id: o._id.toString() })),
       }
     });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// PUT /api/tv-content — update TV config
-router.put('/tv-content', (req, res) => {
+router.put('/tv-content', async (req, res) => {
   try {
-    writeJSON(paths.tvContent, req.body);
-    res.json({ success: true, data: req.body });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    await TvContent.findOneAndUpdate({ key: 'config' }, { key: 'config', value: req.body }, { upsert: true });
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ─── Demo Upload ────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+//  UPLOAD
+// ═══════════════════════════════════════════════════════════════════════════
 
-// POST /api/upload-demo — upload portfolio images
 router.post('/upload-demo', upload.array('files', 20), (req, res) => {
   try {
     const urls = req.files.map(f => `/uploads/portfolio/${f.filename}`);
     res.json({ success: true, urls });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ─── Package Recommendation ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+//  RECOMMENDATION
+// ═══════════════════════════════════════════════════════════════════════════
 
-// GET /api/recommend?eventType=wedding&guestCount=350
-router.get('/recommend', (req, res) => {
+router.get('/recommend', async (req, res) => {
   try {
-    const { eventType, guestCount } = req.query;
-    const recommended = recommendPackage(eventType, guestCount);
-    res.json({ success: true, data: recommended });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    const pkg = await recommendPackage(req.query.eventType, req.query.guestCount);
+    if (!pkg) return res.status(404).json({ success: false, error: 'No packages found' });
+    res.json({ success: true, data: { ...pkg, id: pkg._id.toString() } });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ─── Advance Receipt Generator ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+//  ADVANCE RECEIPT
+// ═══════════════════════════════════════════════════════════════════════════
 
-// POST /api/generate-receipt
 router.post('/generate-receipt', async (req, res) => {
   try {
     const { bookingId } = req.body;
-    const bookings = readJSON(paths.bookings);
-    const packages  = readJSON(paths.packages);
-
-    const booking = bookings.find(b => b.id === bookingId);
+    const Booking = require('./booking');
+    const booking = await Booking.findById(bookingId).lean();
     if (!booking) return res.status(404).json({ success: false, error: 'Booking not found' });
 
-    const pkg = packages.find(p => p.id === booking.packageId);
-    if (!pkg) return res.status(404).json({ success: false, error: 'Package not found' });
+    let pkg = null;
+    if (booking.packageId) pkg = await Package.findById(booking.packageId).lean();
+    if (!pkg && booking.packageName) pkg = await Package.findOne({ name: booking.packageName }).lean();
+    if (!pkg) pkg = { name: booking.packageName || 'Custom Package', price: booking.totalAmount || 0, includes: {} };
 
-    const receiptDir = path.join(__dirname, '../receipts');
-    if (!fs.existsSync(receiptDir)) fs.mkdirSync(receiptDir, { recursive: true });
+    const receiptsDir = path.join(__dirname, '../receipts');
+    if (!fs.existsSync(receiptsDir)) fs.mkdirSync(receiptsDir, { recursive: true });
 
-    const filename   = `receipt-${bookingId}-${Date.now()}.pdf`;
-    const outputPath = path.join(receiptDir, filename);
+    const { generateAdvanceReceipt, buildWhatsAppMessage } = require('../receipt-generator');
+    const filename    = `receipt-${bookingId}-${Date.now()}.pdf`;
+    const outputPath  = path.join(receiptsDir, filename);
+    const bookingData = {
+      customerName: booking.customerName,
+      phone:        booking.customerPhone,
+      eventType:    booking.eventType,
+      eventDate:    booking.eventDate,
+      guestCount:   booking.guestCount || '',
+      advancePaid:  booking.advancePaid || 0,
+    };
 
-    await generateAdvanceReceipt(booking, pkg, outputPath);
-
-    const waText = buildWhatsAppMessage(booking, pkg);
-    const waLink = `https://wa.me/${(booking.phone || '').replace(/\D/g, '')}?text=${waText}`;
-
-    res.json({
-      success:    true,
-      receiptUrl: `/receipts/${filename}`,
-      whatsappLink: waLink,
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
+    await generateAdvanceReceipt(bookingData, pkg, outputPath);
+    const phone  = (booking.customerPhone || '').replace(/\D/g, '');
+    const waLink = `https://wa.me/${phone}?text=${buildWhatsAppMessage(bookingData, pkg)}`;
+    res.json({ success: true, receiptUrl: `/receipts/${filename}`, whatsappLink: waLink });
+  } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
 module.exports = router;
