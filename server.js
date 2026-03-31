@@ -99,6 +99,16 @@ next();
 
 }
 
+/* REDIRECT OLD .HTML LINKS TO CLEAN URLS */
+
+app.get('/admin.html', (req, res) => res.redirect('/admin'));
+app.get('/dashboard.html', (req, res) => res.redirect('/dashboard'));
+app.get('/invoices.html', (req, res) => res.redirect('/invoices'));
+app.get('/customers.html', (req, res) => res.redirect('/customers'));
+app.get('/manage-users.html', (req, res) => res.redirect('/manage-users'));
+app.get('/add-booking.html', (req, res) => res.redirect('/add-booking'));
+app.get('/invoice-view.html', (req, res) => res.redirect('/invoice-view'));
+app.get('/super-admin.html', (req, res) => res.redirect('/super-admin'));
 
 /* =========================
    ROOT ROUTE
