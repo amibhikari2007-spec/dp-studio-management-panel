@@ -680,6 +680,68 @@ tbody tr:hover{background:var(--surf2);}
   th,td{padding:6px;font-size:10px;}
   #chatBtn{font-size:11px;padding:8px 14px;}
   .fab{width:50px;height:50px;font-size:20px;}
+  .studio-features-grid{grid-template-columns:1fr;}
+}
+
+/* ═══ STUDIO FEATURE CARDS ═══ */
+.studio-features-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:14px;
+  margin-bottom:14px;
+  animation:fadeUp 0.5s 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+.feature-card{
+  display:flex;align-items:center;gap:16px;
+  background:var(--surf);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px 20px;
+  text-decoration:none;
+  color:var(--text);
+  transition:all var(--transition);
+  position:relative;overflow:hidden;
+}
+.feature-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--fc,var(--blue));
+  transform:scaleX(0);transform-origin:left;
+  transition:transform var(--transition);
+}
+.feature-card:hover{
+  border-color:var(--fc,var(--blue));
+  background:var(--surf2);
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.2);
+}
+.feature-card:hover::before{transform:scaleX(1);}
+.fc-icon{
+  font-size:28px;flex-shrink:0;
+  width:48px;height:48px;
+  background:var(--surf2);
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid var(--border);
+  transition:all var(--transition);
+}
+.feature-card:hover .fc-icon{
+  background:rgba(var(--fc),0.1);
+  border-color:var(--fc,var(--blue));
+}
+.fc-info{flex:1;}
+.fc-title{
+  font-family:var(--head);font-size:14px;font-weight:700;
+  letter-spacing:-0.3px;margin-bottom:3px;
+}
+.fc-sub{font-size:11px;color:var(--muted);letter-spacing:0.3px;}
+.fc-arrow{
+  font-size:16px;color:var(--muted);
+  transition:all var(--transition);
+}
+.feature-card:hover .fc-arrow{
+  color:var(--fc,var(--blue));
+  transform:translateX(3px);
 }
 </style>
 </head>
@@ -706,6 +768,23 @@ tbody tr:hover{background:var(--surf2);}
   <a href="/customers.html" class="nav-item" title="Customers">
     <span class="nav-icon">👥</span>
     <span class="nav-label">Customers</span>
+  </a>
+  <div class="sidebar-divider"></div>
+  <a href="/catalogue.html" class="nav-item" title="Catalogue">
+    <span class="nav-icon">📦</span>
+    <span class="nav-label">Catalogue</span>
+  </a>
+  <a href="/portfolio.html" class="nav-item" title="Portfolio">
+    <span class="nav-icon">🖼️</span>
+    <span class="nav-label">Portfolio</span>
+  </a>
+  <a href="/catalogue-admin.html" class="nav-item" title="Manage Packages">
+    <span class="nav-icon">⚙️</span>
+    <span class="nav-label">Manage Packages</span>
+  </a>
+  <a href="/tv-mode.html" class="nav-item" title="TV Mode" target="_blank">
+    <span class="nav-icon">📺</span>
+    <span class="nav-label">TV Mode</span>
   </a>
   <div class="nav-spacer"></div>
   <div class="sidebar-divider"></div>
@@ -786,6 +865,43 @@ tbody tr:hover{background:var(--surf2);}
       <div class="skeleton skeleton-card"></div>
     </div>
 
+    <!-- ═══ STUDIO FEATURES ═══ -->
+    <div class="sec-label">Studio Features</div>
+    <div class="studio-features-grid">
+      <a href="/catalogue.html" class="feature-card" style="--fc:var(--purple)">
+        <div class="fc-icon">📦</div>
+        <div class="fc-info">
+          <div class="fc-title">Catalogue</div>
+          <div class="fc-sub">Packages · Price Calculator · Compare</div>
+        </div>
+        <div class="fc-arrow">→</div>
+      </a>
+      <a href="/portfolio.html" class="feature-card" style="--fc:var(--blue)">
+        <div class="fc-icon">🖼️</div>
+        <div class="fc-info">
+          <div class="fc-title">Portfolio</div>
+          <div class="fc-sub">Albums · Flipbook · Demo Badges</div>
+        </div>
+        <div class="fc-arrow">→</div>
+      </a>
+      <a href="/catalogue-admin.html" class="feature-card" style="--fc:var(--amber)">
+        <div class="fc-icon">⚙️</div>
+        <div class="fc-info">
+          <div class="fc-title">Manage Packages</div>
+          <div class="fc-sub">Edit · Offers · Receipts · Upload</div>
+        </div>
+        <div class="fc-arrow">→</div>
+      </a>
+      <a href="/tv-mode.html" target="_blank" class="feature-card" style="--fc:var(--green)">
+        <div class="fc-icon">📺</div>
+        <div class="fc-info">
+          <div class="fc-title">TV Mode</div>
+          <div class="fc-sub">Slideshow · Packages · Offers Loop</div>
+        </div>
+        <div class="fc-arrow">↗</div>
+      </a>
+    </div>
+
     <!-- ═══ TABLE ═══ -->
     <div class="sec-label">Recent Activity</div>
     <div class="table-card">
@@ -829,6 +945,14 @@ tbody tr:hover{background:var(--surf2);}
     <a href="/customers.html" class="mob-nav-item">
       <span class="mob-nav-icon">👥</span>
       <span>Clients</span>
+    </a>
+    <a href="/catalogue.html" class="mob-nav-item">
+      <span class="mob-nav-icon">📦</span>
+      <span>Catalogue</span>
+    </a>
+    <a href="/portfolio.html" class="mob-nav-item">
+      <span class="mob-nav-icon">🖼️</span>
+      <span>Portfolio</span>
     </a>
     <span class="mob-nav-item" onclick="confirmLogout()">
       <span class="mob-nav-icon">🚪</span>
