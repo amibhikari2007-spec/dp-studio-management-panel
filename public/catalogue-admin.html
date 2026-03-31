@@ -512,26 +512,33 @@ async function loadPortfolio() {
   if (data.success) { allPortfolio = data.data; renderPfTable(); }
 }
 
+function getItemId(p) { return p.id || (p._id && p._id.toString()) || ''; }
+
 function renderPfTable() {
-  document.getElementById('pfTableBody').innerHTML = allPortfolio.map(p => `
-    <tr>
-      <td><strong>${p.title}</strong><div style="font-size:11px;color:var(--dp-gray)">${p.description||''}</div></td>
+  document.getElementById('pfTableBody').innerHTML = allPortfolio.map(p => {
+    const id = getItemId(p);
+    return `<tr>
+      <td>
+        <strong>${p.title}</strong>
+        <div style="font-size:11px;color:var(--dp-gray)">${p.description||''}</div>
+        ${p.coverImage ? `<div style="font-size:10px;color:#10B981;margin-top:2px">🖼 ${p.coverImage.split('/').pop()}</div>` : '<div style="font-size:10px;color:#EF4444">⚠ No cover image</div>'}
+      </td>
       <td>${p.eventType || '—'}</td>
       <td><span class="badge ${p.isDemo ? 'badge-demo' : 'badge-success'}">${p.isDemo ? '🎨 Demo' : '✅ Real'}</span></td>
       <td>
         <label class="toggle-switch">
-          <input type="checkbox" ${p.showInPortfolio ? 'checked' : ''} onchange="togglePortfolioVisibility('${p.id}', this.checked)">
+          <input type="checkbox" ${p.showInPortfolio ? 'checked' : ''} onchange="togglePortfolioVisibility('${id}', this.checked)">
           <span class="toggle-slider"></span>
         </label>
       </td>
       <td>
         <div style="display:flex;gap:6px">
-          <button class="btn btn-outline btn-sm" onclick="editPf('${p.id}')">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="deletePf('${p.id}')">🗑</button>
+          <button class="btn btn-outline btn-sm" onclick="editPf('${id}')">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePf('${id}')">🗑</button>
         </div>
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 function populatePfPackageSelect() {
