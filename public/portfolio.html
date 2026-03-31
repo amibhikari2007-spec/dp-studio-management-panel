@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DP Studio — Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dp-purple: #7C3AED; --dp-purple-dark: #5B21B6; --dp-purple-light: #EDE9FE;
+    --dp-gold: #D97706; --dp-dark: #1E1B4B; --dp-gray: #6B7280;
+    --dp-light: #F9FAFB; --dp-white: #FFFFFF; --dp-border: #E5E7EB;
+    --dp-success: #10B981; --sidebar-w: 240px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--dp-light); color:var(--dp-dark); }
+
+  /* Sidebar — same as catalogue */
+  #sidebar {
+    position:fixed; left:0; top:0; width:var(--sidebar-w); height:100vh;
+    background:var(--dp-dark); display:flex; flex-direction:column; z-index:100;
+  }
+  #sidebar .logo { padding:28px 24px 20px; border-bottom:1px solid rgba(255,255,255,0.08); }
+  #sidebar .logo h2 { font-family:'Cormorant Garamond',serif; font-size:22px; color:#fff; letter-spacing:1px; }
+  #sidebar .logo span { font-size:11px; color:#A78BFA; letter-spacing:2px; text-transform:uppercase; }
+  #sidebar nav { flex:1; padding:16px 0; }
+  #sidebar nav a {
+    display:flex; align-items:center; gap:10px; padding:10px 24px;
+    color:rgba(255,255,255,0.65); text-decoration:none; font-size:13.5px;
+    transition:all 0.2s; border-left:3px solid transparent;
+  }
+  #sidebar nav a:hover, #sidebar nav a.active {
+    color:#fff; background:rgba(124,58,237,0.2); border-left-color:var(--dp-purple);
+  }
+  #sidebar nav a .ico { font-size:16px; width:20px; }
+  #sidebar .sidebar-footer { padding:16px 24px; border-top:1px solid rgba(255,255,255,0.08); }
+  #sidebar .sidebar-footer a { color:rgba(255,255,255,0.5); font-size:12px; text-decoration:none; }
+
+  #main { margin-left:var(--sidebar-w); min-height:100vh; }
+
+  .topbar {
+    background:var(--dp-white); border-bottom:1px solid var(--dp-border);
+    padding:0 32px; height:64px; display:flex; align-items:center;
+    justify-content:space-between; position:sticky; top:0; z-index:50;
+  }
+  .topbar h1 { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; }
+  .topbar-actions { display:flex; gap:10px; }
+  .btn {
+    display:inline-flex; align-items:center; gap:6px; padding:8px 16px;
+    border-radius:8px; font-size:13px; font-weight:500; cursor:pointer;
+    transition:all 0.18s; border:1px solid transparent; text-decoration:none;
+    font-family:'DM Sans',sans-serif;
+  }
+  .btn-primary { background:var(--dp-purple); color:#fff; }
+  .btn-primary:hover { background:var(--dp-purple-dark); }
+  .btn-outline { background:transparent; border-color:var(--dp-border); color:var(--dp-dark); }
+  .btn-outline:hover { background:var(--dp-light); }
+
+  .page-body { padding:28px 32px; }
+
+  /* Stats Bar */
+  .stats-bar {
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:28px;
+  }
+  .stat-card {
+    background:var(--dp-white); border-radius:12px; border:1px solid var(--dp-border);
+    padding:16px 20px;
+  }
+  .stat-card .label { font-size:11px; color:var(--dp-gray); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+  .stat-card .value { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; }
+
+  /* Filter */
+  .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; align-items:center; }
+  .filter-chip {
+    padding:6px 14px; border-radius:20px; font-size:12.5px; cursor:pointer;
+    border:1px solid var(--dp-border); background:var(--dp-white); transition:all 0.18s;
+  }
+  .filter-chip.active { background:var(--dp-purple); color:#fff; border-color:var(--dp-purple); }
+  .filter-sep { width:1px; height:24px; background:var(--dp-border); margin:0 4px; }
+
+  /* Portfolio Grid */
+  .portfolio-grid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+    gap:20px;
+  }
+
+  .pf-card {
+    background:var(--dp-white); border-radius:14px; border:1px solid var(--dp-border);
+    overflow:hidden; transition:all 0.25s; cursor:pointer; position:relative;
+  }
+  .pf-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,0.1); }
+
+  .pf-card .cover {
+    position:relative; height:200px; background:#F3F4F6; overflow:hidden;
+  }
+  .pf-card .cover img {
+    width:100%; height:100%; object-fit:cover; transition:transform 0.4s;
+  }
+  .pf-card:hover .cover img { transform:scale(1.05); }
+  .pf-card .cover .placeholder {
+    display:flex; align-items:center; justify-content:center;
+    height:100%; font-size:48px; color:#D1D5DB;
+  }
+
+  /* Confidence Badge */
+  .conf-badge {
+    position:absolute; top:10px; left:10px; padding:4px 10px;
+    border-radius:20px; font-size:10px; font-weight:700; letter-spacing:0.5px;
+    backdrop-filter:blur(8px);
+  }
+  .conf-real { background:rgba(16,185,129,0.9); color:#fff; }
+  .conf-demo { background:rgba(217,119,6,0.9); color:#fff; }
+
+  /* Premium tag */
+  .premium-tag {
+    position:absolute; top:10px; right:10px; background:rgba(124,58,237,0.9);
+    color:#fff; font-size:9px; font-weight:700; letter-spacing:1px;
+    padding:3px 8px; border-radius:4px;
+  }
+
+  /* Image count */
+  .img-count {
+    position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6);
+    color:#fff; font-size:11px; padding:3px 8px; border-radius:20px;
+  }
+
+  .pf-card .card-body { padding:16px 18px; }
+  .pf-card .event-type {
+    font-size:10px; text-transform:uppercase; letter-spacing:1.5px;
+    color:var(--dp-purple); margin-bottom:4px; font-weight:600;
+  }
+  .pf-card .title { font-family:'Cormorant Garamond',serif; font-size:17px; font-weight:600; margin-bottom:6px; }
+  .pf-card .meta { font-size:12px; color:var(--dp-gray); display:flex; gap:12px; }
+  .pf-card .meta span { display:flex; align-items:center; gap:4px; }
+
+  .pf-card .card-footer {
+    padding:12px 18px; border-top:1px solid var(--dp-border);
+    display:flex; gap:8px;
+  }
+
+  /* ── Flipbook Modal ── */
+  .flipbook-modal {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92);
+    z-index:1000; align-items:center; justify-content:center;
+  }
+  .flipbook-modal.open { display:flex; }
+
+  .flipbook-wrapper {
+    position:relative; width:100%; max-width:900px; padding:0 60px;
+  }
+
+  .flipbook {
+    perspective:2000px; width:100%; display:flex; justify-content:center;
+  }
+
+  .flipbook-page {
+    position:relative; width:100%; max-width:780px;
+    animation:pageFlip 0.5s ease;
+  }
+  @keyframes pageFlip {
+    0%   { opacity:0; transform:rotateY(-15deg) scale(0.95); }
+    100% { opacity:1; transform:rotateY(0) scale(1); }
+  }
+
+  .flipbook-page img {
+    width:100%; border-radius:12px; max-height:75vh; object-fit:contain;
+  }
+
+  .flip-btn {
+    position:absolute; top:50%; transform:translateY(-50%);
+    width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.15);
+    border:1px solid rgba(255,255,255,0.2); color:#fff; font-size:18px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:all 0.18s; backdrop-filter:blur(4px);
+  }
+  .flip-btn:hover { background:rgba(255,255,255,0.25); }
+  .flip-btn.prev { left:0; }
+  .flip-btn.next { right:0; }
+  .flip-btn:disabled { opacity:0.3; cursor:default; }
+
+  .flipbook-meta {
+    text-align:center; margin-top:16px; color:rgba(255,255,255,0.8);
+  }
+  .flipbook-meta h3 { font-family:'Cormorant Garamond',serif; font-size:20px; margin-bottom:4px; }
+  .flipbook-meta .page-indicator { font-size:12px; color:rgba(255,255,255,0.5); }
+
+  .flipbook-thumbs {
+    display:flex; gap:8px; justify-content:center; margin-top:12px;
+    flex-wrap:wrap;
+  }
+  .flipbook-thumb {
+    width:48px; height:48px; border-radius:6px; overflow:hidden; cursor:pointer;
+    opacity:0.5; transition:all 0.18s; border:2px solid transparent; flex-shrink:0;
+  }
+  .flipbook-thumb img { width:100%; height:100%; object-fit:cover; }
+  .flipbook-thumb.active { opacity:1; border-color:#A78BFA; }
+
+  .flipbook-close {
+    position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.15);
+    border:none; color:#fff; width:36px; height:36px; border-radius:50%;
+    font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    z-index:10;
+  }
+
+  /* Empty State */
+  .empty { text-align:center; padding:80px 20px; color:var(--dp-gray); }
+  .empty .ico { font-size:56px; margin-bottom:16px; }
+
+  /* Toast */
+  .toast {
+    position:fixed; bottom:28px; right:28px; background:var(--dp-dark); color:#fff;
+    padding:12px 20px; border-radius:10px; font-size:13px; z-index:9999;
+    transform:translateY(80px); opacity:0; transition:all 0.3s;
+  }
+  .toast.show { transform:none; opacity:1; }
+
+  .loading { text-align:center; padding:60px; color:var(--dp-gray); }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div id="sidebar">
+  <div class="logo">
+    <h2>DP Studio</h2>
+    <span>Management Panel</span>
+  </div>
+  <nav>
+    <a href="/dashboard.html"><span class="ico">🏠</span> Dashboard</a>
+    <a href="/catalogue.html"><span class="ico">📦</span> Catalogue</a>
+    <a href="/portfolio.html" class="active"><span class="ico">🖼️</span> Portfolio</a>
+    <a href="/bookings.html"><span class="ico">📅</span> Bookings</a>
+    <a href="/invoices.html"><span class="ico">🧾</span> Invoices</a>
+    <a href="/catalogue-admin.html"><span class="ico">⚙️</span> Manage Packages</a>
+    <a href="/tv-mode.html" target="_blank"><span class="ico">📺</span> TV Mode</a>
+  </nav>
+  <div class="sidebar-footer"><a href="#">← Dashboard</a></div>
+</div>
+
+<div id="main">
+  <div class="topbar">
+    <h1>Portfolio</h1>
+    <div class="topbar-actions">
+      <button class="btn btn-outline" onclick="refreshPortfolio()">↻ Refresh</button>
+      <a href="/catalogue-admin.html" class="btn btn-primary">+ Add Work</a>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <!-- Stats -->
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-card"><div class="label">Total Works</div><div class="value" id="statTotal">—</div></div>
+      <div class="stat-card"><div class="label">Client Projects</div><div class="value" id="statReal">—</div></div>
+      <div class="stat-card"><div class="label">Studio Demos</div><div class="value" id="statDemo">—</div></div>
+      <div class="stat-card"><div class="label">Premium Work</div><div class="value" id="statPremium">—</div></div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-chip active" onclick="filterPortfolio('all', this)">All</div>
+      <div class="filter-chip" onclick="filterPortfolio('wedding', this)">Wedding</div>
+      <div class="filter-chip" onclick="filterPortfolio('reception', this)">Reception</div>
+      <div class="filter-chip" onclick="filterPortfolio('anniversary', this)">Anniversary</div>
+      <div class="filter-chip" onclick="filterPortfolio('birthday', this)">Birthday</div>
+      <div class="filter-sep"></div>
+      <div class="filter-chip" onclick="filterPortfolio('real', this)">✔ Real Clients</div>
+      <div class="filter-chip" onclick="filterPortfolio('demo', this)">Studio Demos</div>
+      <div class="filter-chip" onclick="filterPortfolio('premium', this)">⭐ Premium</div>
+    </div>
+
+    <!-- Grid -->
+    <div class="portfolio-grid" id="portfolioGrid">
+      <div class="loading">Loading portfolio…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Flipbook Modal ── -->
+<div class="flipbook-modal" id="flipbookModal">
+  <button class="flipbook-close" onclick="closeFlipbook()">✕</button>
+  <div class="flipbook-wrapper">
+    <button class="flip-btn prev" id="flipPrev" onclick="flipPage(-1)">‹</button>
+    <div class="flipbook">
+      <div class="flipbook-page">
+        <img id="flipImg" src="" alt="">
+      </div>
+    </div>
+    <button class="flip-btn next" id="flipNext" onclick="flipPage(1)">›</button>
+    <div class="flipbook-meta">
+      <h3 id="flipTitle"></h3>
+      <div class="page-indicator" id="flipIndicator"></div>
+      <div class="flipbook-thumbs" id="flipThumbs"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let allPortfolio = [];
+let currentFilter = 'all';
+let currentFlipImages = [];
+let currentFlipIdx = 0;
+
+async function init() {
+  await loadPortfolio();
+}
+
+async function loadPortfolio() {
+  try {
+    const res = await fetch('/api/portfolio');
+    const data = await res.json();
+    if (data.success) {
+      allPortfolio = data.data;
+      updateStats();
+      renderPortfolio(allPortfolio);
+    }
+  } catch(e) {
+    document.getElementById('portfolioGrid').innerHTML =
+      '<div class="empty"><div class="ico">⚠️</div><p>Could not load portfolio</p></div>';
+  }
+}
+
+function updateStats() {
+  const real    = allPortfolio.filter(p => !p.isDemo).length;
+  const demo    = allPortfolio.filter(p => p.isDemo).length;
+  const premium = allPortfolio.filter(p => (p.tags||[]).includes('premium')).length;
+  document.getElementById('statTotal').textContent   = allPortfolio.length;
+  document.getElementById('statReal').textContent    = real;
+  document.getElementById('statDemo').textContent    = demo;
+  document.getElementById('statPremium').textContent = premium;
+}
+
+function filterPortfolio(type, el) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+
+  let items = allPortfolio;
+  if (type === 'real') items = allPortfolio.filter(p => !p.isDemo);
+  else if (type === 'demo') items = allPortfolio.filter(p => p.isDemo);
+  else if (type === 'premium') items = allPortfolio.filter(p => (p.tags||[]).includes('premium'));
+  else if (type !== 'all') items = allPortfolio.filter(p => p.eventType === type);
+
+  renderPortfolio(items);
+}
+
+function renderPortfolio(items) {
+  const grid = document.getElementById('portfolioGrid');
+  if (!items.length) {
+    grid.innerHTML = '<div class="empty"><div class="ico">🖼️</div><p>No portfolio items found</p></div>';
+    return;
+  }
+
+  const isPremium = p => (p.tags||[]).includes('premium') || (p.packageId === 'PKG003' || p.packageId === 'PKG004');
+
+  grid.innerHTML = items.map(item => {
+    const imgs = item.images || [];
+    const cover = item.coverImage || imgs[0] || '';
+    const dateStr = item.deliveredDate
+      ? new Date(item.deliveredDate).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'})
+      : '—';
+
+    return `
+    <div class="pf-card" onclick="openFlipbook('${item.id}')">
+      <div class="cover">
+        ${cover
+          ? `<img src="${cover}" alt="${item.title}" loading="lazy">`
+          : `<div class="placeholder">📷</div>`}
+        <div class="conf-badge ${item.isDemo ? 'conf-demo' : 'conf-real'}">
+          ${item.isDemo ? '🎨 Studio Demo ✔' : '✅ Real Client Project ✔'}
+        </div>
+        ${isPremium(item) ? `<div class="premium-tag">⭐ PREMIUM</div>` : ''}
+        ${imgs.length > 1 ? `<div class="img-count">📷 ${imgs.length}</div>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="event-type">${item.eventType || 'Event'}</div>
+        <div class="title">${item.title}</div>
+        <div class="meta">
+          <span>📅 ${dateStr}</span>
+          ${item.guestCount ? `<span>👥 ${item.guestCount} guests</span>` : ''}
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-outline" style="flex:1;font-size:12px"
+          onclick="event.stopPropagation(); openFlipbook('${item.id}')">
+          📖 View Album
+        </button>
+        ${item.videoUrl
+          ? `<button class="btn btn-primary" style="font-size:12px"
+              onclick="event.stopPropagation(); window.open('${item.videoUrl}','_blank')">▶ Video</button>`
+          : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Flipbook ───────────────────────────────────────────────────────────────
+function openFlipbook(id) {
+  const item = allPortfolio.find(p => p.id === id);
+  if (!item) return;
+  const imgs = item.images || [];
+  if (!imgs.length && !item.coverImage) {
+    showToast('No images available for this album');
+    return;
+  }
+  currentFlipImages = imgs.length ? imgs : [item.coverImage];
+  currentFlipIdx = 0;
+  document.getElementById('flipTitle').textContent = item.title;
+  document.getElementById('flipbookModal').classList.add('open');
+  renderFlipPage();
+  renderThumbs();
+}
+
+function closeFlipbook() {
+  document.getElementById('flipbookModal').classList.remove('open');
+}
+
+function renderFlipPage() {
+  const img = document.getElementById('flipImg');
+  img.style.opacity = '0';
+  img.src = currentFlipImages[currentFlipIdx];
+  img.onload = () => { img.style.transition = 'opacity 0.3s'; img.style.opacity = '1'; };
+
+  document.getElementById('flipIndicator').textContent =
+    `${currentFlipIdx + 1} / ${currentFlipImages.length}`;
+  document.getElementById('flipPrev').disabled = currentFlipIdx === 0;
+  document.getElementById('flipNext').disabled = currentFlipIdx === currentFlipImages.length - 1;
+
+  document.querySelectorAll('.flipbook-thumb').forEach((t, i) => {
+    t.classList.toggle('active', i === currentFlipIdx);
+  });
+}
+
+function renderThumbs() {
+  document.getElementById('flipThumbs').innerHTML = currentFlipImages.map((src, i) => `
+    <div class="flipbook-thumb ${i === 0 ? 'active' : ''}" onclick="goFlipPage(${i})">
+      <img src="${src}" alt="Page ${i+1}">
+    </div>
+  `).join('');
+}
+
+function flipPage(dir) {
+  const next = currentFlipIdx + dir;
+  if (next < 0 || next >= currentFlipImages.length) return;
+  currentFlipIdx = next;
+  // Animate flip
+  const page = document.querySelector('.flipbook-page');
+  page.style.animation = 'none';
+  page.offsetHeight; // reflow
+  page.style.animation = 'pageFlip 0.4s ease';
+  renderFlipPage();
+}
+
+function goFlipPage(idx) {
+  currentFlipIdx = idx;
+  const page = document.querySelector('.flipbook-page');
+  page.style.animation = 'none';
+  page.offsetHeight;
+  page.style.animation = 'pageFlip 0.3s ease';
+  renderFlipPage();
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('flipbookModal').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') flipPage(-1);
+  if (e.key === 'ArrowRight') flipPage(1);
+  if (e.key === 'Escape') closeFlipbook();
+});
+
+function refreshPortfolio() {
+  document.getElementById('portfolioGrid').innerHTML = '<div class="loading">Refreshing…</div>';
+  loadPortfolio();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>
