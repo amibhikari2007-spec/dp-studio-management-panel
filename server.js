@@ -18,10 +18,10 @@ const Admin = require("./routes/admin");
 const User = require("./routes/user");
 const studioRoutes = require('./routes/studio');
 
-app.use('/api', studioRoutes);
-
-
 const app = express();
+
+
+app.use('/api', studioRoutes);
 
 
 /* =========================
