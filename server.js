@@ -11,9 +11,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const Activity = require("./routes/Activity");
-const Customer = require("./routes/Customer");
-const Booking = require("./routes/Booking");
-const Admin = require("./routes/Admin");
+const Customer = require("./routes/customer");
+const Booking = require("./routes/booking");
+const Admin = require("./routes/admin");
 const User = require("./routes/user");
 const studioRoutes = require('./routes/studio');
 
