@@ -96,7 +96,7 @@ router.post('/packages', async (req, res) => {
 
 router.put('/packages/:id', async (req, res) => {
   try {
-    const pkg = await Package.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+    const pkg = await Package.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, runValidators: false }).lean();
     if (!pkg) return res.status(404).json({ success: false, error: 'Not found' });
     res.json({ success: true, data: { ...pkg, id: pkg._id.toString() } });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
@@ -178,7 +178,7 @@ router.post('/offers', async (req, res) => {
 
 router.put('/offers/:id', async (req, res) => {
   try {
-    const offer = await Offer.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+    const offer = await Offer.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, runValidators: false }).lean();
     if (!offer) return res.status(404).json({ success: false, error: 'Not found' });
     res.json({ success: true, data: { ...offer, id: offer._id.toString() } });
   } catch (err) { res.status(500).json({ success: false, error: err.message }); }
