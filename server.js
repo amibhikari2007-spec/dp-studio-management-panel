@@ -104,9 +104,39 @@ next();
    ROOT ROUTE
 ========================= */
 
-app.get("/",(req,res)=>{
-res.redirect("/admin.html");
-});
+/* CLEAN PAGE ROUTES */
+
+app.get('/admin', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public/admin.html'))
+);
+
+app.get('/dashboard', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public/dashboard.html'))
+);
+
+app.get('/invoices', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public/invoices.html'))
+);
+
+app.get('/customers', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public/customers.html'))
+);
+
+app.get('/manage-users', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public/manage-users.html'))
+);
+
+app.get('/add-booking', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public/add-booking.html'))
+);
+
+app.get('/invoice-view', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public/invoice-view.html'))
+);
+
+app.get('/super-admin', (req, res) =>
+  res.sendFile(path.join(__dirname, 'public/super-admin.html'))
+);
 
 
 
