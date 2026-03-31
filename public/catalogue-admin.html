@@ -506,7 +506,8 @@ async function savePkg() {
 
 // ─ Portfolio ──────────────────────────────────────────────────────────────
 async function loadPortfolio() {
-  const res = await fetch('/api/portfolio');
+  // Cache-bust so we always get the latest saved data from server
+  const res = await fetch('/api/portfolio?t=' + Date.now());
   const data = await res.json();
   if (data.success) { allPortfolio = data.data; renderPfTable(); }
 }
@@ -557,7 +558,20 @@ function openPfModal(item = null) {
   document.getElementById('pfModal').classList.add('open');
 }
 function closePfModal() { document.getElementById('pfModal').classList.remove('open'); }
-function editPf(id) { openPfModal(allPortfolio.find(p => p.id === id)); }
+
+async function editPf(id) {
+  // Always fetch fresh from server so we never show stale data
+  try {
+    const res = await fetch('/api/portfolio?t=' + Date.now());
+    const data = await res.json();
+    if (data.success) {
+      allPortfolio = data.data;
+      renderPfTable();
+    }
+  } catch(e) {}
+  const item = allPortfolio.find(p => p.id === id);
+  openPfModal(item);
+}
 
 async function deletePf(id) {
   if (!confirm('Remove this portfolio item?')) return;
@@ -575,6 +589,13 @@ async function togglePortfolioVisibility(id, show) {
 
 async function savePf() {
   const id = document.getElementById('pfId').value;
+  const coverVal = document.getElementById('pfCover').value.trim();
+  const imagesVal = document.getElementById('pfImages').value.trim();
+
+  // If coverImage is empty but images field has URLs, use first image as cover automatically
+  const imagesList = imagesVal.split(',').map(s => s.trim()).filter(Boolean);
+  const finalCover = coverVal || imagesList[0] || '';
+
   const body = {
     title:         document.getElementById('pfTitle').value,
     eventType:     document.getElementById('pfEventType').value,
@@ -583,19 +604,37 @@ async function savePf() {
     deliveredDate: document.getElementById('pfDeliveredDate').value,
     guestCount:    parseInt(document.getElementById('pfGuestCount').value) || 0,
     description:   document.getElementById('pfDesc').value,
-    coverImage:    document.getElementById('pfCover').value,
-    images:        document.getElementById('pfImages').value.split(',').map(s => s.trim()).filter(Boolean),
+    coverImage:    finalCover,
+    images:        imagesList,
     tags:          document.getElementById('pfTags').value.split(',').map(s => s.trim()).filter(Boolean),
     isDemo:        document.getElementById('pfIsDemo').checked,
     showInPortfolio: document.getElementById('pfShowInPortfolio').checked,
     status:        'Delivered',
   };
-  const url = id ? `/api/portfolio/${id}` : '/api/portfolio';
+
+  if (!body.title) { showToast('Title is required'); return; }
+
+  const url    = id ? `/api/portfolio/${id}` : '/api/portfolio';
   const method = id ? 'PUT' : 'POST';
-  const res = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-  const data = await res.json();
-  if (data.success) { showToast('Saved!'); closePfModal(); loadPortfolio(); }
-  else showToast('Error: ' + data.error);
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('✅ Saved successfully!');
+      closePfModal();
+      // Force fresh reload from server so edit shows updated data
+      await loadPortfolio();
+    } else {
+      showToast('Error: ' + (data.error || 'Save failed'));
+    }
+  } catch(e) {
+    showToast('Network error — check server');
+  }
 }
 
 // ─ Offers ─────────────────────────────────────────────────────────────────
@@ -707,22 +746,78 @@ async function uploadFiles(files) {
   document.getElementById('progressBar').style.width = '30%';
   const formData = new FormData();
   Array.from(files).forEach(f => formData.append('files', f));
-  const res = await fetch('/api/upload-demo', { method: 'POST', body: formData });
+
+  let data;
+  try {
+    const res = await fetch('/api/upload-demo', { method: 'POST', body: formData });
+    data = await res.json();
+  } catch(e) {
+    showToast('Upload failed — server error');
+    document.getElementById('uploadProgress').style.display = 'none';
+    return;
+  }
+
   document.getElementById('progressBar').style.width = '100%';
-  const data = await res.json();
+
   if (data.success) {
     document.getElementById('uploadedUrls').innerHTML = `
-      <div style="margin-top:8px;font-size:13px;font-weight:500;margin-bottom:8px">Uploaded URLs (copy to use):</div>
-      ${data.urls.map(url => `
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <code style="flex:1;background:var(--dp-light);padding:6px 10px;border-radius:6px;font-size:12px">${url}</code>
-          <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText('${url}');showToast('Copied!')">Copy</button>
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:var(--dp-dark)">
+        ✅ ${data.urls.length} file(s) uploaded — copy or inject into form:
+      </div>
+      ${data.urls.map((url, i) => `
+        <div style="background:var(--dp-white);border:1px solid var(--dp-border);border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+            <code style="flex:1;background:var(--dp-light);padding:6px 10px;border-radius:6px;font-size:11px;word-break:break-all">${url}</code>
+            <button class="btn btn-outline btn-sm" onclick="copyUrl('${url}')">📋 Copy</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="injectUrl('cover','${url}')">
+              🖼 Set as Cover Image
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="injectUrl('images','${url}')">
+              ➕ Add to Images
+            </button>
+          </div>
         </div>
       `).join('')}
+      <div style="font-size:11px;color:var(--dp-gray);margin-top:8px;">
+        💡 Tip: Open Edit on a portfolio item first, then click "Set as Cover" or "Add to Images" to inject directly.
+      </div>
     `;
-    showToast(`${data.urls.length} file(s) uploaded!`);
-  } else { showToast('Upload failed'); }
-  setTimeout(() => { document.getElementById('uploadProgress').style.display = 'none'; }, 1000);
+    showToast(`✅ ${data.urls.length} file(s) uploaded!`);
+  } else {
+    showToast('Upload failed');
+  }
+
+  setTimeout(() => { document.getElementById('uploadProgress').style.display = 'none'; }, 800);
+}
+
+function copyUrl(url) {
+  navigator.clipboard.writeText(url).then(() => showToast('✅ URL copied!'));
+}
+
+function injectUrl(field, url) {
+  // Check if the portfolio edit modal is open
+  const modal = document.getElementById('pfModal');
+  if (!modal.classList.contains('open')) {
+    showToast('⚠️ Open a portfolio item Edit form first, then inject');
+    return;
+  }
+
+  if (field === 'cover') {
+    document.getElementById('pfCover').value = url;
+    showToast('✅ Cover image URL set!');
+  } else if (field === 'images') {
+    const existing = document.getElementById('pfImages').value.trim();
+    document.getElementById('pfImages').value = existing ? existing + ', ' + url : url;
+    showToast('✅ Added to images list!');
+  }
+
+  // Switch tab back to portfolio to show the form
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-portfolio').classList.add('active');
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
 }
 
 // ─ Utilities ─────────────────────────────────────────────────────────────
