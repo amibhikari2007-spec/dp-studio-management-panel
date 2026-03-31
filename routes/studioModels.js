@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 
 // ── Package ────────────────────────────────────────────────────────────────
 const PackageSchema = new mongoose.Schema({
-  name:        { type: String, required: true },
+  name:        { type: String, default: '' },
   tier:        { type: String, default: 'standard' },
   price:       { type: Number, default: 0 },
   description: { type: String, default: '' },
@@ -26,7 +26,7 @@ const PackageSchema = new mongoose.Schema({
 
 // ── Portfolio ──────────────────────────────────────────────────────────────
 const PortfolioSchema = new mongoose.Schema({
-  title:           { type: String, required: true },
+  title:           { type: String, default: '' },
   eventType:       { type: String, default: 'wedding' },
   packageId:       { type: String, default: '' },
   date:            { type: String, default: '' },
@@ -44,7 +44,7 @@ const PortfolioSchema = new mongoose.Schema({
 
 // ── Offer ──────────────────────────────────────────────────────────────────
 const OfferSchema = new mongoose.Schema({
-  title:        { type: String, required: true },
+  title:        { type: String, default: '' },
   subtitle:     { type: String, default: '' },
   discount:     { type: Number, default: 0 },
   discountType: { type: String, default: 'percentage' },
