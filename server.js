@@ -103,6 +103,9 @@ next();
 /* =========================
    ROOT ROUTE
 ========================= */
+app.get("/",(req,res)=>{
+res.redirect("/admin.html");
+});
 
 /* CLEAN PAGE ROUTES */
 
