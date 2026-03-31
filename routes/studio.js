@@ -16,11 +16,10 @@ const { Package, Portfolio, Offer, TvContent } = require('./studioModels');
 
 // ── Cloudinary config (reads from Render environment variables) ─────────────
 cloudinary.config({
-  cloud_name: process.env.dmbvvjuft,
-  api_key:    process.env.435998745188711,
-  api_secret: process.env.XaYc-KGyw8IUrJ1Rznn1Gqv7PPY,
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
-
 // ── Multer — memory storage (no disk, straight to Cloudinary) ──────────────
 const upload = multer({
   storage: multer.memoryStorage(),
